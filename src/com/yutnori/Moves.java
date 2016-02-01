@@ -1,3 +1,14 @@
+/* @file Moves.java
+ *
+ * @author marco corvi
+ * @date nov 2015
+ *
+ * @brief Yutnori moves
+ * --------------------------------------------------------
+ *  Copyright This sowftare is distributed under GPL-3.0 or later
+ *  See the file COPYING.
+ * --------------------------------------------------------
+ */
 package com.yutnori;
 
 import java.util.ArrayList;

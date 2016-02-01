@@ -1,4 +1,14 @@
 /** @file YutnoriAlertDialog.java
+ * 
+ * @author marco corvi
+ * @date dec 2015
+ * 
+ * @brief board dialogs
+ *
+ * --------------------------------------------------------
+ *  Copyright This sowftare is distributed under GPL-3.0 or later
+ *  See the file COPYING.
+ * --------------------------------------------------------
  */
 package com.yutnori;
 

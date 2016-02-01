@@ -1,5 +1,14 @@
 /** @file ConnectionQueue.java
  *
+ * @author marco corvi
+ * @date jan 2016
+ *
+ * @brief Connection dialog with another Yutnori
+ *
+ * --------------------------------------------------------
+ *  Copyright This sowftare is distributed under GPL-3.0 or later
+ *  See the file COPYING.
+ * --------------------------------------------------------
  */
 package com.yutnori;
 
