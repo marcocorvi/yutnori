@@ -1,0 +1,64 @@
+Y U T   N O R I
+
+Yut Nori is a traditinal korean game. 
+This is an abridged version of the game.
+
+-------------------------------------------------------------------
+THE RULES OF YUT NORI
+
+There are two players: you play against the computer.
+Each player has four pawns (mal); yours are red the computer are green.
+The Yut Nori board has 29 stations.
+At the beginning all the pawns are in the cells at the bottom right.
+You move the pawns on the board starting from the start station, 
+indicated by the arrow, and go around the board until they pass
+beyond the fourth corner (and are placed in the "home" cells at the
+bottom left). If a pawns stops at a corner at the next move you can 
+decide to move it through the shortcut diagonal.
+
+Therefore there are four routes to go through the board:
+  o - - - - o    o - - - - o   o . . . . o   o . . . . o
+  | .     . |    . \     . |   . .     / |   . .     / |
+  |   . .   |    .   \ .   |   .   . /   |   .   . /   |
+  |   . .   |    .   . \   |   .   / .   |   .   . \   |
+  | .     . |    . .     \ |   . /     . |   . .     \ |
+  o - - - - +    o . . . . +   o - - - - +   o . . . . +
+
+To move the pawn the players throw the Yut Nori sticks in turn.
+They move the pawns my the score they get:
+  - one stick up (do): move by one step
+  - two sticks up (gae): move by two steps
+  - three sticks up (geol): move by three steps
+  - four sticks up (yut): move by four steps
+  - all sticks down (mo): move by five steps
+When a player scores "yut" (4) or "mo" (5) he gets another throw.
+Therefore there is no limit to the number of scores a player can
+get before he moves. The scores can be played separatedly, each given
+to a pawn, but a score cannot be split among two pawns. 
+
+If a pawn lands on a station occupied by the other players' pawns
+these are sent back to the initial cell, and the player gets another
+throw of the sticks. 
+
+If a pawn lands on a station occupied by another pawn of the same
+player, the pawns form a group and travel together from that point on.
+[Note: in the traditional Yut Nori the player can decide whether to
+form a group or not]
+
+The game is won by the player who completes the board course with all
+the four pawns first.
+
+-------------------------------------------------------------------
+HOW TO PLAY THE GAME
+
+When it is your turn to throw the sticks the second menu button
+displays "Throw": to throw click on the button. The score is shown
+between the menus and the board.
+
+When you can move a pawn (or a group of pawns) the menu button
+displays "Move". To move click first on the station with the pawn
+you want to move (or on the stating cell), and then click again
+on the station where you want to move the pawn to (or to the stating
+cell if the pawn completes the course).
+
+When the computer plays, the menu button displays "Wait".

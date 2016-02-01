@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+  <string-array name="level">
+     <item name="plain">plain</item>
+     <item name="stealth">stealth</item>
+     <item name="obscure">obscure</item>
+  </string-array>
+  <string-array name="levelValue">
+     <item name="plain">0</item>
+     <item name="stealth">1</item>
+     <item name="obscure">2</item>
+  </string-array>
+
+  <string-array name="engine">
+     <item name="yut0">Random</item>
+     <item name="yut1">Yut-1</item>
+     <item name="yut2">Yut-2</item>
+  </string-array>
+  <string-array name="engineValue">
+     <item name="yut0">0</item>
+     <item name="yut1">1</item>
+     <item name="yut2">2</item>
+  </string-array>
+
+  <string-array name="delay">
+     <item name="very_slow">very slow</item>
+     <item name="slow">slow</item>
+     <item name="normal">normal</item>
+     <item name="fast">fast</item>
+     <item name="very_fast">very fast</item>
+  </string-array>
+  <string-array name="delayValue">
+     <item name="very_slow">0</item>
+     <item name="slow">1</item>
+     <item name="normal">2</item>
+     <item name="fast">3</item>
+     <item name="very_fast">4</item>
+  </string-array>
+
+</resources>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yutnori</string>
+    <string name="app_help">Yutnori - Aiuto</string>
+
+    <string name="button_again">Nuovo gioco</string>
+    <string name="button_quit">Esci</string>
+    <string name="button_ok">  OK  </string>
+    <string name="button_cancel">CANCELLA</string>
+
+    <string name="ask_quit">Vuoi uscire ?</string>
+    <string name="ask_accept">%1$s vuol giocare con te</string>
+    <string name="ask_new_game">%1$s vuol giocare ancora</string>
+
+    <string name="state_throw">LANCIA</string>
+    <string name="state_move">MUOVI</string>
+    <string name="state_ready">ATTENDI</string>
+    <string name="state_over">FINE GIOCO</string>
+    <string name="state_hold">ASPETTA ...</string>
+    <string name="state_start_throw">Scelta di chi inizia: LANCIA</string>
+    <string name="state_start_ready">Scelta di chi inizia: ATTENDI</string>
+
+    <string name="you_won">Fine gioco.\nHai vinto !</string>
+    <string name="i_won">Fine gioco.\nAndroid ha vinto !</string>
+    <string name="friend_won">Fine gioco.\nHai perso !</string>
+
+    <string name="you_start">Cominci tu</string>
+    <string name="i_start">Comincia Android</string>
+    <string name="friend_start">Comincia il tuo amico</string>
+
+    <string name="sync_conn_fail">Connessione fallita. Gioca con Android.\nLe tue pedine sono BLU, e tu inizi.</string>
+    <string name="sync_conn_lost">Connesione persa</string>
+    <!-- string name="sync_conn">Connesso a %1$s</string -->
+
+    <string name="color_red">Connesso a %1$s.\nScelta di chi inizia.\nLe tue pedine sono ROSSE</string>
+    <string name="color_blue">Connesso a %1$s.\nScelta di chi inizia.\nLe tue pedine sono BLU</string>
+    <string name="color_none">Gioca con Android.\nLe tue pedine sono BLU e cominci tu</string>
+
+    <string name="accept">Accetta</string>
+    <string name="decline">Rifuita</string>
+    <string name="attach">Connetti</string>
+    <string name="detach">Sconnetti</string>
+    <string name="sync">Sincronizza</string>
+    <string name="peer_device">Android</string>
+    <string name="no_device">Nessun Android selezionato</string>
+    <string name="not_connected">Non connesso</string>
+    <string name="already_connected">Già connesso</string>
+    <string name="connection_refused">Connessione rifiutata</string>
+    <string name="devices">Dispositivi Bluetooth</string>
+    <string name="device_status">Stato: %1$s"</string>
+
+    <string name="NONE">NONE</string>
+    <string name="LISTEN">LISTEN</string>
+
+    <string name="another_game">%1$s gioca di nuovo</string>
+    <string name="not_another_game">%1$s non gioca</string>
+
+    <string name="menu_new">NUOVO</string>
+    <string name="menu_join">CONNETTI</string>
+    <string name="menu_help">AIUTO</string>
+    <string name="menu_about">INFO</string>
+    <string name="menu_settings">IMPOSTAZIONI</string>
+
+    <string name="yutnori_wait">Attendi che un altro Yutnori si connetta</string>
+    <string name="yutnori_join">Connettiti ad un altro Yutnori</string>
+    <string name="yutnori_android">Gioca contro Android</string>
+
+    <string name="pref_split_title">Separazione</string>
+    <string name="pref_split_summary">Gruppi separabili</string>
+    <string name="pref_level_title">Livello</string>
+    <string name="pref_level_summary">Livello di gioco</string>
+    <string name="pref_engine_title">Engine</string>
+    <string name="pref_engine_summary">Game Engine</string>
+    <string name="pref_delay_title">Velocità</string>
+    <string name="pref_delay_summary">Velocità di display</string>
+
+<string name="about_text">
+Yutnori è un gioco da tavola tradizionale della Korea,\n
+con due giocatori.\n\n
+Puoi giocare con un amico, connettendo i vostri due Yutnori,\n
+oppure contro Android.\n\n
+Buon divertimento.
+</string>
+</resources>

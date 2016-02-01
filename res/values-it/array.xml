@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+  <string-array name="level">
+     <item name="plain">normale</item>
+     <item name="stealth">nascosto</item>
+     <item name="obscure">invisibile</item>
+  </string-array>
+
+  <string-array name="engine">
+     <item name="yut1">Yut-1</item>
+     <item name="yut2">Yut-2</item>
+  </string-array>
+
+  <string-array name="delay">
+     <item name="very_slow">molto lento</item>
+     <item name="slow">lento</item>
+     <item name="normal">normale</item>
+     <item name="fast">veloce</item>
+     <item name="very_fast">molto veloce</item>
+  </string-array>
+
+</resources>

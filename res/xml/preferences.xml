@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <com.yutnori.MyListPreference
+       android:key="YUTNORI_ENGINE"
+       android:title="@string/pref_engine_title"
+       android:summary="@string/pref_engine_summary"
+       android:defaultValue="0"
+       android:entries="@array/engine"
+       android:entryValues="@array/engineValue"
+       />
+
+  <com.yutnori.MyListPreference
+       android:key="YUTNORI_LEVEL"
+       android:title="@string/pref_level_title"
+       android:summary="@string/pref_level_summary"
+       android:defaultValue="0"
+       android:entries="@array/level"
+       android:entryValues="@array/levelValue"
+       />
+
+  <com.yutnori.MyListPreference
+       android:key="YUTNORI_DELAY"
+       android:title="@string/pref_delay_title"
+       android:summary="@string/pref_delay_summary"
+       android:defaultValue="2"
+       android:entries="@array/delay"
+       android:entryValues="@array/delayValue"
+       />
+
+  <android.preference.CheckBoxPreference
+       android:key="YUTNORI_SPLIT"
+       android:title="@string/pref_split_title"
+       android:summary="@string/pref_split_summary"
+       android:defaultValue="false"
+       />
+
+</PreferenceScreen>
