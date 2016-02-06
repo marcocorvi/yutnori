@@ -573,18 +573,31 @@ public class DrawingSurface extends SurfaceView
     }
   }
 
-  void swapPawns()
+  void setPawns( int color )
   {
-    mColor = -1;
-    for ( int k = 1; k <= NZ2; ++k ) {
-      mzcard[k] = mzcard0[NZ2+k];
-      mZcard[k] = mZcard0[NZ2+k];
-      mscard[k] = mscard0[NZ2+k];
-      mScard[k] = mScard0[NZ2+k];
-      mzcard[NZ2+k] = mzcard0[k];
-      mZcard[NZ2+k] = mZcard0[k];
-      mscard[NZ2+k] = mscard0[k];
-      mScard[NZ2+k] = mScard0[k];
+    mColor = color;
+    if ( mColor == -1 ) {
+      for ( int k = 1; k <= NZ2; ++k ) {
+        mzcard[k]     = mzcard0[NZ2+k];
+        mZcard[k]     = mZcard0[NZ2+k];
+        mscard[k]     = mscard0[NZ2+k];
+        mScard[k]     = mScard0[NZ2+k];
+        mzcard[NZ2+k] = mzcard0[k];
+        mZcard[NZ2+k] = mZcard0[k];
+        mscard[NZ2+k] = mscard0[k];
+        mScard[NZ2+k] = mScard0[k];
+      }
+    } else {
+      for ( int k = 1; k <= NZ2; ++k ) {
+        mzcard[k]     = mzcard0[k];
+        mZcard[k]     = mZcard0[k];
+        mscard[k]     = mscard0[k];
+        mScard[k]     = mScard0[k];
+        mzcard[NZ2+k] = mzcard0[NZ2+k];
+        mZcard[NZ2+k] = mZcard0[NZ2+k];
+        mscard[NZ2+k] = mscard0[NZ2+k];
+        mScard[NZ2+k] = mScard0[NZ2+k];
+      }
     }
   }
 

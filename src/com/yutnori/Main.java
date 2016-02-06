@@ -92,6 +92,8 @@ public class Main extends Activity
   private MenuItem mMenuHelp     = null;
   private MenuItem mMenuAbout    = null;
 
+  ConnectDialog mConnectDialog = null;
+
   Yutnori  mYutnori   = null;
   Strategy mStrategy1 = null;
   Strategy mStrategy2 = null;
@@ -286,7 +288,7 @@ public class Main extends Activity
     // alertNumber( R.string.color_none );
 
     mDisclosure = new int[10];
-    for ( int k = 0; k<12; ++ k ) {
+    for ( int k = 0; k<mDisclosure.length; ++ k ) {
       int v = 6 + 5 * ((int)( Math.random()*4.9999 ));
       if ( v > 21 ) v = 24;
       mDisclosure[k] = v;
@@ -313,7 +315,8 @@ public class Main extends Activity
         mPlaying = true;
         mState   = OVER;
         setTheTitle();
-        (new ConnectDialog( this, this )).show();
+        mConnectDialog = new ConnectDialog( this, this );
+        mConnectDialog.show();
         break;
     }
   }
@@ -330,8 +333,18 @@ public class Main extends Activity
     if ( mConnection != null ) mConnection.syncDevice( device );
   }
 
+  private void closeConnectDialog()
+  {
+    // Log.v( TAG, "close connect-dialog " + ( (mConnectDialog == null)? "null" : "non-null") );
+    if ( mConnectDialog != null ) {
+      mConnectDialog.dismiss();
+      mConnectDialog = null;
+    }
+  }
+
   void connectRemoteYutnori( BluetoothDevice device )
   {
+    // Log.v( TAG, "Main: connect remote device " + device.getName() );
     mLastWinner = 0;
     if ( mConnection != null ) {
       mJoining = true;
@@ -363,6 +376,11 @@ public class Main extends Activity
     mPlaying = ( mState == THROW || mState == MOVE );
     if ( mConnection != null ) mConnection.stop( );
   }
+  void restartRemote()
+  {
+    stopRemote();
+    startRemote();
+  }
 
   void syncConnectionFailed()
   {
@@ -388,6 +406,7 @@ public class Main extends Activity
         String title = String.format( res.getString( R.string.ask_accept, mRemote ) );
         String ok = res.getString( R.string.accept );
         String no = res.getString( R.string.decline );
+        closeConnectDialog();
         dismissAlert();
         mAlert = new YutnoriAlertDialog( this, res, title, ok, no, 
           new DialogInterface.OnClickListener() {
@@ -422,6 +441,8 @@ public class Main extends Activity
     mDrawingSurface.setStartColor( offset );
   }
 
+  // called by connectionLost()
+  // and on receiving a sendAccept
   void execAccept( int bool, int pos )
   {
     // Log.v( TAG, "exec Accept " + bool );
@@ -430,7 +451,7 @@ public class Main extends Activity
       Resources res = getResources();
       if ( bool == 1 ) {
         YutnoriPrefs.setPos( pos );
-        mDrawingSurface.swapPawns();
+        mDrawingSurface.setPawns( -1 ); // color = -1
         mConnection.sendReset( START );
         execReset( WAIT );
         alertString( String.format( getResources().getString(R.string.color_red), mRemote ) );
@@ -440,6 +461,7 @@ public class Main extends Activity
         // if ( mConnection != null ) mConnection.disconnect( /* null */ );
         alertString( String.format( getResources().getString(R.string.connection_refused), mRemote ) );
         mRemote  = null;
+        restartRemote(); // FIXME if connection has been refused it is safe to restart the sync-service
       }
     } else {
       mConnected = false;
@@ -637,7 +659,9 @@ public class Main extends Activity
       if ( mState == HOLD && mDisclosureIndex >= 0 ) {
         if ( pos == mDisclosure[ mDisclosureIndex ] ) {
           mDisclosureIndex ++;
-          if ( mDisclosureIndex == 4 ) {
+          if ( mDisclosureIndex == 3 ) {
+            Toast.makeText( this, "One tap to temporary full mode", Toast.LENGTH_SHORT).show();
+          } else if ( mDisclosureIndex == 4 ) {
             YutnoriPrefs.mDisclosed = true;
             Toast.makeText( this, "Temporary enabled full mode", Toast.LENGTH_SHORT).show();
           } else if ( mDisclosureIndex == mDisclosure.length ) {
@@ -888,7 +912,8 @@ public class Main extends Activity
     //     mYutnori.mStrategy = mStrategy1;
     //   }
     } else if ( item == mMenuJoin ) {
-      (new ConnectDialog( this, this )).show();
+      mConnectDialog = new ConnectDialog( this, this );
+      mConnectDialog.show();
       
     } else if ( item == mMenuSettings && YutnoriPrefs.mDisclosed ) {
       startActivity( new Intent( this, YutnoriPreferences.class ) );

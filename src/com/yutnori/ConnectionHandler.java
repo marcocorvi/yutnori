@@ -103,7 +103,7 @@ class ConnectionHandler extends Handler
   void stop() 
   { 
     // Log.v( TAG, "ConnectionHandler stop()");
-    stopSendThread();
+    stopSendThread( true );
     mSyncService.stop();
   }
 
@@ -113,13 +113,11 @@ class ConnectionHandler extends Handler
     if ( mDevice != device ) {
       mRun = false;
       if ( mSendThread != null ) {
-        try {
-          mSendThread.join();
-        } catch ( InterruptedException e ) { }
-        mSendThread = null;
-        mBufferQueue.clear(); // flush the queue
+        // Log.v( TAG, "ConnectionHandler join send-thread");
+        stopSendThread( true );
       }
     }
+    // Log.v( TAG, "ConnectionHandler now connect");
     resetCounters();
     mAccepted = false;
     mDevice = device;
@@ -127,6 +125,7 @@ class ConnectionHandler extends Handler
       mClient = true;
       mSyncService.connect( mDevice );
     }
+    // Log.v( TAG, "ConnectionHandler connect done");
   }
 
   // called when the connection has been lost
@@ -135,7 +134,7 @@ class ConnectionHandler extends Handler
     if ( mDevice == null ) return;
     if ( ! mClient ) return;
     // Log.v( TAG, "ConnectionHandler reconnect() ");
-    if ( mSendThread != null ) stopSendThread();
+    if ( mSendThread != null ) stopSendThread( false );
     while ( mSyncService.getConnectState() == SyncService.STATE_NONE ) {
       try {
         Thread.sleep( 200 );
@@ -164,7 +163,7 @@ class ConnectionHandler extends Handler
   {
     // Log.v( TAG, "ConnectionHandler disconnect() ");
     // if ( device.getName() != null && device.getName().equals( mDevice.getName() ) {
-      stopSendThread();
+      stopSendThread( true );
       mSyncService.disconnect();
       mDevice = null;
     // }
@@ -178,31 +177,37 @@ class ConnectionHandler extends Handler
     // }
   }
 
-  boolean writeBytes( byte[] buffer ) 
+  private boolean writeBytes( byte[] buffer ) 
   {
     // Log.v( TAG, "ConnectionHandler write CNT " + buffer[0] + " key " + buffer[1] );
     return mSyncService.writeBuffer( buffer );
   }
 
-  void startSendThread()
+  private void startSendThread()
   {
-    // Log.v( TAG, "ConnectionHandler startSendThread()");
+    // Log.v( TAG, "ConnectionHandler start send-thread()");
     mRun = true;
-    mSendThread = new SendThread( mBufferQueue );
+    // mSendThread = new SendThread( mBufferQueue );
+    mSendThread = new SendThread( );
     mSendThread.start();
   }
 
-  void stopSendThread()
+  private void stopSendThread( boolean empty_queue )
   {
-    // Log.v( TAG, "ConnectionHandler stopSendThread()");
+    // Log.v( TAG, "ConnectionHandler stop send-thread");
+    if ( empty_queue ) {
+      mBufferQueue.clear(); // flush the queue
+    }
     mRun = false;
     if ( mSendThread != null ) {
-      try {
-        mSendThread.join();
-      } catch ( InterruptedException e ) { }
+      if ( mSendThread.isRunning() ) {
+        try {
+          mSendThread.join();
+        } catch ( InterruptedException e ) { }
+      }
       mSendThread = null;
-      // flush the queue
     }
+    // Log.v( TAG, "ConnectionHandler stop send-thread done");
   }
 
 
@@ -417,28 +422,31 @@ class ConnectionHandler extends Handler
 
   private class SendThread extends Thread
   {
-    // final ConcurrentLinkedQueue<byte[]> mQueue;
-    final ConnectionQueue mQueue;
+    boolean mRunning;
 
-    // SendThread( ConcurrentLinkedQueue<byte[]> queue ) 
-    SendThread( ConnectionQueue queue ) 
+    SendThread( )
     {
-      mQueue = queue;
+      mRunning = false;
     }
+
+    boolean isRunning() { return mRunning; }
   
     @Override
     public void run()
     {
+      mRunning = true;
       int cnt = 0;
       byte lastByte = (byte)0xff;
       // Log.v( "DistoX", "SendThread running ...");
       while( mRun ) {
         try {
-          while ( mRun && mQueue.isEmpty() ) Thread.sleep( SLEEP_EMPTY );
-          if ( mRun ) {
-            // byte buffer[] = mQueue.peek();
+          // Log.v( TAG, "SendThread queue " + mBufferQueue.size() + " - run " + mRun );
+          if ( mBufferQueue.isEmpty() ) {
+            Thread.sleep( SLEEP_EMPTY );
+          } else {
+            // byte buffer[] = mBufferQueue.peek();
             // write( buffer );
-            ConnectionQueueItem item = mQueue.peek();
+            ConnectionQueueItem item = mBufferQueue.peek();
             if ( item != null ) {
               byte[] buffer = item.mData;
               if ( buffer[0] == lastByte ) {
@@ -464,6 +472,7 @@ class ConnectionHandler extends Handler
         } catch ( InterruptedException e ) {
         }
       }
+      mRunning = false;
       // Log.v( TAG, "SendThread exiting");
     }
   }

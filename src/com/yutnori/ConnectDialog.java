@@ -187,7 +187,7 @@ public class ConnectDialog extends Dialog
 
   private void connectDevice()
   {
-    // Log.v( TAG, "connectDevice state " + mApp.getConnectionStateStr() );
+    // Log.v( TAG, "ConnectDialog::connectDevice() state " + mApp.getConnectionStateStr() );
     for ( BluetoothDevice device : mDevices ) {
       if ( mName != null && mName.equals( device.getName() ) ) {
         mApp.connectRemoteYutnori( device );

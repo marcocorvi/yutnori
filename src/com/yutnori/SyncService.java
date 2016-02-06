@@ -45,8 +45,8 @@ public class SyncService
   private ConnectingThread mConnectingThread;
   private ConnectedThread  mConnectedThread;
 
-  private int mConnectState; // NONE --> CONNECTING --> CONNECTED --> NONE
-  private int mAcceptState;  // NONE --> LISTEN --> NONE
+  private int mConnectState; // NONE   --> CONNECTING --> CONNECTED --> NONE
+  private int mAcceptState;  // LISTEN --> NONE ................... --> LISTEN
 
   static final String mStateName[] = { "none", "listen", "connecting", "connected" };
   private int mType;   // the service type. either server (LISTEN) or client (CONNECTING)
@@ -71,7 +71,7 @@ public class SyncService
 
   public SyncService( Context context, Main app, Handler handler )
   {
-    mContext = context;
+    // mContext = context;
     mApp     = app;
     mAdapter = mApp.mBTAdapter; // BluetoothAdapter.getDefaultAdapter();
     mRemoteDevice = null;
@@ -123,16 +123,17 @@ public class SyncService
   public synchronized void start( Context context ) 
   {
     // Log.v( TAG, "sync start()" );
+    mContext    = context;
     mAcceptRun  = false;
     mConnectRun = false;
     if (mConnectingThread != null) { mConnectingThread.cancelJT(); mConnectingThread = null; }
     if (mConnectedThread  != null) { mConnectedThread.cancelCT();  mConnectedThread  = null; }
-    startAccept( context );
+    startAccept( );
   }
 
-  private synchronized void startAccept( Context context )
+  private synchronized void startAccept( )
   {
-    // Log.v( TAG, "sync startAccept()" );
+    // Log.v( TAG, "sync start accept-thread" );
     if (mAcceptThread != null) {
       mAcceptRun = false;
       setAcceptState(STATE_NONE);
@@ -143,9 +144,33 @@ public class SyncService
 
     mAcceptRun = true;
     mType = STATE_LISTEN;
-    mAcceptThread = new AcceptThread( context );
+    mAcceptThread = new AcceptThread( mContext );
     mAcceptThread.start();
     setAcceptState(STATE_LISTEN);
+  }
+
+  private void nullAccept()
+  {
+    if ( /* mConnectState == STATE_LISTEN && */ mAcceptThread != null ) {
+      mAcceptThread.cancelAT();
+      mAcceptThread = null;
+    }
+  }
+
+  private void nullConnecting()
+  {
+    if ( /* mConnectState == STATE_CONNECTING && */ mConnectingThread != null ) {
+      mConnectingThread.cancelJT();
+      mConnectingThread = null;
+    }
+  }
+
+  private void nullConnected()
+  {
+    if ( /* mConnectState == STATE_CONNECTED && */ mConnectedThread != null ) {
+      mConnectedThread.cancelCT();
+      mConnectedThread = null;
+    }
   }
 
   /**
@@ -154,17 +179,14 @@ public class SyncService
    */
   public synchronized void connect( BluetoothDevice device )
   {
-    // Log.v( TAG, "sync connect to " + device.getName() );
-    mRemoteDevice = device;
-
+    // Log.v( TAG, "sync connect to " + device.getName() + " connect-state " + mConnectState );
     mConnectRun = false;
-    if ( mConnectState == STATE_CONNECTING && mConnectingThread != null ) {
-      mConnectingThread.cancelJT();
-      mConnectingThread = null;
-    }
-    if ( mConnectedThread != null ) { mConnectedThread.cancelCT(); mConnectedThread = null; }
+    nullConnecting();
+    nullConnected();
 
+    mRemoteDevice = device;
     reconnect();
+    // Log.v( TAG, "sync connect done");
   }
 
   private synchronized void reconnect()
@@ -186,32 +208,35 @@ public class SyncService
   public synchronized void connected(BluetoothSocket socket, BluetoothDevice device)
   {
     // Log.v( TAG, "sync connected. remote device " + device.getName() );
+    nullConnecting();
+    nullConnected();
+    // nullAccept(); // ONE-TO-ONE
 
-    mRemoteDevice = device;
-    mConnectRun = true;
+    String name = device.getName();
+    if ( name != null ) {
+      mRemoteDevice = device;
+      mConnectRun = true;
 
-    if ( mConnectingThread != null ) { mConnectingThread.cancelJT();   mConnectingThread   = null; }
-    if ( mConnectedThread != null )  { mConnectedThread.cancelCT(); mConnectedThread = null; }
-    // ONE-TO-ONE
-    // if ( mAcceptThread != null )  { mAcceptThread.cancelAT();    mAcceptThread    = null; }
+      mConnectedThread = new ConnectedThread(socket);
+      mConnectedThread.start();
 
+      Message msg = mHandler.obtainMessage( MESSAGE_DEVICE );
+      Bundle bundle = new Bundle();
+      
+      bundle.putString( DEVICE, name );
+      msg.setData(bundle);
+      mHandler.sendMessage(msg);
 
-    mConnectedThread = new ConnectedThread(socket);
-    mConnectedThread.start();
-
-    Message msg = mHandler.obtainMessage( MESSAGE_DEVICE );
-    Bundle bundle = new Bundle();
-    bundle.putString( DEVICE, mRemoteDevice.getName() );
-    msg.setData(bundle);
-    mHandler.sendMessage(msg);
-
-    setConnectState(STATE_CONNECTED);
+      setConnectState( STATE_CONNECTED );
+    } else {
+      disconnect();
+    }
   }
 
   public synchronized void disconnect() 
   {
     // Log.v( TAG, "sync disconnect");
-    if ( mConnectingThread != null ) { mConnectingThread.cancelJT();   mConnectingThread   = null; }
+    nullConnecting();
 
     if ( mConnectState == STATE_CONNECTED ) {
       byte shutdown[] = new byte[4];
@@ -224,16 +249,20 @@ public class SyncService
     if ( mConnectedThread != null ) { mConnectedThread.cancelCT(); mConnectedThread = null; }
     mRemoteDevice = null;
     setConnectState( STATE_NONE );
+    // startAccept( ); // ONE-TO-ONE ??
   }
 
   public synchronized void stop() 
   {
     // Log.v( TAG, "sync stop");
     // disconnect();
-    if ( mAcceptThread    != null ) { mAcceptThread.cancelAT();    mAcceptThread    = null; }
+    nullAccept();
     setAcceptState( STATE_NONE );
-    mType = STATE_NONE;
+    mType    = STATE_NONE;
+    mContext = null;
   }
+
+  // --------------------------------------------------------------------
 
   public boolean writeBuffer( byte[] buffer ) 
   {
@@ -343,8 +372,11 @@ public class SyncService
               switch ( mConnectState ) {
                 case STATE_NONE:
                 case STATE_CONNECTING: // Situation normal. Start the connected thread.
-                  connected( socket, socket.getRemoteDevice() );
-                  break;
+                  BluetoothDevice device = socket.getRemoteDevice();
+                  if ( device != null ) {
+                    connected( socket, device );
+                    break;
+                  } // else { fall-through }
                 case STATE_CONNECTED: // Either not ready or already connected. Terminate new socket.
                   try {
                     socket.close();
@@ -511,8 +543,7 @@ public class SyncService
       }
       // Log.v( TAG, "sync ConnectedThread done type " + mStateName[mType] );
       if ( mType == STATE_LISTEN ) {
-        // ONE-TO-ONE
-        // startAccept(); 
+        // startAccept(); // ONE-TO-ONE
       } else if ( mType == STATE_CONNECTING ) {
         try {
           Thread.sleep( 200 );
