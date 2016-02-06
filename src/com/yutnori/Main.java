@@ -93,6 +93,7 @@ public class Main extends Activity
   private MenuItem mMenuAbout    = null;
 
   ConnectDialog mConnectDialog = null;
+  SplashDialog  mSplashDialog = null;
 
   Yutnori  mYutnori   = null;
   Strategy mStrategy1 = null;
@@ -284,7 +285,8 @@ public class Main extends Activity
     mRemote  = null;
     mPlaying = true;
     
-    (new SplashDialog( this, this )).show();
+    mSplashDialog = new SplashDialog( this, this );
+    mSplashDialog.show();
     // alertNumber( R.string.color_none );
 
     mDisclosure = new int[10];
@@ -313,7 +315,7 @@ public class Main extends Activity
         break;
       case 2:
         mPlaying = true;
-        mState   = OVER;
+        mState   = HOLD;
         setTheTitle();
         mConnectDialog = new ConnectDialog( this, this );
         mConnectDialog.show();
@@ -333,12 +335,18 @@ public class Main extends Activity
     if ( mConnection != null ) mConnection.syncDevice( device );
   }
 
-  private void closeConnectDialog()
+  void closeConnectDialog()
   {
-    // Log.v( TAG, "close connect-dialog " + ( (mConnectDialog == null)? "null" : "non-null") );
     if ( mConnectDialog != null ) {
       mConnectDialog.dismiss();
       mConnectDialog = null;
+    }
+  }
+
+  void closeSplashDialog() {
+    if ( mSplashDialog != null ) {
+      mSplashDialog.dismiss();
+      mSplashDialog = null;
     }
   }
 
@@ -407,6 +415,7 @@ public class Main extends Activity
         String ok = res.getString( R.string.accept );
         String no = res.getString( R.string.decline );
         closeConnectDialog();
+        closeSplashDialog();
         dismissAlert();
         mAlert = new YutnoriAlertDialog( this, res, title, ok, no, 
           new DialogInterface.OnClickListener() {

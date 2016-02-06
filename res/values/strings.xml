@@ -16,7 +16,7 @@
     <string name="state_move">MOVE</string>
     <string name="state_ready">WAIT</string>
     <string name="state_over">GAME OVER</string>
-    <string name="state_hold">HOLD ON</string>
+    <string name="state_hold">ON HOLD</string>
     <string name="state_start_throw">Decide who starts: THROW</string>
     <string name="state_start_ready">Decide who starts: WAIT</string>
 

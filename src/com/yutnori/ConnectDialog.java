@@ -249,17 +249,17 @@ public class ConnectDialog extends Dialog
     Button b = (Button) v;
     // if ( b == mBtnStart ) {
     //   startDevice();
-    //   dismiss();
+    //   mApp.closeConnectDialog();
     // } else if ( b == mBtnStop ) {
     //   stopDevice();
-    //   dismiss();
+    //   mApp.closeConnectDialog();
     // } else
     if ( b == mBtnConnect ) {
       if ( mApp.getConnectState() != SyncService.STATE_NONE ) {
         Toast.makeText( mContext, R.string.already_connected, Toast.LENGTH_SHORT).show();
       } else if ( mName != null ) {
         connectDevice();
-        dismiss();
+        mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();
       } 
@@ -268,7 +268,7 @@ public class ConnectDialog extends Dialog
         Toast.makeText( mContext, R.string.not_connected, Toast.LENGTH_SHORT).show();
       } else if ( mName != null ) {
         disconnectDevice();
-        dismiss();
+        mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();
       }
@@ -277,14 +277,20 @@ public class ConnectDialog extends Dialog
         Toast.makeText( mContext, R.string.not_connected, Toast.LENGTH_SHORT).show();
       } else if ( mName != null ) {
         syncDevice();
-        dismiss();
+        mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();
       }
     // } else if ( b == mBtnCancel ) {
     //   /* nothing */
     } 
-    //   dismiss();
+    //   mApp.closeConnectDialog();
+  }
+
+  @Override
+  public void onBackPressed()
+  {
+    mApp.closeConnectDialog();
   }
 
 }

@@ -91,7 +91,8 @@ public class SplashDialog extends Dialog
     } else if ( mCBjoin.isChecked() ) {
       start = 2;
     }
-    dismiss();
+    // dismiss();
+    mApp.closeSplashDialog();
     mApp.setStartAs( start );
   }
 
