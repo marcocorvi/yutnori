@@ -642,11 +642,6 @@ public class Main extends Activity
       if ( np > 2 ) return true;
       /* fall through */
     }
-    float x_canvas = event.getX(id);
-    float y_canvas = event.getY(id);
-
-    int pos = mDrawingSurface.getIndex( (int)x_canvas, (int)y_canvas );
-    if ( pos == 0 ) pos = 1;
 
     if (action == MotionEvent.ACTION_DOWN) {
 
@@ -655,6 +650,11 @@ public class Main extends Activity
 
     // ---------------------------------------- UP
     } else if (action == MotionEvent.ACTION_UP) {
+      float x_canvas = event.getX(id);
+      float y_canvas = event.getY(id);
+      int pos = mDrawingSurface.getIndex( (int)x_canvas, (int)y_canvas );
+      if ( pos ==  0 ) pos =  1;
+      if ( pos == 33 ) pos = 32;
       // Log.v( TAG, "onTouch() " + pos + " X-Y " + x_canvas + " " + y_canvas + " state " + mState );
       if ( mState == HOLD && mDisclosureIndex >= 0 ) {
         if ( pos == mDisclosure[ mDisclosureIndex ] ) {
@@ -889,6 +889,7 @@ public class Main extends Activity
       mConnection.sendNewGame( );
     } else {
       setEngine( YutnoriPrefs.mEngine );
+      mDrawingSurface.resetPawns();
       execReset( THROW );
       alertNumber( R.string.color_none );
     }
