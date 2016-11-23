@@ -328,7 +328,7 @@ public class SyncService
         tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
         mAcceptState = STATE_LISTEN;
       } catch (IOException e) {
-        Log.e( TAG, "listen() failed " + e);
+        Log.e( TAG, "listen() failed " + e.getMessage() );
       }
       mSSocket = tmp;
     }
@@ -345,7 +345,7 @@ public class SyncService
             // Log.v( TAG, "sync accept listening ... ");
             socket = mSSocket.accept(); // blocking call
           } catch (IOException e) {
-            Log.e( TAG, "accept() failed " + e);
+            Log.e( TAG, "accept() failed " + e.getMessage() );
             break;
           }
 
@@ -381,7 +381,7 @@ public class SyncService
                   try {
                     socket.close();
                   } catch (IOException e) {
-                    Log.e( TAG, "Could not close unwanted socket " + e);
+                    Log.e( TAG, "Could not close unwanted socket " + e.getMessage() );
                   }
                   break;
               }
@@ -400,7 +400,7 @@ public class SyncService
       try {
         if ( mSSocket != null ) mSSocket.close();
       } catch (IOException e) {
-        Log.e( TAG, "close() of server failed " + e);
+        Log.e( TAG, "close() of server failed " + e.getMessage() );
       }
       mSSocket = null;
     }
@@ -430,7 +430,7 @@ public class SyncService
         //
         tmp = mJDevice.createRfcommSocketToServiceRecord( MY_UUID );
       } catch (IOException e) {
-        Log.e( TAG, "ConnectingThread cstr failed " + e);
+        Log.e( TAG, "ConnectingThread cstr failed " + e.getMessage() );
       }
       mJSocket = tmp;
     }
@@ -445,6 +445,7 @@ public class SyncService
         try { // Make a connection to the BluetoothSocket
           mJSocket.connect(); // blocking call
         } catch (IOException e) {
+          Log.e( TAG, "sync ConnectingThread IOexception " + e.getMessage() );
           connectionFailed();
           cancelJT();
           // SyncService.this.start(); // Start the service over to restart listening mode
@@ -465,7 +466,7 @@ public class SyncService
       try {
         if ( mJSocket != null ) mJSocket.close();
       } catch (IOException e) {
-        Log.e( TAG, "close() of connect socket failed " + e);
+        Log.e( TAG, "close() of connect socket failed " + e.getMessage() );
       }
       mJSocket = null;
     }
@@ -491,7 +492,7 @@ public class SyncService
           tmpIn  = mCSocket.getInputStream();
           tmpOut = mCSocket.getOutputStream();
         } catch (IOException e) {
-          Log.e( TAG, "sockets I/O streams not created " + e);
+          Log.e( TAG, "sockets I/O streams not created " + e.getMessage() );
         }
       } else {
         Log.e( TAG, "ERROR null BT socket");
@@ -535,7 +536,7 @@ public class SyncService
             }
           }
         } catch (IOException e) {
-          // Log.v( TAG, "disconnected " + e);
+          // Log.v( TAG, "disconnected " + e.getMessage() );
           cancelCT();
           connectionLost();
           break;
@@ -566,7 +567,7 @@ public class SyncService
           // mHandler.obtainMessage( MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
           return true;
         } catch (IOException e) {
-          Log.e( TAG, "Write exception " + e );
+          Log.e( TAG, "Write exception " + e.getMessage()  );
         }
       } else {
         Log.e( TAG, "null socket output stream");
@@ -582,7 +583,7 @@ public class SyncService
         if ( mCOut != null ) { mCOut.flush(); mCOut.close(); }
         if ( mCSocket    != null ) mCSocket.close();
       } catch (IOException e) {
-        Log.e( TAG, "close of connect socket failed " + e );
+        Log.e( TAG, "close of connect socket failed " + e.getMessage()  );
       }
       mCIn  = null;
       mCOut = null;

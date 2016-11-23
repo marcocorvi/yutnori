@@ -28,7 +28,8 @@
     <string name="i_start">Comincia Android</string>
     <string name="friend_start">Comincia il tuo amico</string>
 
-    <string name="sync_conn_fail">Connessione fallita. Gioca con Android.\nLe tue pedine sono BLU, e tu inizi.</string>
+    <string name="sync_conn_failed">Connessione fallita</string>
+    <string name="sync_conn_fail">Connessione fallita.\nGioca con Android.\nLe tue pedine sono BLU, e tu inizi.</string>
     <string name="sync_conn_lost">Connesione persa</string>
     <!-- string name="sync_conn">Connesso a %1$s</string -->
 

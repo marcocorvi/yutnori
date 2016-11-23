@@ -28,6 +28,7 @@
     <string name="i_start">Android가 먼저 시작해요.</string>
     <string name="friend_start">친구가 먼저 시작 합니다.</string>
 
+    <!-- TODO string name="sync_conn_failed">Connection failed.</string -->
     <string name="sync_conn_fail">연결실패. ANDROID와 대결.\n청색 말을 사용, 먼저 시작 하세요.</string>
     <string name="sync_conn_lost">연결 끊어짐</string>
     <!-- string name="sync_conn"> %1$s 에 연결됨</string -->

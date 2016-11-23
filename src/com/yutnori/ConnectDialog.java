@@ -185,23 +185,25 @@ public class ConnectDialog extends Dialog
     mTVaddress.setText( mName );
   }
 
-  private void connectDevice()
+  private boolean connectDevice()
   {
     // Log.v( TAG, "ConnectDialog::connectDevice() state " + mApp.getConnectionStateStr() );
-    for ( BluetoothDevice device : mDevices ) {
-      if ( mName != null && mName.equals( device.getName() ) ) {
-        mApp.connectRemoteYutnori( device );
-        return;
+    if ( mName != null ) {
+      for ( BluetoothDevice device : mDevices ) {
+        if ( mName.equals( device.getName() ) ) {
+          mApp.connectRemoteYutnori( device );
+          return true;
+        }
       }
     }
+    return false;
   }
 
-  private void disconnectDevice()
+  private boolean disconnectDevice()
   {
     // Log.v( TAG, "disconnectDevice " + mName );
     // Log.v( TAG, "disconnectDevice state " + mApp.getConnectionStateStr() );
     // Let the user choose which device to disconnect from
-    // if ( mName == null ) return false; // <-- mName != null is guaranteed
 
     // Use this if n-n 
     // for ( BluetoothDevice device : mDevices ) {
@@ -210,7 +212,11 @@ public class ConnectDialog extends Dialog
     //     return;
     //   }
     // }
-    mApp.disconnectRemoteYutnori( );
+    if ( mName != null ) {
+      mApp.disconnectRemoteYutnori( );
+      return true;
+    }
+    return false;
   }
 
   private void syncDevice()
@@ -257,8 +263,7 @@ public class ConnectDialog extends Dialog
     if ( b == mBtnConnect ) {
       if ( mApp.getConnectState() != SyncService.STATE_NONE ) {
         Toast.makeText( mContext, R.string.already_connected, Toast.LENGTH_SHORT).show();
-      } else if ( mName != null ) {
-        connectDevice();
+      } else if ( connectDevice() ) {
         mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();
@@ -266,8 +271,7 @@ public class ConnectDialog extends Dialog
     } else if ( b == mBtnDisconnect ) {
       if ( mApp.getConnectState() != SyncService.STATE_CONNECTED ) {
         Toast.makeText( mContext, R.string.not_connected, Toast.LENGTH_SHORT).show();
-      } else if ( mName != null ) {
-        disconnectDevice();
+      } else if ( disconnectDevice() ) { // this is true iff mName != null
         mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();

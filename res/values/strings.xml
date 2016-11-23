@@ -28,7 +28,8 @@
     <string name="i_start">Android starts</string>
     <string name="friend_start">Your friend starts</string>
 
-    <string name="sync_conn_fail">Connection failed. Playing against ANDROID.\nYour paws are BLUE, and you start.</string>
+    <string name="sync_conn_failed">Connection failed.</string>
+    <string name="sync_conn_fail">Connection failed.\nPlaying against ANDROID.\nYour paws are BLUE, and you start.</string>
     <string name="sync_conn_lost">Connection lost</string>
     <!-- string name="sync_conn">Connected to %1$s</string -->
 

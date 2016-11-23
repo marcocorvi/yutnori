@@ -27,8 +27,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothAdapter;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 
 import android.view.Menu;
 // import android.view.SubMenu;
@@ -289,7 +287,7 @@ public class Main extends Activity
     mSplashDialog.show();
     // alertNumber( R.string.color_none );
 
-    mDisclosure = new int[10];
+    mDisclosure = new int[4];
     for ( int k = 0; k<mDisclosure.length; ++ k ) {
       int v = 6 + 5 * ((int)( Math.random()*4.9999 ));
       if ( v > 21 ) v = 24;
@@ -361,6 +359,7 @@ public class Main extends Activity
       // Log.v( TAG, "connect remote device " + mRemote );
       resetStatus( false );
       mState = WAIT;
+      setTheTitle();
     }
   }
 
@@ -392,6 +391,7 @@ public class Main extends Activity
 
   void syncConnectionFailed()
   {
+    // Log.v( TAG, "sync connection failed ");
     // Toast.makeText( this, R.string.sync_conn_fail, Toast.LENGTH_SHORT ).show();
     mRemote  = null;
     mDrawingSurface.resetPawns();
@@ -557,6 +557,7 @@ public class Main extends Activity
         break;
       case 60: // connection failed
         // already handled by syncConnectionFailed
+        // Toast.makeText( this, R.string.sync_conn_failed, Toast.LENGTH_SHORT ).show();
         break;
       case 70: // accept: none
         break;
@@ -668,9 +669,9 @@ public class Main extends Activity
       if ( mState == HOLD && mDisclosureIndex >= 0 ) {
         if ( pos == mDisclosure[ mDisclosureIndex ] ) {
           mDisclosureIndex ++;
-          if ( mDisclosureIndex == 3 ) {
+          if ( mDisclosureIndex == 1 ) {
             Toast.makeText( this, "One tap to temporary full mode", Toast.LENGTH_SHORT).show();
-          } else if ( mDisclosureIndex == 4 ) {
+          } else if ( mDisclosureIndex == 2 ) {
             YutnoriPrefs.mDisclosed = true;
             Toast.makeText( this, "Temporary enabled full mode", Toast.LENGTH_SHORT).show();
           } else if ( mDisclosureIndex == mDisclosure.length ) {

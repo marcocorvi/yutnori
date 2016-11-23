@@ -152,7 +152,7 @@ class ConnectionHandler extends Handler
     if ( mClient ) {
       mClient = false;
       mDevice = null;
-      mApp.syncConnectionFailed();
+      mApp.syncConnectionFailed(); // this makes AlertDialog
     } else {
       // mSyncService.start( context );
     }
@@ -480,7 +480,7 @@ class ConnectionHandler extends Handler
   @Override
   public void handleMessage( Message msg )
   {
-    // Log.v(TAG, "CH handle message. Arg1: " + msg.arg1 );
+    // Log.v(TAG, "CH handle message. Arg1: " + msg.arg1 + " what " + msg.what );
     Bundle bundle; 
     switch (msg.what) {
       case SyncService.MESSAGE_LOST_CONN: // 5
@@ -492,10 +492,10 @@ class ConnectionHandler extends Handler
         break;
       case SyncService.MESSAGE_FAIL_CONN: // 6
         // Log.v( TAG, "CH failed connection ");
-        if ( mAccepted ) {
-          mApp.connStateChanged( 60 );
+        // if ( mAccepted ) {
           connectionFailed();
-        }
+          mApp.connStateChanged( 60 );
+        // }
         break;
       case SyncService.MESSAGE_CONNECT_STATE: // 1
         // Log.v( TAG, "handle message: CH connect state " + msg.arg1 );
