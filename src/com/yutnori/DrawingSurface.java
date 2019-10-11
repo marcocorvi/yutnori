@@ -545,7 +545,7 @@ public class DrawingSurface extends SurfaceView
     mWPawn *= s;
     mHPawn *= s;
 
-    mArrow = BitmapFactory.decodeResource( res, R.drawable.arrow );
+    mArrow = BitmapFactory.decodeResource( res, R.drawable.elblack );
     mYut   = new Bitmap[NY];
     for ( int k = 0; k < NY; ++k ) {
       bitmap = BitmapFactory.decodeResource( res, myutindex[k] );
@@ -679,7 +679,8 @@ public class DrawingSurface extends SurfaceView
 
   private void drawArrow( Canvas c )
   {
-    int x = xoffset[2] + mCardRow;
+    // int x = xoffset[2] + mCardRow;
+    int x = xoffset[2];
     int y = yoffset[2];
     c.drawBitmap( mArrow, x, y, null );
   }

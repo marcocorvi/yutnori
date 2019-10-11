@@ -686,9 +686,10 @@ public class Main extends Activity
       if ( mPlaying ) {
         int old_state = mState;
         if ( mState == MOVE ) {
+          // Log.v(TAG, "Play state MOVE " + mState );
           if ( YutnoriPrefs.mSplitGroup && mDrawingSurface.isShowingPawnNrs() ) {
             int nr = mDrawingSurface.getPawnNr( (int)x_canvas, (int)y_canvas );
-            // Log.v( TAG, "got pawns " + nr );
+            // Log.v( TAG, "Play got pawns " + nr );
             if ( nr >= 1 ) {
               myPawnNr = nr;
               mDrawingSurface.pressedPawn = myPawnNr - 1;
@@ -702,14 +703,15 @@ public class Main extends Activity
           if ( mMoving && pos > 1 ) {
             if ( YutnoriPrefs.mSplitGroup && pos == mStartPos ) {
               int nr = mBoard.value( pos );
+              // Log.v( TAG, "Play set pawn nr " + nr + " pos " + pos );
               if ( nr > 1 ) {
-                // Log.v( TAG, "main set pawn nr " + nr + " pos " + pos );
                 mDrawingSurface.setPawnNr( nr, pos );
                 return true;
               }
             }
-            // try to move:
             int m = Board.difference( mStartPos, pos );
+            // Log.v(TAG, "PLay try to move: start pos " + mStartPos + " pos " + pos + " diff " + m );
+
             int k = -1;
             if ( m < 0 && m > -100 ) {
               m = -m;
@@ -717,7 +719,7 @@ public class Main extends Activity
             } else {
               k = mMoves.hasMove( m );
             }
-            // Log.v( TAG, "difference " + pos + "-" + mStartPos + " " + m + " move-index " + k );
+            // Log.v( TAG, "Play difference " + pos + "-" + mStartPos + " " + m + " move-index " + k );
             if ( k >= 0 && mYutnori.canMove( mStartPos, pos, m ) ) {
               if ( mConnected ) {
                 mConnection.sendMoved( k ); 
@@ -725,8 +727,9 @@ public class Main extends Activity
               }
               mMoves.shift( k );
               if ( mBoard.move( mStartPos, pos, USER, myPawnNr ) ) { 
+                // Log.v(TAG, "new state THROW" );
                 mState = THROW;
-                mDrawingSurface.refresh();
+                // mDrawingSurface.refresh(); // this is a race cond with drawing thread
               } else if ( mBoard.winner() != 0 ) {
                 mState = OVER;
                 yourPawnNr = 0;
@@ -740,7 +743,7 @@ public class Main extends Activity
             mMoving = false;
             if ( mConnected ) mConnection.sendHighlight( -1 );
           } else if ( pos >= 1 && pos <= 31) {
-            // Log.v( TAG, "pos " + pos + " board " + mBoard.value(pos) );
+            // Log.v( TAG, "Play pos " + pos + " board " + mBoard.value(pos) );
             if ( (pos == 1 && mBoard.start(pos) > 0 ) 
               || (pos > 1 && mBoard.value( pos ) > 0 ) ) {
               mStartPos = pos;
@@ -765,6 +768,7 @@ public class Main extends Activity
             if ( m <= 3 ) mState = MOVE;
           }
         }
+
         // Log.v( TAG, "onTouch() UP. State " + old_state + " -> " + mState );
         setTheTitle();
         if ( mState == READY ) {
