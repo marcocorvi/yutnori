@@ -14,14 +14,16 @@
   </string-array>
 
   <string-array name="engine">
-     <item name="yut0">Random</item>
+     <item name="yut0">Yut-0</item>
      <item name="yut1">Yut-1</item>
      <item name="yut2">Yut-2</item>
+     <item name="yutR">Yut-Random</item>
   </string-array>
   <string-array name="engineValue">
      <item name="yut0">0</item>
      <item name="yut1">1</item>
      <item name="yut2">2</item>
+     <item name="yutR">3</item>
   </string-array>
 
   <string-array name="delay">
@@ -37,6 +39,13 @@
      <item name="normal">2</item>
      <item name="fast">3</item>
      <item name="very_fast">4</item>
+  </string-array>
+
+
+  <string-array name="backyuts">
+     <item name="one">1</item>
+     <item name="two">2</item>
+     <item name="three">3</item>
   </string-array>
 
 </resources>

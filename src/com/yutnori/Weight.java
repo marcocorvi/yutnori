@@ -31,6 +31,8 @@ class Weight
 
   void add( int k, float w ) { weight[k] += w; }
 
+  void set29() { weight[29] = weight[24]; }
+
   private void initWeight()
   {
     weight[0]  =  0;

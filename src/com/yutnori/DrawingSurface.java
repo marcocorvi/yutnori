@@ -37,7 +37,7 @@ import android.util.Log;
 public class DrawingSurface extends SurfaceView
                             implements SurfaceHolder.Callback
 {
-  static final String TAG = "yutnori";
+  // static final String TAG = "Yutnori-TITO";
 
   private Main mApp = null;
 
@@ -62,8 +62,8 @@ public class DrawingSurface extends SurfaceView
   public int width()  { return mCanvasWidth; }
   public int height() { return mCanvasHeight; }
 
-  Board mBoard = null;
-  Moves mMoves = null;
+  private Board mBoard = null;
+  private Moves mMoves = null;
 
   private Paint mPaint[];
   int mColor = 0;
@@ -73,6 +73,9 @@ public class DrawingSurface extends SurfaceView
 
   private Positions mPositions;
   void addPosition( int pos ) { mPositions.add( pos ); }
+
+  Board getBoard() { return mBoard; }
+  Moves getMoves() { return mMoves; }
   
   public DrawingSurface(Context context, AttributeSet attrs) 
   {
@@ -212,8 +215,8 @@ public class DrawingSurface extends SurfaceView
     mWidth  = w;
     mHeight = h;
 
-    xoffset = new int[34];
-    yoffset = new int[34];
+    xoffset = new int[36];
+    yoffset = new int[36];
 
     int row = (int)((w - 40) / 7);
     mCardRow = row;
@@ -226,6 +229,7 @@ public class DrawingSurface extends SurfaceView
     int ROW4 = 4 * row2;
     int ROW5 = 5 * row2;
     int ROW6 = 6 * row2;
+    int ROW7 = 7 * row2;
 
     int XOW0 = 0;
     int XOW1 = 1 * row;
@@ -277,10 +281,11 @@ public class DrawingSurface extends SurfaceView
     xoffset[30] = OFFX + XOW2; yoffset[30] = OFFY + XOW4;
     xoffset[31] = OFFX + XOW1; yoffset[31] = OFFY + XOW5;
 
-    xoffset[32] = OFFX + ROW4;
-    yoffset[32] = OFFY + ROW6;
-    xoffset[33] = OFFX + ROW5;
-    yoffset[33] = OFFY + ROW6;
+    xoffset[32] = OFFX + ROW4; yoffset[32] = OFFY + ROW6;
+    xoffset[33] = OFFX + ROW5; yoffset[33] = OFFY + ROW6;
+
+    xoffset[34] = OFFX + ROW0; yoffset[34] = OFFY + ROW7;
+    xoffset[35] = OFFX + ROW1; yoffset[35] = OFFY + ROW7;
 
     // for ( int k=0; k<34; ++k ) {
     //   Log.v("yutnori", "Offset[" + k + "] " + xoffset[k] + " " + yoffset[k] );
@@ -289,7 +294,10 @@ public class DrawingSurface extends SurfaceView
     makePawns( mContext.getResources() );
   }
 
-
+  // get the index of point (x1,y1)
+  // return 2 .. 31 (except 29=24) board
+  //        0, 1    starts
+  //        33, 34  homes
   int getIndex(int x1, int y1 )
   {
     int  k;
@@ -312,7 +320,8 @@ public class DrawingSurface extends SurfaceView
   // Drawer interface
   int pressedPawn = -1;
 
-  void drawPawnNrs( Canvas c )
+  // Mal Split ------------------------------------------
+  private void drawPawnNrs( Canvas c )
   {
     if ( mPawnNr <= 1 ) return;
     for ( int m = 0; m<mPawnNr; ++ m ) {
@@ -320,7 +329,7 @@ public class DrawingSurface extends SurfaceView
     }
   }
 
-  void drawPawnNr( Canvas c, int m, int x, int y )
+  private void drawPawnNr( Canvas c, int m, int x, int y )
   {
     c.drawBitmap( ((m == pressedPawn )? mPawn[m] : mpawn[m]), x, y, null );
   }
@@ -356,12 +365,13 @@ public class DrawingSurface extends SurfaceView
     pressedPawn = -1;
   }
   
+  // Moves ----------------------------------------------------------
   int mMax = 0;
 
   void drawMoves( Canvas c )
   {
     int k = 0;
-    for ( ; k < mMoves.size(); ++k ) drawYut( c, mMoves.value(k), k, 0, 0 );
+    for ( ; k < mMoves.size(); ++k ) drawYut( c, mMoves.getRawValue(k), k, 0, 0 );
     for ( ; k < mMax; ++k ) drawYut( c, 0, k, 0, 0 );
     mMax = mMoves.size();
   }
@@ -370,12 +380,13 @@ public class DrawingSurface extends SurfaceView
   {
     int k = 0;
     for ( ; k < mMoves.size(); ++k ) {
-      drawYut( c, mMoves.value(k), k, mColor, mStartColor );
+      drawYut( c, mMoves.getRawValue(k), k, mColor, mStartColor );
     }
     for ( ; k < mMax; ++k ) drawYut( c, 0, k, 0, 0 );
     mMax = mMoves.size();
   }
 
+  // -------------------------------------------------------------------
   private void executeAll( Canvas c, Handler h )
   {
     if ( ! mCanDraw ) { // this is a generic delay before the surface can draw
@@ -384,21 +395,145 @@ public class DrawingSurface extends SurfaceView
     }
     if ( mBoard != null ) drawBoard( c );
     if ( mMoves != null ) {
-      if ( mApp.mState == Main.WAIT || mApp.mState == Main.START ) {
+      if ( mApp.mState.isWaitOrStart() ) {
         drawStartMoves( c );
       } else {
         drawMoves( c );
       }
     }
 
-    if ( mApp.mState == Main.THROW || mApp.mState == Main.START ) {
+    if ( mApp.mState.isThrowOrStart() ) {
       drawThrow( c );
     } else {
       drawPawnNrs( c );
     }
   }
 
-  // -----------------------------------------------------
+  // highlight card --------------------------------------------------------------
+  int mHighlight      = -1;
+
+  void setHighlight( int pos ) 
+  {
+    if ( pos == 29 ) pos = 24;
+
+    mHighlight = -1;
+    if ( pos >= 0 && pos < 2 ) {
+      mHighlight = pos;
+    } else if ( pos >= 2 && pos < 32 ) {
+      if ( mBoard.value(pos) > 0 || YutnoriPrefs.getPos() != YutnoriPrefs.POS_TOTAL ) {
+        mHighlight = pos;
+      }
+    }
+  }
+
+  // private draw routines ------------------------------------------------------
+  private void drawBoard( Canvas c )
+  {
+    for ( int k=2; k<32; ++k ) {
+      if ( k == 29 ) continue;
+      int b = mBoard.value(k);
+      if ( b < 0 && mApp.mState.isNotOver() ) {
+        switch ( YutnoriPrefs.getPos() ) {
+          case YutnoriPrefs.POS_PARTIAL:
+            if ( ! mPositions.contains( k ) ) b = 0;
+            break;
+          case YutnoriPrefs.POS_TOTAL:
+            b = 0;
+            break;
+          // case YutnoriPrefs.POS_NO:
+          // default:
+          //   break;
+        }
+      }
+      drawCard( c, b, k );
+    }
+    drawStart( c );
+    drawHome( c );
+    if ( YutnoriPrefs.mDoSpot ) drawDoSpot( c );
+    drawArrow( c );
+  }
+
+  private void drawCard( Canvas c, int b, int pos )
+  {
+    Bitmap card = null;
+    if ( b < 0 ) b = - b;
+    else if ( b > 0 ) b += 4;
+    if ( b >= NZ ) return;
+    if ( pos == 32 || pos == 33 ) {
+      card = ( b == 0 )? mscard[b] : mzcard[b];
+    } else if ( pos == 34 || pos == 35 ) {
+      card = ( b == 0 )? mscard[b] : mzcard[b];
+    } else if ( pos <= 1 ) {
+      card = ( pos == mHighlight )? mscard[b] : mzcard[b];
+    } else if ( pos == 6 || pos == 11 || pos == 16 || pos == 21 || pos == 24 ) {
+      card = (pos == mHighlight)? mscard[b] : mzcard[b];
+    } else {
+      card = (pos == mHighlight)? mScard[b] : mZcard[b];
+    }
+    if ( card != null ) {
+      int x = xoffset[pos];
+      int y = yoffset[pos];
+      // draw card at x,y
+      c.drawBitmap( card, x, y, null );
+    }
+  }
+  
+  private void drawStart( Canvas c )
+  {
+    drawCard( c, - mBoard.start(0), 0 );
+    drawCard( c,   mBoard.start(1), 1 );
+  }
+
+  private void drawHome( Canvas c )
+  {
+    drawCard( c, - mBoard.home(0), 32 );
+    drawCard( c,   mBoard.home(1), 33 );
+  }
+
+  private void drawDoSpot( Canvas c )
+  {
+    drawCard( c, - mBoard.doSpot(0), 34 );
+    drawCard( c,   mBoard.doSpot(1), 35 );
+  }
+
+
+  private void drawArrow( Canvas c )
+  {
+    // int x = xoffset[2] + mCardRow;
+    int x = xoffset[2];
+    int y = yoffset[2];
+    c.drawBitmap( mArrow, x, y, null );
+  }
+
+  // draw yuts on the top 
+  // @param m     yut value
+  // @param k     yut position in the row
+  private void drawYut( Canvas c, int m, int k, int color, int off )
+  {
+    int x = 0 + mYutRow * k;
+    int y = 0;
+    if ( color != 0 ) {
+      c.drawCircle( x+mYutRow/2, y+mYutRow/2, mYutRow/2, mPaint[ (k+off)%2 ] );
+    }
+    // Log.v( TAG, "draw yut " + m + " pos " + k );
+    if ( m >= 0 && m <= 5 ) {
+      c.drawBitmap( mYut[m], x, y, null );
+    } else if ( m >= 10 && m <= 15 ) {
+      c.drawBitmap( mYut1[m-10], x, y, null );
+    } else if ( m >= 20 && m <= 25 ) {
+      c.drawBitmap( mYut2[m-20], x, y, null );
+    } else if ( m >= 30 && m <= 35 ) {
+      c.drawBitmap( mYut3[m-30], x, y, null );
+    }
+  }
+
+  // draw the "throw" prompt - middle down
+  private void drawThrow( Canvas c )
+  {
+    c.drawBitmap( mYut[5], mYutX, mYutY, null );
+  }
+
+  // ================================================================
   private static int mpawnindex[] = {
     R.drawable.p1,
     R.drawable.p2,
@@ -471,6 +606,35 @@ public class DrawingSurface extends SurfaceView
     R.drawable.y5
   };
 
+  private static int myut1index[] = {
+    R.drawable.y0,
+    R.drawable.y1t,
+    R.drawable.y2t,
+    R.drawable.y3t,
+    R.drawable.y4t,
+    R.drawable.y5
+  };
+
+  private static int myut2index[] = {
+    R.drawable.y0,
+    R.drawable.y1t,
+    R.drawable.y2tt,
+    R.drawable.y3tt,
+    R.drawable.y4tt,
+    R.drawable.y5
+  };
+
+  private static int myut3index[] = {
+    R.drawable.y0,
+    R.drawable.y1t,
+    R.drawable.y2tt,
+    R.drawable.y3ttt,
+    R.drawable.y4ttt,
+    R.drawable.y5
+  };
+
+
+
   final static int NZ = 9;
   final static int NZ2 = 4; // (NZ-1)/2
   final static int NY = 6;
@@ -497,8 +661,9 @@ public class DrawingSurface extends SurfaceView
 
   private static Bitmap mArrow;
   private static Bitmap mYut[];
-
-  
+  private static Bitmap mYut1[];
+  private static Bitmap mYut2[];
+  private static Bitmap mYut3[];
 
   private void makePawns( Resources res )
   {
@@ -547,13 +712,22 @@ public class DrawingSurface extends SurfaceView
 
     mArrow = BitmapFactory.decodeResource( res, R.drawable.elblack );
     mYut   = new Bitmap[NY];
+    mYut1  = new Bitmap[NY];
+    mYut2  = new Bitmap[NY];
+    mYut3  = new Bitmap[NY];
     for ( int k = 0; k < NY; ++k ) {
       bitmap = BitmapFactory.decodeResource( res, myutindex[k] );
       if ( k == 0 ) {
         mYutSize = bitmap.getWidth();
         mYutRow  = 1 + (int)( mYutSize * s ) + 5;  // 5 = padding
       }
-      mYut[k] = Bitmap.createBitmap( bitmap, 0, 0, mYutSize, mYutSize, m, true );
+      mYut[k]  = Bitmap.createBitmap( bitmap, 0, 0, mYutSize, mYutSize, m, true );
+      bitmap   = BitmapFactory.decodeResource( res, myut1index[k] );
+      mYut1[k] = Bitmap.createBitmap( bitmap, 0, 0, mYutSize, mYutSize, m, true );
+      bitmap   = BitmapFactory.decodeResource( res, myut2index[k] );
+      mYut2[k] = Bitmap.createBitmap( bitmap, 0, 0, mYutSize, mYutSize, m, true );
+      bitmap   = BitmapFactory.decodeResource( res, myut3index[k] );
+      mYut3[k] = Bitmap.createBitmap( bitmap, 0, 0, mYutSize, mYutSize, m, true );
     }
 
     mYutX = (mWidth - mYutRow)/2;
@@ -599,105 +773,6 @@ public class DrawingSurface extends SurfaceView
         mScard[NZ2+k] = mScard0[NZ2+k];
       }
     }
-  }
-
-
-  int mHighlight      = -1;
-  void setHighlight( int pos ) 
-  {
-    if ( pos == 29 ) pos = 24;
-
-    mHighlight = -1;
-    if ( pos >= 0 && pos < 2 ) {
-      mHighlight = pos;
-    } else if ( pos >= 2 && pos < 32 ) {
-      if ( mBoard.value(pos) > 0 || YutnoriPrefs.getPos() != YutnoriPrefs.POS_TOTAL ) {
-        mHighlight = pos;
-      }
-    }
-  }
-
-  private void drawBoard( Canvas c )
-  {
-    for ( int k=2; k<32; ++k ) {
-      if ( k == 29 ) continue;
-      int b = mBoard.value(k);
-      if ( b < 0 && mApp.mState != Main.OVER ) {
-        switch ( YutnoriPrefs.getPos() ) {
-          case YutnoriPrefs.POS_PARTIAL:
-            if ( ! mPositions.contains( k ) ) b = 0;
-            break;
-          case YutnoriPrefs.POS_TOTAL:
-            b = 0;
-            break;
-          // case YutnoriPrefs.POS_NO:
-          // default:
-          //   break;
-        }
-      }
-      drawCard( c, b, k );
-    }
-    drawStart( c );
-    drawHome( c );
-    drawArrow( c );
-  }
-
-  private void drawCard( Canvas c, int b, int pos )
-  {
-    Bitmap card = null;
-    if ( b < 0 ) b = - b;
-    else if ( b > 0 ) b += 4;
-    if ( b >= NZ ) return;
-    if ( pos >= 32 ) {
-      card = ( b == 0 )? mscard[b] : mzcard[b];
-    } else if ( pos <= 1 ) {
-      card = ( pos == mHighlight )? mscard[b] : mzcard[b];
-    } else if ( pos == 6 || pos == 11 || pos == 16 || pos == 21 || pos == 24 ) {
-      card = (pos == mHighlight)? mscard[b] : mzcard[b];
-    } else {
-      card = (pos == mHighlight)? mScard[b] : mZcard[b];
-    }
-    if ( card != null ) {
-      int x = xoffset[pos];
-      int y = yoffset[pos];
-      // draw card at x,y
-      c.drawBitmap( card, x, y, null );
-    }
-  }
-  
-  private void drawStart( Canvas c )
-  {
-    drawCard( c, - mBoard.start(0), 0 );
-    drawCard( c,   mBoard.start(1), 1 );
-  }
-
-  private void drawHome( Canvas c )
-  {
-    drawCard( c, - mBoard.home(0), 32 );
-    drawCard( c,   mBoard.home(1), 33 );
-  }
-
-  private void drawArrow( Canvas c )
-  {
-    // int x = xoffset[2] + mCardRow;
-    int x = xoffset[2];
-    int y = yoffset[2];
-    c.drawBitmap( mArrow, x, y, null );
-  }
-
-  private void drawYut( Canvas c, int m, int k, int color, int off )
-  {
-    int x = 0 + mYutRow * k;
-    int y = 0;
-    if ( color != 0 ) {
-      c.drawCircle( x+mYutRow/2, y+mYutRow/2, mYutRow/2, mPaint[ (k+off)%2 ] );
-    }
-    c.drawBitmap( mYut[m], x, y, null );
-  }
-
-  private void drawThrow( Canvas c )
-  {
-    c.drawBitmap( mYut[5], mYutX, mYutY, null );
   }
 
 }

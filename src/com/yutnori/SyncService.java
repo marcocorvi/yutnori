@@ -26,7 +26,7 @@ import android.util.Log;
 
 public class SyncService 
 {
-  final static String TAG = "yutnori";
+  final static String TAG = "Yutnori";
 
   // Name for the SDP record when creating server socket
   private static final String NAME = "YutnoriSync";

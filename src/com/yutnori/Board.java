@@ -16,7 +16,7 @@ import android.util.Log;
 
 class Board 
 {
-  static final String TAG = "yutnori";
+  // static final String TAG = "Yutnori-TITO";
 
   private int mBoard[];
     // -----------------------------------------
@@ -31,6 +31,7 @@ class Board
 
   private int mStart[];
   private int mHome[];
+  private int mDoSpot[];
   private static boolean cross24 = false; //!< whether can cross 24
 
   Board()
@@ -38,8 +39,20 @@ class Board
     mBoard = new int[33];
     mStart = new int[2];
     mHome  = new int[2];
+    mDoSpot = new int[2];
     reset();
   }
+
+  int countPlayer( int player )  // totalCount
+  {
+    int ret = 0;
+    for ( int k = 2; k <= 32; ++ k ) {
+      if ( k == 29 ) continue;
+      if ( mBoard[k] * player > 0 ) ++ ret; // if there are player's pawns
+    }
+    return ret;
+  }
+
 
   void reset()
   {
@@ -49,6 +62,8 @@ class Board
       mStart[1] = 4;
       mHome[0] = 0;
       mHome[1] = 0;
+      mDoSpot[0] = 0;
+      mDoSpot[1] = 0;
     }
     cross24 = false;
   }
@@ -63,54 +78,157 @@ class Board
   int value( int k ) { return mBoard[k]; }
   int start( int k ) { return mStart[k]; }
   int home( int k )  { return mHome[k]; }
+  int doSpot( int k ) { return mDoSpot[k]; }
 
-  // total move required to go between two position
+  int getStationValue( int k )  { return mBoard[ k ]; }
+  int playerStart( int player )  { return mStart[ Indices.yut_index( player ) ]; }
+  int playerDoSpot( int player ) { return mDoSpot[ Indices.yut_index( player ) ]; }
+
+  boolean hasPlayerAtStation( int player, int k )
+  {
+    if ( k < 2 ) return false;
+    if ( k > 31 ) return false;
+    if ( k == 29 ) k = 24;
+    return ( mBoard[k] * player > 0 );
+  }
+
+  boolean startToDoSpot( int k ) 
+  {
+    if ( mStart[k] == 0 ) return false;
+    mStart[k] --;
+    mDoSpot[k] ++;
+    return true;
+  }
+
+  static final int HOME  =  100;
+  static final int START = -100;
+  static final int BACK  =    0;
+  static final int BACK1 =   -1;
+
+  // total move required to go between two position: used only by Main
   // @from first position index
   // @to   second position index
   // @return 0 if cannot go
-  //         negative if going out
-  static int difference( int from, int to )
+  //         HOME + min moves to go out (moving straight)
+  //         START - max moves to go back to START
+  //         BACK  - max moves to go back 
+  static int posDifference( int from, int to )
   {
-    if ( from == 0 ) from = 1;
-      
-    if ( from == 6 ) {
+    if ( from == 0 || from == 1 ) {
+      if ( to >= 2 && to < 21 ) return to - from;
+      if ( to == 21 ) return 14;
+      if ( to == 24 ) return 8;
+      if ( to >= 22 && to <= 26 ) return (to-21) + 10;
+      if ( to >= 27 && to <= 31 ) return (to-26) +  5;
+    } else if ( from == 6 ) { // first corner
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( to == 5 ) return BACK1;
+        // if ( to <=  1 ) return START - 5; // TITO 
+        // if ( to >=  2 && to <   6 ) return BACK -(6-to);
+      }
       if ( to == 24 ) return 3;
-      if ( to < 16 ) return to - from;
-      if ( to >= 16 && to <= 21 ) return 6 + to - 16;
-      if ( to >  24 && to <= 26 ) return 3 + to - 24;
-      if ( to >= 27 && to <= 31 ) return 0 + to - 26;
-      if ( to >= 32 ) return -12;
-    } else if ( from == 11 ) {
-      if ( to < 21 ) return to - from;
+      if ( to >=  7 && to <  16 ) return to - 6;     // B2 and B3
+      if ( to >= 16 && to <= 21 ) return 6 + to - 16;   // B4
+      if ( to >= 24 && to <= 26 ) return 3 + to - 24;   // (D3) + C + D2
+      if ( to >= 27 && to <= 31 ) return 0 + to - 26;   // D3 & D4
+      if ( to == 32 || to == 33 ) return HOME + 11;                 // (D3 + D4 + B4) or (D3 + C + D2)
+    } else if ( from == 11 ) { // second corner
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( to == 10 ) return BACK1;
+        // if ( to <=  1 ) return START - 10; // TITO 
+        // if ( to >=  2 && to < 11 ) return BACK -(11-to);
+      }
+      if ( to >= 12 && to < 21 ) return to - 11;
       if ( to == 21 ) return 6;
       if ( to >= 22 && to <= 26 ) return 0 + to - 21;
-      if ( to >= 30 && to <= 31 ) return 3 + to - 29;
-      if ( to >= 32 ) return -7;
-    } else if ( from == 16 ) {
-      if ( to > 16 && to <= 21 ) return to - from;
-      if ( to >= 32 ) return -6;
-    } else if ( from == 21 ) {
-      if ( to == 32 ) return -1;
-    } else if ( from == 24 ) {
+      if ( to == 30 || to == 31 ) return 3 + to - 29;
+      if ( to == 32 || to == 33 ) return HOME + 7;
+    } else if ( from == 16 ) { // third corner
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( to == 15 || to == 31 ) return BACK1;
+        // if ( to <=  1 ) return START - 11; // TITO 
+        // if ( to >=  7 && to <  16) return BACK -(16-to);
+        // if ( to >=  2 && to <=  6) return BACK - 6 -(6-to);
+        // if ( to == 24            ) return BACK -3;
+        // if ( to >= 27 && to < 32 ) return BACK -(32-to);
+      }
+      if ( to >= 17 && to <= 21 ) return to - 16;
+      if ( to == 24 ) to = 29;
+      if ( to >= 28 && to <= 31 ) return -(32-to);
+      if ( to == 32 || to == 33 ) return HOME + 6;
+    } else if ( from == 21 ) { // fourth corner
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( to == 20 || to == 26 ) return BACK1;
+        // if ( to <=  1 ) return START - 11; // TITO 
+        // if ( to >=  2 && to <=  6) return BACK -6 -(6-to);
+        // if ( to >=  7 && to <= 11) return BACK -6 -(11-to);
+        // if ( to >= 12 && to <  21) return BACK -(21-to);
+        // if ( to >= 22 && to <  27) return BACK -(27-to);
+        // if ( to == 30 || to == 31) return BACK -5 -(32-to);
+        // if ( to == 27 || to == 28) return BACK -3 -(29-to);
+      }
+      if ( to == 32 || to == 33 ) return HOME + 1;
+    } else if ( from == 24 ) { // middle crossway
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( to == 23 || to == 28 ) return BACK1;
+        // if ( to <=  1 ) return START - 8; // TITO 
+        // if ( to >=  2 && to <=  6) return BACK -3 -(6-to);
+        // if ( to == 27 || to == 28) return BACK -(29-to);
+        // if ( to == 22 || to == 23) return BACK -(24-to);
+        // if ( to >=  7 && to <= 11) return BACK -3 -(11-to);
+      }
+      // if ( to == 10 || to ==  5 ) return -4;
       if ( to >= 16 && to <  21 ) return 3 + to - 16;
       if ( to == 21 ) return 3;
-      if ( to >= 25 && to <= 26 ) return to - from;
-      if ( to >= 30 && to <= 31 ) return to - 29;
-      if ( to >= 32 ) return -4;
-    } else if ( from >= 22 && from <= 26 ) {
+      if ( to == 25 || to == 26 ) return to - 24;
+      if ( to == 30 || to == 31 ) return to - 29;
+      if ( to == 32 || to == 33 ) return HOME + 4;
+    } else if ( from >= 22 && from <= 26 ) { // second diagonal D1 & D2
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( from == 22 ) {
+          if ( to == 11 ) return BACK1;
+        } else {
+          if ( to == from - 1 ) return BACK1;
+        }
+        // if ( to <=  1 ) return START - 10 - (from-21); // TITO 
+        // if ( to >=  2 && to <= 11)  return  BACK - (11-to) - (from-21);
+        // if ( to >= 22 && to < from) return  BACK - (from-to);
+      }
       if ( to == 21 ) return 27 - from;
-      if ( to > from && to <= 26 ) return to - from;
-      if ( to >= 32 ) return -(28 - from);
-    } else if ( from >= 27 && from <= 31 ) {
+      if ( to >  22 && to <= 26 ) return to - from;
+      if ( to == 32 || to == 33 ) return HOME + (28 - from);
+    } else if ( from >= 27 && from <= 31 ) { // first diagonal D3 & D4
       if ( to == 24 ) to = 29;
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( from == 27 ) {
+          if ( to == 6 ) return BACK1;
+        } else {
+          if ( to == from - 1 ) return BACK1;
+        }
+        // if ( to <=  1 ) return START - 5 - (from-26); //
+        // if ( to >=  2 && to <=  6)   return BACK - (6-to) - (from-26);
+        // if ( to >= 27 && to < from ) return BACK - (from-to);
+        // if ( from == 30 || from == 31 ) {
+        //   int d24 = from - 29;
+        //   if ( to == 22 || to == 23 ) return BACK - d24 - (24-to);
+        //   if ( to >   6 && to <= 11 ) return BACK - d24 - 3 - (11-to);
+        // }
+      }
       if ( to >= 16 && to <= 21 ) return to - 16 + 32 - from;
       if ( to > from && to <= 31 ) return to - from;
-      if ( to >= 32 ) return -( 7 + 32 - from);
-    } else {
-      if ( to <= 21 ) return to - from;
-      if ( to <= 26 && from >= 22 ) return to - from;
-      if ( to <= 31 && from >= 27 ) return to - from;
-      if ( to >= 32 ) return -(22 - from);
+      if ( to == 32 || to == 33 ) return HOME + 6 + (32 - from);
+    } else if ( from >= 2 && from < 21 ) { // board 1-4
+      if ( YutnoriPrefs.mTiTo ) {
+        if ( from == 2 ) {
+          if ( to <= 1 || to >= 34 ) return START - 1;
+        } else { 
+          if ( to == from - 1 ) return BACK1;
+        }
+        // if ( to <=  1 ) return START - (from-1); // START + 1 - from
+        // if ( to >=  2 && to < from) return BACK - (from - to);
+      }
+      if ( to > from && to <= 21 ) return to - from;
+      if ( to == 32 || to == 33 ) return HOME + (22 - from);
     }
     return 0;
   }
@@ -118,11 +236,11 @@ class Board
   static int distance( int from, int to )
   {
     if ( from == 0 ) {
-      if ( to <= Indices.POS_CORNER1 ) return Probability.value(to-1);
+      if ( to <= Indices.POS_CORNER1 ) return Probability.value(to-1); // corner-1 is bottom-right
       return 0;
     }
     int t = to;
-    if ( from <= Indices.POS_CORNER4 ) {
+    if ( from <= Indices.POS_CORNER4 ) { // from = 2 3 4 5 6
       if ( to > from ) {
         int k = to - from; 
         if ( k <= 5 ) return Probability.value(k);
@@ -134,24 +252,29 @@ class Board
           t = to - 21;
           if ( t > 0  && t <= 5 ) return Probability.value(t);
         } 
+      } else if ( to < from ) {
+        if ( t < 2 ) return Probability.value( from );
+        return 1; // low prob.
       }
-    } else if ( from < 27 ) {
-      if ( t == 21 ) { 
+    } else if ( from < 27 ) {  // 27-31 is the first diagonal
+      if ( t == 21 ) {         // last corner: 27
         t = 27;
-      } else if ( t < 20 ) {
+      } else if ( t < 20 ) {   // border: border+16
         t += 16;
       }
-      if ( from == 24 ) {
-        if ( t >= 30 ) {
-          t = t - 29;
+      if ( from == 24 ) { // diagonal cross-point
+        if ( t >= 30 ) {  // 30: 1,  31:2
+          t = t - 29;     
         }
         if ( t > 0  && t <= 5 ) return Probability.value(t);
+        if ( t < 0 ) return 1;
       } else if ( t <= 27 ) {
         t = t - from;
         if ( t > 0  && t <= 5 ) return Probability.value(t);
+        if ( t < 0 ) return 1;
       }
       return 0;
-    } else {
+    } else { // border (no-lower row) or second diagonal
       if ( t == 24 ) { 
         t = 29;
       } else if ( t >= 16 && t < 21 ) {
@@ -159,11 +282,74 @@ class Board
       }
       t = t - from;
       if ( t > 0  && t <= 5 ) return Probability.value(t);
+      if ( t < 0 ) return 1;
     }
     return 0;
   }
 
-  boolean move( int from, int to, int player, int pawn_nr )
+  void doMoveToDoSpot( int from, int player, int pawn_nr )
+  {
+    int me  = Indices.yut_index(player);
+    if ( from <= 1 ) {
+      mStart[ me ]  -= pawn_nr;
+      mDoSpot[ me ] += pawn_nr;
+    } else if ( from == 2 ) {
+      mBoard[ from ] -= pawn_nr * player;
+      mDoSpot[ me ]  += pawn_nr;
+    }
+  }
+
+  static final int SEOUL = 24;
+  static final int BUSAN = 11;
+
+  // return -1 error
+  //         0 ok move
+  //         1 ok move and sent opponent back to START
+  int doMoveToSeoulOrBusan( int player, Moves moves, int station )
+  {
+    int me  = Indices.yut_index( player);
+    if ( ! moves.hasSkip() ) return -1;
+    if ( mStart[ me ] == 0 ) {
+      // Log.v(TAG, "Board S/B - no start : set revert-do" );
+      moves.setRevertDo();
+      return -1;
+    }
+    moves.removeSkip();
+    mStart[me] --;
+    int pawns = mBoard[station] * player;
+    if ( pawns < 0 ) {
+      // Log.v(TAG, "Board send home " + pawns );
+      mBoard[station] = player;
+      int you = 1 - me; // Indices.yut_index(-player);
+      mStart[you] += Math.abs(pawns);
+      return 1;
+    } // else pawns >= 0
+    mBoard[station] += player;
+    return 0;
+  }
+
+  // return -1 error
+  //         0 ok move
+  //         1 ok move and sent opponent back to START
+  int doMoveFromDoSpot( int player )
+  {
+    int me  = Indices.yut_index(player);
+    int pawn_nr = mDoSpot[ me ];
+    mDoSpot[ me ] = 0;
+    // Log.v(TAG, "BOARD " +player + " do-spot " + pawn_nr );
+    if ( pawn_nr < 1 ) return -1; // cannot move from DoSpot
+    int b21 = mBoard[21] * player;
+    if ( b21 < 0 ) {
+      int you = Indices.yut_index(-player);
+      mHome[ you ] -= b21;
+      mBoard[21] = pawn_nr * player;
+      return 1;
+    }
+    mBoard[21] = pawn_nr * player;
+    return 0;
+  }
+
+  boolean doMove( int from, int to, int player, int pawn_nr )
   {
     boolean ret = false;
     int me  = Indices.yut_index(player);
@@ -174,29 +360,46 @@ class Board
       assert( mBoard[from]*player > 0 );
     }
     synchronized( this ) {
-      int b = mBoard[to];
-      if ( b*player < 0 ) { 
-        mStart[ you ] += Math.abs(b);
-        mBoard[ to ] = 0;
-        ret = true;
-        // printf("sent %d you back to mStart %d \n", b, mStart[you]);
+      if ( to > 1 && to < 34 ) {
+        int b = mBoard[to];
+        if ( b*player < 0 ) { 
+          mStart[ you ] += Math.abs(b);
+          mBoard[ to ] = 0;
+          ret = true;
+          // printf("sent %d you back to mStart %d \n", b, mStart[you]);
+        }
+        if ( from <= 1 ) {    // move from mStart
+          mBoard[to] += player;
+          mStart[me] --;
+          // printf("moved me from mStart %d \n", mStart[me] );
+        } else {              // move forward
+          if ( pawn_nr == 0 ) pawn_nr = mBoard[from];
+          assert ( pawn_nr <= mBoard[from] );
+          mBoard[to]   += pawn_nr;
+          mBoard[from] -= pawn_nr;
+          //  mBoard[from] = 0;
+        }
+        if ( to == Indices.POS_HOME ) { // got mHome
+          mHome[ me ] += Math.abs( mBoard[to] );
+          // Log.v( TAG, "moved to home " + mHome[0] + "/" + mHome[1] + mBoard[to] );
+          mBoard[to] = 0;
+        }
+      } else { // to == 0, 1 or to == 34, 35
+        if ( from > 1 ) {
+          if ( YutnoriPrefs.mDoSpot ) {
+            // Log.v(TAG, "Player " + player + " move to DoSpot from " + from + " mal " + pawn_nr );
+            doMoveToDoSpot( from, player, pawn_nr );
+          } else {
+            int b = mBoard[from];
+            // Log.v(TAG, "Player " + player + " move to Start from " + from + " mal " + pawn_nr + " " + b);
+            if ( b*player > 0 ) { 
+              mStart[ me ] += Math.abs(b);
+              mBoard[from] = 0;
+            }
+          }
+        }
       }
-      if ( from <= 1 ) {    // move from mStart
-        mBoard[to] += player;
-        mStart[me] --;
-        // printf("moved me from mStart %d \n", mStart[me] );
-      } else {              // move forward
-        if ( pawn_nr == 0 ) pawn_nr = mBoard[from];
-        assert ( pawn_nr <= mBoard[from] );
-        mBoard[to]   += pawn_nr;
-        mBoard[from] -= pawn_nr;
-        //  mBoard[from] = 0;
-      }
-      if ( to == Indices.POS_HOME ) { // got mHome
-        mHome[ me ] += Math.abs( mBoard[to] );
-        // Log.v( TAG, "moved to home " + mHome[0] + "/" + mHome[1] + mBoard[to] );
-        mBoard[to] = 0;
-      }
+
       if ( from == Indices.POS_CENTER ) {
         cross24 = false;
       } else if ( to == Indices.POS_CENTER ) {
@@ -231,27 +434,53 @@ class Board
   {
     pos[0] = -1;
     pos[1] = -1;
-    if ( mov <= 0 ) return;
+    if ( mov <= 0 && ! YutnoriPrefs.mTiTo ) return;
 
-    if ( from <= 1 ) {
-      pos[0] = 1 + mov;
-    } else  if ( from <= Indices.POS_CORNER4 ) {
-      pos[0] = from + mov;
-      if ( pos[0] > Indices.POS_CORNER4 ) pos[0] = Indices.POS_HOME;
+    if ( mov > 0 ) {
+      if ( from <= 1 ) {
+        pos[0] = 1 + mov;
+      } else  if ( from <= Indices.POS_CORNER4 ) {
+        pos[0] = from + mov;
+        if ( pos[0] > Indices.POS_CORNER4 ) pos[0] = Indices.POS_HOME;
   
-      if ( from == Indices.POS_CORNER1 ) {
-        pos[1] = secondDiagonal( 26, mov );
-      } else if ( from == Indices.POS_CORNER2 ) {
-        pos[1] = firstDiagonal( 21, mov );
+        if ( from == Indices.POS_CORNER1 ) {
+          pos[1] = secondDiagonal( 26, mov );
+        } else if ( from == Indices.POS_CORNER2 ) {
+          pos[1] = firstDiagonal( 21, mov );
+        }
+      } else if ( from == 24 ) {
+        pos[0] = ( mov < 3 )? from+mov : ( mov == 3 )? Indices.POS_CORNER4 : Indices.POS_HOME;
+        pos[1] = ( mov < 3 )? 29+mov   : 16 + mov-3;
+      } else if ( from <= 26 ) {
+        pos[0] = firstDiagonal( from, mov );
+        // if ( cross24 && from == Indices.POS_CENTER ) pos[1] = secondDiagonal( 29, mov );
+      } else {
+        pos[0] = secondDiagonal( from, mov );
       }
-    } else if ( from == 24 ) {
-      pos[0] = ( mov < 3 )? from+mov : ( mov == 3 )? Indices.POS_CORNER4 : Indices.POS_HOME;
-      pos[1] = ( mov < 3 )? 29+mov   : 16 + mov-3;
-    } else if ( from <= 26 ) {
-      pos[0] = firstDiagonal( from, mov );
-      // if ( cross24 && from == Indices.POS_CENTER ) pos[1] = secondDiagonal( 29, mov );
     } else {
-      pos[0] = secondDiagonal( from, mov );
+      if ( from+mov < 2 ) {
+        pos[0] = 1;
+      } else if ( from == 16 ) {
+        pos[0] = 16 + mov;
+        pos[1] = 32 + mov;
+      } else if ( from == 21 ) {
+        pos[0] = 21 + mov;
+        pos[1] = 27 + mov;
+      } else if ( from == 24 ) {
+        pos[0] = 24 + mov;
+        pos[1] = 29 + mov;
+      } else if ( from > 2 && from <= 21 ) {
+        pos[0] = from + mov;
+      // } else if ( from == 22 ) {
+      //   pos[0] = 12 + mov;
+      } else if ( from >= 22 && from < 27 ) {
+        pos[0] = from + mov; if ( pos[0] <= 21 ) pos[0] -= 10;
+      // } else if ( from == 27 ) {
+      //   pos[0] = 7 + mov;
+      } else if ( from >= 27 && from < 32 ) {
+        pos[0] = from + mov; if ( pos[0] <= 26 ) pos[0] -= 20;
+        if ( pos[0] == 29 ) pos[0] = 24;
+      }
     }
   }
 

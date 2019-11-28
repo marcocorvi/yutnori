@@ -2,15 +2,17 @@
 
 <resources>
 
-  <string-array name="level">
+  <!-- UNUSED string-array name="level">
      <item name="plain">normale</item>
      <item name="stealth">nascosto</item>
      <item name="obscure">invisibile</item>
-  </string-array>
+  </string-array -->
 
   <string-array name="engine">
+     <item name="yut0">Yut-0</item>
      <item name="yut1">Yut-1</item>
      <item name="yut2">Yut-2</item>
+     <item name="yutR">Yut a caso</item>
   </string-array>
 
   <string-array name="delay">

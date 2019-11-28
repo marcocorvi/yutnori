@@ -6,18 +6,9 @@
        android:key="YUTNORI_ENGINE"
        android:title="@string/pref_engine_title"
        android:summary="@string/pref_engine_summary"
-       android:defaultValue="0"
+       android:defaultValue="3"
        android:entries="@array/engine"
        android:entryValues="@array/engineValue"
-       />
-
-  <com.yutnori.MyListPreference
-       android:key="YUTNORI_LEVEL"
-       android:title="@string/pref_level_title"
-       android:summary="@string/pref_level_summary"
-       android:defaultValue="0"
-       android:entries="@array/level"
-       android:entryValues="@array/levelValue"
        />
 
   <com.yutnori.MyListPreference
@@ -30,10 +21,54 @@
        />
 
   <android.preference.CheckBoxPreference
+       android:key="YUTNORI_SPECIAL_RULES"
+       android:title="@string/pref_special_rules_title"
+       android:summary="@string/pref_special_rules_summary"
+       android:defaultValue="false"
+       />
+
+  <com.yutnori.MyListPreference
+       android:key="YUTNORI_BACKYUTS"
+       android:title="@string/pref_backyuts_title"
+       android:summary="@string/pref_backyuts_summary"
+       android:defaultValue="0"
+       android:entries="@array/backyuts"
+       android:entryValues="@array/backyuts"
+       />
+
+
+  <!-- com.yutnori.MyListPreference
+       android:key="YUTNORI_LEVEL"
+       android:title="@string/pref_level_title"
+       android:summary="@string/pref_level_summary"
+       android:defaultValue="0"
+       android:entries="@array/level"
+       android:entryValues="@array/levelValue"
+       / -->
+
+  <!-- android.preference.CheckBoxPreference
        android:key="YUTNORI_SPLIT"
        android:title="@string/pref_split_title"
        android:summary="@string/pref_split_summary"
        android:defaultValue="false"
-       />
+       / -->
+
+  <!-- com.yutnori.MyListPreference
+       android:key="YUTNORI_TITO"
+       android:title="@string/pref_tito_title"
+       android:summary="@string/pref_tito_summary"
+       android:defaultValue="0"
+       android:entries="@array/tito"
+       android:entryValues="@array/titoValue"
+       / -->
+
+  <!-- com.yutnori.MyListPreference
+       android:key="YUTNORI_TITO_SKIP"
+       android:title="@string/pref_titoskip_title"
+       android:summary="@string/pref_titoskip_summary"
+       android:defaultValue="0"
+       android:entries="@array/titoskip"
+       android:entryValues="@array/titoskipValue"
+       / -->
 
 </PreferenceScreen>

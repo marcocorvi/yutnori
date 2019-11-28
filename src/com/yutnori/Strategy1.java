@@ -38,7 +38,7 @@ import android.util.Log;
 
 class Strategy1 extends Strategy
 {
-  final static String TAG = "yutnori";
+  // final static String TAG = "Yutnori-TITO";
 
   private static final float WF_GET  = 0.8f; // weight increment to get you
   private static final float WF_GET2 = 0.2f; // weight increment to get you
@@ -47,7 +47,10 @@ class Strategy1 extends Strategy
   private static final float WF_JOIN = 0.6f; // score increment to join me forward
   private static final float WF_JOIN0= 0.3f; // score increment to join me at the beginning
   private static final float WF_HOME = 1.5f; // score increment to get home
+  private static final float WF_MOVE = 1.0f; // score decrement to get home with big moves
   private static final float WF_DANGER=0.50f;
+  private static final float WF_START =0.30f;
+
 
   private static final float SCORE_MIN = -1000f;
 
@@ -56,7 +59,63 @@ class Strategy1 extends Strategy
     super( b, m, s, p );
   }
 
-  private void updateWeight( Weight w )
+  private void updateWeightFrom( Weight w )
+  {
+    int k;
+    for (k=2; k<21; ++k ) {
+      if ( mBoard.value(k) * player() > 0 ) { // my position
+        for (int k1=1; k1<=5 && k-k1 > 1; ++k1) {
+          if ( mBoard.value(k-k1) * player() < 0 ) { // other position
+            w.add(k, WF_GOT * Probability.value(k1) );
+          }
+        }
+      }
+    }
+    k = 21;
+    int kk = 27;
+    if ( mBoard.value(k) * player() > 0 ) { // my position
+      for (int k1=1; k1<=5; ++k1) {
+        if ( mBoard.value(k-k1) * player() < 0 ) { // other position
+          w.add(k, WF_GOT * Probability.value(k1) );
+        }
+        if ( mBoard.value(kk-k1) * player() < 0 ) { // other position
+          w.add(k, WF_GOT * Probability.value(k1) );
+        }
+      }
+    }
+    for (k=22; k<=26; ++k ) {
+      if ( mBoard.value(k) * player() > 0 ) { // my position
+        for (int k1=1; k1<=5; ++k1) {
+          int kk1 = k - k1; if ( kk1 <= 21 ) kk1 -= 10;
+          if ( mBoard.value(kk1) * player() < 0 ) { // other position
+            w.add(k, WF_GOT * Probability.value(k1) );
+          }
+        }
+        if ( k == 24 ) {
+          for (int k1=1; k1<=5; ++k1) {
+            int kk1 = 29 - k1; if ( kk1 <= 26 ) kk1 -= 20;
+            if ( mBoard.value(kk1) * player() < 0 ) { // other position
+              w.add(k, WF_GOT * Probability.value(k1) );
+            }
+          }
+        }
+      }
+    }
+    for (k=27; k<=31; ++k ) {
+      if ( k == 29 ) continue;
+      if ( mBoard.value(k) * player() > 0 ) { // my position
+        for (int k1=1; k1<=5; ++k1) {
+          int kk1 = k - k1; if ( kk1 <= 26 ) kk1 -= 20; if (kk1 == 29) kk1 = 24;
+          if ( mBoard.value(kk1) * player() < 0 ) { // other position
+            w.add(k, WF_GOT * Probability.value(k1) );
+          }
+        }
+      }
+    }
+    w.set29();
+  }
+
+  private void updateWeightTo( Weight w )
   {
     for (int k=1; k< Indices.POS_HOME; ++k ) {
       if ( k ==  Indices.POS_SKIP ) continue;
@@ -95,6 +154,7 @@ class Strategy1 extends Strategy
             if ( k2 == 21 ) k2 = 11;
             w.add(k2, Math.abs(b) * (k-k1-6) * WF_GET2 * Probability.value(k1) );
           }
+          // if ( k == 1 ) Log.v("Yutnori-TITO", "w1[1] " + w.value(k) );
         } else {
           w.add( k, Math.abs(b) * (k-16) * WF_GET );
           for (int k1=1; k1<=5; ++k1 ) {
@@ -114,50 +174,62 @@ class Strategy1 extends Strategy
         w.add(k, Math.abs(b) * Indices.distance(k) * WF_ADD );
       }
     }
+    w.set29();
   }
 
   @Override
-  boolean movePlayer( Moves moves, int doze )
+  int doMovePlayer( Moves moves, int doze )
   {
-    while ( moves.size() > 0 && mBoard.winner() == 0 ) { // TODO find all the possible composite moves
-      int max = moves.size();
-      Moves composite_moves = new Moves();
-      int kk = 0;
-      for ( int k1=0; k1<max; ++k1) {
-        composite_moves.add( moves.value(k1) );
+    // Log.v( TAG, "Android [1] do Move Player " + moves.size() );
+    int max = moves.size();
+    Moves composite_moves = new Moves();
+    int kk = 0;
+    for ( int k1=0; k1<max; ++k1) {
+      composite_moves.add( moves.getValue(k1) );
+    }
+    for ( int k1=0; k1<max-1; ++k1 ) {
+      for ( int k2=k1+1; k2<max; ++k2 ) {
+        composite_moves.add( moves.getValue(k1) + moves.getValue(k2) );
       }
-      for ( int k1=0; k1<max-1; ++k1 ) {
-        for ( int k2=k1+1; k2<max; ++k2 ) {
-          composite_moves.add( moves.value(k1) + moves.value(k2) );
+    }
+    for ( int k1=0; k1<max-2; ++k1 ) {
+      for ( int k2=k1+1; k2<max-1; ++k2 ) {
+        for ( int k3=k2+1; k3<max; ++k3 ) {
+          composite_moves.add( moves.getValue(k1) + moves.getValue(k2) + moves.getValue(k3) );
         }
       }
-      for ( int k1=0; k1<max-2; ++k1 ) {
-        for ( int k2=k1+1; k2<max-1; ++k2 ) {
-          for ( int k3=k2+1; k3<max; ++k3 ) {
-            composite_moves.add( moves.value(k1) + moves.value(k2) + moves.value(k3) );
-          }
-        }
-      }
-      composite_moves.sortUnique( );
+    }
+    // Log.v( TAG, "android composite moves " + composite_moves.size() );
+    composite_moves.sortUnique( );
 
-      FromTo ft = new FromTo();
-      int m0 = bestMove( composite_moves, ft );
-
+    FromTo ft = new FromTo();
+    int m0 = bestMove( composite_moves, ft );
+    // composite_moves.print("Best " + m0 + " " + ft.from + "->" + ft.to );
+    // Log.v( TAG, "best move " + m0 + " from " + ft.from + " to " + ft.to );
+    if ( m0 >= 0 ) {
       if ( try1( moves, doze, m0, ft )
         || try2( moves, doze, m0, ft )
         || try3( moves, doze, m0, ft ) ) {
-        return true; // throw again
+        return State.THROW; // 1; // throw again
+      }
+    } else { 
+      // Log.v( TAG, "back move " + m0 );
+      if ( YutnoriPrefs.mTiTo ) m0 = -1;
+      if ( try1( moves, doze, m0, ft ) ) {
+        return State.THROW; // 1;
       }
     }
-    return false;
+    return State.MOVE;
   }
 
   boolean try1( Moves moves, int doze, int m0, FromTo ft )
   {
     if ( mBoard.winner() != 0 ) return false;
     for (int k1=0; k1<moves.size(); ++k1) {
-      if ( m0 == moves.value(k1) ) {
-        return found1( moves, doze, mBoard, k1, ft );
+      if ( m0 == moves.getValue(k1) ) {
+        boolean ret = found1( moves, doze, mBoard, k1, ft );
+        // Log.v( TAG, "   One at " + k1 + " found " + ret );
+        return ret;
       }
     }
     return false;
@@ -170,8 +242,10 @@ class Strategy1 extends Strategy
     for (int k1=0; k1<moves.size(); ++k1 ) {
       for (int k2=0; k2<moves.size(); ++k2 ) {
         if ( k2 == k1 ) continue;
-        if ( m0 == moves.value(k1)+moves.value(k2) ) {
-          return found2( moves, doze, mBoard, k1, k2, ft );
+        if ( m0 == moves.getValue(k1)+moves.getValue(k2) ) {
+          boolean ret = found2( moves, doze, mBoard, k1, k2, ft );
+          // Log.v( TAG, "   Two at " + k1 + " " + k2 + " found " + ret );
+          return ret;
         }
       }
     }
@@ -187,8 +261,10 @@ class Strategy1 extends Strategy
         if ( k2 == k1 ) continue;
         for (int k3=0; k3<moves.size(); ++k3 ) {
           if ( k3 == k1 || k3 == k2 ) continue;
-          if ( m0 == moves.value(k1)+moves.value(k2)+moves.value(k3) ) {
-            return found3( moves, doze, mBoard, k1, k2, k3, ft );
+          if ( m0 == moves.getValue(k1)+moves.getValue(k2)+moves.getValue(k3) ) {
+            boolean ret = found3( moves, doze, mBoard, k1, k2, k3, ft );
+            // Log.v( TAG, "   Three at " + k1 + " " + k2 + " " + k3 + " found " + ret );
+            return ret;
           }
         }
       }
@@ -203,28 +279,28 @@ class Strategy1 extends Strategy
     int[] pos3 = new int[2];
     int[] pos2 = new int[2];
     int[] pos1 = new int[2];
-    mBoard.nextPositions( ft.from, moves.value(k3), pos3 );
+    mBoard.nextPositions( ft.from, moves.getValue(k3), pos3 );
     if ( pos3[0] < 32 ) {
-      mBoard.nextPositions( pos3[0], moves.value(k2), pos2 );
+      mBoard.nextPositions( pos3[0], moves.getValue(k2), pos2 );
       if ( pos2[0] < 32 ) {
-        mBoard.nextPositions( pos2[0], moves.value(k1), pos1 );
+        mBoard.nextPositions( pos2[0], moves.getValue(k1), pos1 );
         if ( pos1[0] == ft.to || pos1[1] == ft.to ) { // can get to "to" in 3 step pos3[0]--pos2[0]--pos1[]
           to3 = pos3[0];
           to2 = pos2[0];
         } else if ( pos2[1] > 1 ) { // try from pos2[1]
-          mBoard.nextPositions( pos2[1], moves.value(k1), pos1 );
+          mBoard.nextPositions( pos2[1], moves.getValue(k1), pos1 );
           if ( pos1[0] == ft.to || pos1[1] == ft.to ) { // pos3[0]--pos2[1]--pos1[]
             to3 = pos3[0];
             to2 = pos2[1];
           }
         } else {
-          mBoard.nextPositions( pos3[1], moves.value(k2), pos2 );
-          mBoard.nextPositions( pos2[0], moves.value(k1), pos1 );
+          mBoard.nextPositions( pos3[1], moves.getValue(k2), pos2 );
+          mBoard.nextPositions( pos2[0], moves.getValue(k1), pos1 );
           if ( pos1[0] == ft.to || pos1[1] == ft.to ) { // pos3[1]--pos2[0]--pos1[]
             to3 = pos3[1];
             to2 = pos2[0];
           } else if ( pos2[1] > 1 ) {
-            mBoard.nextPositions( pos2[1], moves.value(k1), pos1 );
+            mBoard.nextPositions( pos2[1], moves.getValue(k1), pos1 );
             if ( pos1[0] == ft.to || pos1[1] == ft.to ) { // pos3[1]--pos2[1]--pos1[]
               to3 = pos3[1];
               to2 = pos2[1];
@@ -242,8 +318,8 @@ class Strategy1 extends Strategy
     
     boolean throw_again = do_move( ft.from, to3, 2*doze );
     mDrawingSurface.addPosition( to3 );
-    Delay.sleep( doze );
     moves.shift( k3 );
+    Delay.sleep( 1 * doze ); // was 1
 
     ft.from = to3; 
     if ( mBoard.winner() != 0 ) return false;
@@ -257,10 +333,10 @@ class Strategy1 extends Strategy
     int to2 = -1; // FIXME recompute pos2
     if ( to2 == -1 ) {
       int[] pos2 = new int[2];
-      mBoard.nextPositions( ft.from, moves.value(k2), pos2 );
+      mBoard.nextPositions( ft.from, moves.getValue(k2), pos2 );
       if ( pos2[0] < 32 ) {
         int[] pos1 = new int[2];
-        mBoard.nextPositions( pos2[0], moves.value(k1), pos1 );
+        mBoard.nextPositions( pos2[0], moves.getValue(k1), pos1 );
         if ( pos1[0] == ft.to || pos1[1] == ft.to ) {
           to2 = pos2[0];
         } else {
@@ -274,8 +350,8 @@ class Strategy1 extends Strategy
 
     boolean throw_again = do_move( ft.from, to2, 2*doze );
     mDrawingSurface.addPosition( to2 );
-    Delay.sleep( doze );
     moves.shift( k2 );
+    Delay.sleep( 1 * doze );
 
     ft.from = to2;
     if ( mBoard.winner() != 0 ) return false;
@@ -288,8 +364,8 @@ class Strategy1 extends Strategy
   {
     boolean throw_again = do_move( ft.from, ft.to, 2*doze );
     mDrawingSurface.addPosition( ft.to );
-    Delay.sleep( doze );
     moves.shift( k1 );
+    Delay.sleep( 1 * doze );
 
     if ( mBoard.winner() != 0 ) return false;
     if ( throw_again )          return true;
@@ -304,37 +380,75 @@ class Strategy1 extends Strategy
     int ret = -1;
     Weight wei_from = new Weight();
     Weight wei_to   = new Weight();
-    updateWeight( wei_to );
+    updateWeightFrom( wei_from );
+    updateWeightTo( wei_to );
   
     for ( int k = 0; k < moves.size(); ++k) {
-      int v = moves.value(k);
-      float s = movingHomeScore( v, ft, wei_from );
-      // Log.v("yutnori", "move " + v + " " + ft.from + "-" + ft.to + ": home score " + s );
-      // if ( ft.from >= 0 ) Log.v("yutnori", " weights " + wei_from.value(32) + " " + wei_from.value( ft.from ) );
-      if ( s > score ) {
-        score = s;
-        ft0.from = ft.from;
-        ft0.to   = Indices.POS_HOME;
-        ret = moves.value(k);
+      int v   = moves.getValue(k);
+      float s;
+      if ( v > 0 ) {
+        s  = movingHomeScore( v, ft, wei_from );
+        // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": home score " + s );
+        // if ( ft.from >= 0 ) Log.v("yutnori", " weights " + wei_from.value(32) + " " + wei_from.value( ft.from ) );
+        if ( s > score ) {
+          score = s;
+          ft0.from = ft.from;
+          ft0.to   = Indices.POS_HOME;
+          ret = moves.getValue(k);
+        }
       }
+
       s = movingBackScore( v, ft, wei_from, wei_to );
-      // Log.v("yutnori", "move " + v + " " + ft.from + "-" + ft.to + ": back score " + s );
+      // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": back score " + s );
       if ( s > score ) {
         score = s;
         ft0.from = ft.from;
         ft0.to   = ft.to;
-        ret = moves.value(k);
+        ret = moves.getValue(k);
       }
+
       s = movingForScore( v, ft, wei_from, wei_to );
-      // Log.v("yutnori", "move " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
+      // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
       if ( s > score ) {
         score = s;
         ft0.from = ft.from;
         ft0.to   = ft.to;
-        ret = moves.value(k);
+        ret = moves.getValue(k);
+      }
+
+      s = movingStartScore( v, ft, wei_from, wei_to );
+      // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
+      if ( s > score ) {
+        score = s;
+        ft0.from = ft.from;
+        ft0.to   = ft.to;
+        ret = moves.getValue(k);
       }
     }
     return ret;
+  }
+
+  private float movingStartScore( int move, FromTo ft, Weight wei_from, Weight wei_to ) 
+  {
+    float score = SCORE_MIN;
+    ft.from = -1;
+    ft.to   = -1;
+    if ( move > 0 ) return score;
+    for (int k=2; k<= Indices.POS_CORNER1; ++k ) {
+      // if ( k == Indices.POS_SKIP ) continue;
+      int b = mBoard.value(k) * player();
+      if ( b > 0 ) {
+        if ( k + move < 2 ) {
+          float s = (7-k) * player() * WF_START * yut_random();
+          if ( s > score ) {
+            score = s;
+            ft.from = k;
+            ft.to = 1;
+          }
+        }
+      }
+    }
+    return score;
   }
 
   private float movingForScore( int move, FromTo ft, Weight wei_from, Weight wei_to ) 
@@ -342,7 +456,7 @@ class Strategy1 extends Strategy
     float score = SCORE_MIN;
     ft.from = -1;
     ft.to   = -1;
-    if ( mBoard.start( Indices.yut_index( player() ) ) > 0 ) {
+    if ( move > 0 && mBoard.start( Indices.yut_index( player() ) ) > 0 ) {
       int t = 1 + move;
       float s = wei_to.value(t) - wei_from.value(1);
       int b = mBoard.value(t) * player();
@@ -361,41 +475,44 @@ class Strategy1 extends Strategy
     }
     for (int k=2; k< Indices.POS_HOME; ++k ) {
       if ( k == Indices.POS_SKIP ) continue;
-      int b = mBoard.value(k) * player();
-      if ( b > 0 ) {
-        // double danger = b * positionDanger( k ) * WF_DANGER * Indices.distance(k)/10.0f;
-        int[] pos = new int[2];
-        mBoard.nextPositions( k, move, pos );
-        for ( int j=0; j<2; ++j ) {
-          int t = pos[j];
-          if ( t > 0  && t < Indices.POS_HOME ) {
-            float s = b * ( wei_to.value(t) - wei_from.value(k) );
-            float danger = positionDanger( t ) * WF_DANGER;
-            // printf("danger[%d] = %.2f ", t, danger );
-            if (  mBoard.value(t) * player() > 0 ) {
-              float w = 1.0f;
-              if ( t < 11 ) w *= t/11.0f;
-              s += mBoard.value(t) * player() * WF_JOIN * w;
-            }
-            s -= danger;
-            // printf("movingForScore from %d %.2f to %d %.2f score %.2f\n", 
-            //   k, wei_from.value(k), t, wei_to.value(t), s );
-            s *= yut_random();
-            if ( s > score ) {
-              score = s;
-              ft.from  = k;
-              ft.to    = t;
-            }
-          } 
+      if ( (k+move) > 1 ) {
+        int b = mBoard.value(k) * player();
+        if ( b > 0 ) {
+          // double danger = b * positionDanger( k ) * WF_DANGER * Indices.distance(k)/10.0f;
+          int[] pos = new int[2];
+          mBoard.nextPositions( k, move, pos );
+          for ( int j=0; j<2; ++j ) {
+            int t = pos[j];
+            if ( t > 0  && t < Indices.POS_HOME ) {
+              float s = b * ( wei_to.value(t) - wei_from.value(k) );
+              float danger = positionDanger( t ) * WF_DANGER;
+              // printf("danger[%d] = %.2f ", t, danger );
+              if (  mBoard.value(t) * player() > 0 ) {
+                float w = 1.0f;
+                if ( t < 11 ) w *= t/11.0f;
+                s += mBoard.value(t) * player() * WF_JOIN * w;
+              }
+              s -= danger;
+              // printf("movingForScore from %d %.2f to %d %.2f score %.2f\n", 
+              //   k, wei_from.value(k), t, wei_to.value(t), s );
+              s *= yut_random();
+              if ( s > score ) {
+                score = s;
+                ft.from  = k;
+                ft.to    = t;
+              }
+            } 
+          }
         }
       }
     }
     return score;
   }
 
-  private float movingHomeScore( int move, FromTo ft, Weight wei_from )
+  private float movingHomeScore( int move, FromTo ft, Weight wei_from ) // moving HOME
   {
     float score = SCORE_MIN;
+    if ( move < 0 ) return score;
     ft.from = -1;
     for (int k=2; k< Indices.POS_HOME; ++k ) {
       if ( k ==  Indices.POS_SKIP ) continue;
@@ -403,7 +520,7 @@ class Strategy1 extends Strategy
         int[] pos = new int[2];
         mBoard.nextPositions( k, move, pos );
         if ( pos[0] == Indices.POS_HOME || pos[1] == Indices.POS_HOME ) {
-          float s = Math.abs(mBoard.value(k)) * (wei_from.value(32) - wei_from.value(k)) * WF_HOME;
+          float s = Math.abs(mBoard.value(k)) * (wei_from.value(32) - wei_from.value(k)) * WF_HOME - move * WF_MOVE;
           s *= yut_random();
           if ( s > score ) {
             score = s;
@@ -415,13 +532,13 @@ class Strategy1 extends Strategy
     return score;
   } 
        
-
+  // moving so that the opponent goes back to START
   private float movingBackScore( int move, FromTo ft, Weight wei_from, Weight wei_to ) 
   {
     float score = SCORE_MIN;
     ft.from = -1;
     ft.to   = -1;
-    if ( mBoard.start( Indices.yut_index(player()) ) > 0 ) {
+    if ( mBoard.start( Indices.yut_index(player()) ) > 0 && move > 0 ) { // moving from START
       int t = 1 + move;
       if ( mBoard.value(t) * player() < 0 ) {
         float s = wei_to.value(t) - wei_from.value(1) - mBoard.value(t) * player() * ( wei_to.value(t) - wei_from.value(1) );
@@ -435,19 +552,21 @@ class Strategy1 extends Strategy
     }
     for (int k=2; k< Indices.POS_HOME; ++k ) {
       if ( k == Indices.POS_SKIP ) continue;
-      int w = mBoard.value(k) * player();
-      if ( w > 0 ) {
-        int[] pos = new int[2];
-        mBoard.nextPositions( k, move, pos );
-        for ( int j=0; j<2; ++j ) {
-          int t = pos[j];
-          if ( t > 0  && t < Indices.POS_HOME && mBoard.value(t) * player() < 0 ) {
-            float s = w * ( wei_to.value(t) - wei_from.value(k) ) - (mBoard.value(t) * player()) * (wei_to.value(t) - wei_from.value(1)); 
-            s *= yut_random();
-            if ( s > score ) {
-              score = s;
-              ft.from  = k;
-              ft.to    = t;
+      if ( (k+move) > 1 ) { // only positions that can be reached
+        int w = mBoard.value(k) * player();
+        if ( w > 0 ) {
+          int[] pos = new int[2];
+          mBoard.nextPositions( k, move, pos );
+          for ( int j=0; j<2; ++j ) {
+            int t = pos[j];
+            if ( t > 0  && t < Indices.POS_HOME && mBoard.value(t) * player() < 0 ) {
+              float s = w * ( wei_to.value(t) - wei_from.value(k) ) - (mBoard.value(t) * player()) * (wei_to.value(t) - wei_from.value(1)); 
+              s *= yut_random();
+              if ( s > score ) {
+                score = s;
+                ft.from  = k;
+                ft.to    = t;
+              }
             }
           }
         }

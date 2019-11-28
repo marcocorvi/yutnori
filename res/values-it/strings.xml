@@ -17,6 +17,7 @@
     <string name="state_ready">ATTENDI</string>
     <string name="state_over">FINE GIOCO</string>
     <string name="state_hold">ASPETTA ...</string>
+    <string name="state_skip">SALTA</string>
     <string name="state_start_throw">Scelta di chi inizia: LANCIA</string>
     <string name="state_start_ready">Scelta di chi inizia: ATTENDI</string>
 
@@ -49,6 +50,10 @@
     <string name="connection_refused">Connessione rifiutata</string>
     <string name="devices">Dispositivi Bluetooth</string>
     <string name="device_status">Stato: %1$s"</string>
+    <string name="android_skipping">Android salta ...</string>
+    <string name="skipping">Salto ...</string>
+    <string name="android_nomove">Android non puo\' muovere</string>
+    <string name="nomove">Non posso muovere ...</string>
 
     <string name="NONE">NONE</string>
     <string name="LISTEN">LISTEN</string>
@@ -66,8 +71,30 @@
     <string name="yutnori_join">Connettiti ad un altro Yutnori</string>
     <string name="yutnori_android">Gioca contro Android</string>
 
+    <string name="title_yutnori"> Y U T N O R I </string>
+    <string name="title_backskip">Do-salta</string>
+    <string name="title_dospot">Do-casa</string>
+    <string name="title_seoul">Seul</string>
+    <string name="title_busan">Pusan</string>
+    <string name="title_back">Retro Do</string>
+
+    <string name="special_rules">Regole speciali</string>
+
+    <string name="malsplit">Separa pedine</string>
+    <string name="backdo">Retro Do</string>
+    <string name="seoul">Seul</string>
+    <string name="busan">Pusan</string>
+    <string name="doskip">Salta Do</string>
+    <string name="dospot">Do casa</string>
+<!--
     <string name="pref_split_title">Separazione</string>
     <string name="pref_split_summary">Gruppi separabili</string>
+-->
+    <string name="pref_special_rules_title">Regole speciali</string>
+    <string name="pref_special_rules_summary">Abilita le regole speciali</string>
+
+    <string name="pref_backyuts_title">Retro Yut</string>
+    <string name="pref_backyuts_summary">Numero di yut retro</string>
     <string name="pref_level_title">Livello</string>
     <string name="pref_level_summary">Livello di gioco</string>
     <string name="pref_engine_title">Engine</string>

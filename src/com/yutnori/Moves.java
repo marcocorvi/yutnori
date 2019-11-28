@@ -18,15 +18,68 @@ import android.util.Log;
 class Moves
 {
   private ArrayList<Integer> move;
+  private boolean mRevertDo = false;
 
   Moves()
   {
     move = new ArrayList<Integer>();
+    mRevertDo = false;
   }
 
+  static boolean rethrow( int m ) { return ( ( m % 10 ) >= 4 ); }
+
+  void setRevertDo() { mRevertDo = true; }
+  
+  // remove a skip move
+  // @return true if found and removed a skip move, false otherwise
+  boolean removeSkip()
+  {
+    for ( int k = 0; k < move.size(); ++ k ) {
+      if ( getValue( k ) < 0 ) {
+        shift( k );
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+  // @return true if moves are all skips 
+  //              or there are no moves
+  boolean hasAllSkips()
+  {
+    for ( int k=0; k < move.size(); ++k ) {
+      if ( getValue( k ) > 0 ) return false;
+    }
+    return true;
+  }
+
+  // #return the number of skips moves
+  // int getSkipCount()
+  // {
+  //   int ret = 0;
+  //   for ( int k=0; k<move.size(); ++k ) {
+  //     if ( getValue(k) < 0 ) ++ ret;
+  //   }
+  //   return ret;
+  // }
+
+  boolean hasSkip()
+  {
+    for ( int k=0; k<move.size(); ++k ) {
+      if ( getValue(k) < 0 ) return true;
+    }
+    return false;
+  }
+
+  
+
+  // shift out a move
+  // @param k   index of the move to shift out
   synchronized void shift( int k ) 
   {
     assert( k < move.size() );
+    mRevertDo = false;
     for ( ++k; k < move.size(); ++ k ) {
       move.set( k-1, move.get( k ) );
     }
@@ -35,39 +88,67 @@ class Moves
 
   synchronized int size() { return move.size(); }
 
-  synchronized int value( int k ) 
+  // --------------------------------------------------------
+  synchronized int getValue( int k ) 
   { 
-    assert( k < move.size() );
+    assert( k >= 0 && k < move.size() );
+    int val = move.get(k).intValue();
+    int ret = val % 10;
+    if ( ! YutnoriPrefs.mTiTo || mRevertDo ) return ret;
+    return ( ret == 1 && val >= 10 && ! mRevertDo )? -ret : ret;
+  }
+
+  // used only by DrawingSurface
+  synchronized int getRawValue( int k ) 
+  { 
+    assert( k >= 0 && k < move.size() );
     return move.get(k).intValue();
   }
 
-  synchronized void add( int v ) { move.add( new Integer(v) ); }
+  // not used
+  // synchronized int getAbsValue( int k ) 
+  // { 
+  //   assert( k >= 0 && k < move.size() );
+  //   return move.get(k).intValue() % 10;
+  // }
 
-  synchronized void clear() { move.clear(); }
+  // -------------------------------------------------------
 
+  synchronized void add( int v ) { move.add( new Integer(v) ); mRevertDo = false; }
+  synchronized void addAndRevert( int v, boolean revert_do ) { move.add( new Integer(v) ); mRevertDo = revert_do; }
+
+  synchronized void clear() { move.clear(); mRevertDo = false; }
+
+  // get the move to achieve a displacement
+  // @param m     displacement 
   synchronized int hasMove( int m )
   {
-    // StringBuilder sb = new StringBuilder();
-    // sb.append("moves:");
-    // for ( int k = 0; k < move.size(); ++ k ) sb.append(" " + move.get(k).intValue() );
-    // Log.v("yutnori", sb.toString() );
-
     for ( int k = 0; k < move.size(); ++ k ) {
-      if ( move.get(k).intValue() == m ) {
-        return k;
-      }
+      if ( getValue( k ) == m ) return k;
     }
     return -1;
   }
 
+  // get the minimal (abs value) move to achieve a displacement
+  // @param m     displacement 
+  // @return  index of min move >= m (if m > 0)
+  //          index of most negative move (if m < 0)
   synchronized int minMove( int m )
   {
     int k0 = -1;
-    int m0 = 100;
-    for ( int k = 0; k <  move.size(); ++k ) {
-      int mm = move.get(k).intValue();
-      if ( mm >= m && mm < m0 ) { m0 = mm; k0 = k; }
-    }
+    if ( m > 0 ) {
+      int m0 = 100;
+      for ( int k = 0; k < move.size(); ++k ) {
+        int mm = getValue( k );
+        if ( mm >= m && mm < m0 ) { m0 = mm; k0 = k; }
+      }
+    } else {
+      int m0 = 0;
+      for ( int k = 0; k < move.size(); ++k ) {
+        int mm = getValue( k );
+        if ( mm <= m && mm < m0 ) { m0 = mm; k0 = k; }
+      }
+    }  
     return k0;
   }
 
@@ -76,8 +157,8 @@ class Moves
     if ( move.size() < 2 ) return;
     int k = 0;
     while ( k+1 < move.size() ) {
-      int i0 = value( k );
-      int i1 = value( k+1 );
+      int i0 = getValue( k );
+      int i1 = getValue( k+1 );
       if ( i0 < i1 ) {
         ++ k;
       } else if ( i0 == i1 ) {
@@ -88,6 +169,14 @@ class Moves
         if ( k > 0 ) --k;
       }  
     }
+  }
+
+  void print( String msg )
+  {
+    StringBuffer sb = new StringBuffer();
+    sb.append( msg + " moves: (" + mRevertDo + ") " );
+    for ( Integer ii : move ) sb.append( " " + ii.intValue() );
+    Log.v("Yutnori-TITO", sb.toString() );
   }
 
 }

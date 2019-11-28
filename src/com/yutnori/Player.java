@@ -16,6 +16,9 @@ import android.util.Log;
 
 class Player
 {
+  final static int USER    =  1;
+  final static int ANDROID = -1;
+
   protected DrawingSurface mDrawingSurface;
   protected Board mBoard;
   protected Moves mMoves;
@@ -44,7 +47,7 @@ class Player
       Delay.sleep( doze );
       mDrawingSurface.setHighlight( -1 );
     }
-    boolean ret = mBoard.move( from, to, me, 0 );
+    boolean ret = mBoard.doMove( from, to, me, 0 );
     // Log.v("yutnori", "Player do move " + from + " -> " + to + " return " + ret );
     return ret;
   }

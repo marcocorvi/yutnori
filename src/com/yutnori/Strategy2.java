@@ -21,6 +21,8 @@
  */
 package com.yutnori;
 
+import android.util.Log;
+
 class Strategy2 extends Strategy
 {
   Strategy2( Board b, Moves m, DrawingSurface s, int p ) 
@@ -36,6 +38,7 @@ class Strategy2 extends Strategy
   private static final float WF_JOIN0  = 0.8f; // score increment to join me at the beginning
   private static final float WF_HOME   = 1.5f; // score increment to get home
   private static final float WF_DANGER = 0.50f;
+  private static final float WF_START =0.30f;
   
   private static final float SCORE_MIN = -1000f;
 
@@ -45,11 +48,11 @@ class Strategy2 extends Strategy
   void updateWeight( Weight w, Board board )
   {
     float get = getFactors[ mBoard.start( Indices.yut_index( opponent() ) ) ];
-    for (int k=1; k< Indices.POS_HOME; ++k ) {
+    for (int k=1; k< Indices.POS_HOME; ++k ) { // POS_HOME=32 is over the end of the board
       if ( k == Indices.POS_SKIP ) continue;
       int b = mBoard.value(k);
       if ( b * player() < 0 ) {
-        if ( k <= Indices.POS_CORNER4 ) {
+        if ( k <= Indices.POS_CORNER4 ) { // last corner
           w.add( k, Math.abs(b) * k * get * WF_GET );
           for (int k1=1; k1<=5 && k1+k<= Indices.POS_CORNER4; ++k1) {
             w.add(k1+k, -(k1+k) * WF_GOT * Probability.value(k1) );
@@ -70,7 +73,7 @@ class Strategy2 extends Strategy
               w.add( k2, Math.abs(b) * (k2-6) * WF_GET2 * Probability.value(k1) * get );
             }
           }
-        } else if ( k <= 26 ) {
+        } else if ( k <= 26 ) { // regular outer board
           w.add( k, Math.abs(b) * (k-6) * WF_GET * get );
           for (int k1=1; k1<=5 && k1+k<=27; ++k1) {
             int k2 = k1+k;
@@ -82,6 +85,7 @@ class Strategy2 extends Strategy
             if ( k2 == 21 ) k2 = 11;
             w.add( k2, Math.abs(b) * (k-k1-6) * WF_GET2 * Probability.value(k1) * get );
           }
+          if ( k == 1 ) Log.v("Yutnori-TITO", "w2[1] " + w.value(k) );
         } else {
           w.add( k, Math.abs(b) * (k-16) * WF_GET * get );
           for (int k1=1; k1<=5; ++k1 ) {
@@ -108,26 +112,31 @@ class Strategy2 extends Strategy
     float s; // score
     int k;   // move index
     int f;   // from position
+    int t;   // to position
 
     Trial() 
     {
       s = - 1000.0f;
       k = - 1;
       f = - 1;
+      t = - 1;
     }
   
-    void update( float s0, int f0, int k0 ) {
+    void update( float s0, int k0, int f0, int t0 ) {
       if ( s0 > s ) {
         s = s0;
         f = f0;
+        t = t0;
         k = k0;
       }
     }
   }
   
   @Override
-  boolean movePlayer( Moves moves, int doze )
+  int doMovePlayer( Moves moves, int doze )
   {
+    // Log.v( TAG, "Android [2] do Move Player " + moves.size() );
+    // moves.print();
     Trial[] tried = new Trial[33];
     for ( int k=0; k<33; ++k ) tried[k] = new Trial();
     Weight wei_from = new Weight();
@@ -136,52 +145,66 @@ class Strategy2 extends Strategy
     
     if ( mBoard.start( Indices.yut_index(player()) ) > 0 ) {
       for ( int k = 0; k < moves.size(); ++k) {
-        int t = 1 + moves.value(k);
+        int m = moves.getValue(k);
+        if ( m < 0 ) continue;
+        int t = 1 + m;
         // TODO compute the score to get from 0 to "t"
-        float s = computeScore( 0, t, moves.value(k), wei_from, wei_to );
-        tried[t].update( s, 0, k );
+        computeScore( k, 0, t, m, wei_from, wei_to, tried[m] );
       }
     }
-    for (int n=2; n<32; ++n ) {
-      if ( n == Indices.POS_SKIP ) continue;
-      if ( mBoard.value(n) * player() > 0 ) {
+    for (int f=2; f<32; ++f ) {
+      if ( f == Indices.POS_SKIP ) continue;
+      if ( mBoard.value(f) * player() > 0 ) {
         for ( int k = 0; k < moves.size(); ++k) {
+          int m = moves.getValue(k);
+          if ( m < 0 ) continue;
           int[] pos = new int[2];
-          mBoard.nextPositions( n, moves.value(k), pos );
+          mBoard.nextPositions( f, m, pos );
           int t = pos[0];
-          float s = computeScore( 0, t, moves.value(k), wei_from, wei_to );
-          tried[t].update( s, n, k );
+          computeScore( k, f, t, m, wei_from, wei_to, tried[m] );
           if ( ( t = pos[1] ) > 0 ) {
-            s = computeScore( 0, t, moves.value(k), wei_from, wei_to );
-            tried[t].update( s, n, k );
+            computeScore( k, f, t, m, wei_from, wei_to, tried[m] );
           }
         }
       }
     }
         
-    int to = 0;
     float score = - 1000.0f;
-    for (int k = 2; k<33; ++k ) {
-      if ( tried[k].s > score ) {
-        to = k;
-        score = tried[k].s;
+    int kbest = -1;
+    int fbest = -1;
+    int tbest = 0;
+    for (int m = 1; m<33; ++m ) {
+      if ( tried[m].s > score ) {
+        fbest = tried[m].f;
+        tbest = tried[m].t;
+        kbest = tried[m].k;
+        score = tried[m].s;
       }
     }
   
-    if ( to > 0 ) {
-      moves.shift( tried[to].k );
-      boolean throw_again = do_move( tried[to].f, to, 2*doze );
-      mDrawingSurface.addPosition( to );
+    if ( tbest > 0 ) {
+      // Log.v( TAG, "move " + fbest + " -> " + tbest + " " + kbest + " m " + moves.getValue(kbest) );
+      moves.shift( kbest );
+      boolean throw_again = do_move( fbest, tbest, 2*doze );
+      mDrawingSurface.addPosition( tbest );
       Delay.sleep( doze );
+      // moves.print("[2] after move");
 
-      if ( mBoard.winner() != 0 ) return false;
-      if ( throw_again ) return true;
-      if ( moves.size() == 0 ) return false;
+      if ( mBoard.winner() != 0 ) return State.MOVE;
+      if ( throw_again ) return State.THROW;
+      if ( moves.size() > 0 ) return State.MOVE;
+    } else {
+      // Log.v( TAG, "[2] no best move ");
     }
-    return false;
+    return State.NONE;
   }
   
-  private float computeScore( int f, int t, int m, Weight wei_from, Weight wei_to )
+  // @param f   from position
+  // @param t   to position
+  // @param m   move value
+  // @param wei_from
+  // @param wei_to
+  private void computeScore( int k, int f, int t, int m, Weight wei_from, Weight wei_to, Trial trial )
   {
     float score = wei_to.value( t ) - wei_from.value( f );
     if ( mBoard.value(t) * player() < 0 ) {
@@ -215,45 +238,45 @@ class Strategy2 extends Strategy
   
     // avoid the opponent mals and try to stay behind them
     if ( t <= 21 ) {
-      for (int k=1; k<=5; ++k ) {
-        int k1 = t-k;
+      for (int k0=1; k0<=5; ++k0 ) {
+        int k1 = t-k0;
         if ( k1 >= 2 && mBoard.value(k1) * player() < 0 ) {
-          score -= Probability.value(k) * 0.33f;
+          score -= Probability.value(k0) * 0.33f;
         }
       }
       if ( t == 21 ) {
-        for (int k=1; k<=5; ++k ) {
-          int k1 = 27 - k;
+        for (int k0=1; k0<=5; ++k0 ) {
+          int k1 = 27 - k0;
           if ( mBoard.value(k1) * player() < 0 ) {
-            score -= Probability.value(k) * 0.33f;
+            score -= Probability.value(k0) * 0.33f;
           }
         }
       } else if ( t == 16 ) {
-        for (int k=1; k<=5; ++k ) {
-          int k1 = 32 - k;
+        for (int k0=1; k0<=5; ++k0 ) {
+          int k1 = 32 - k0;
           if ( k1 == 29 ) k1 = 24;
           if ( mBoard.value(k1) * player() < 0 ) {
-            score -= Probability.value(k) * 0.33f;
+            score -= Probability.value(k0) * 0.33f;
           }
         }
       }
     } else if ( t < 27 ) {
-      for ( int k=1; k<=5; ++k ) {
-        int k1 = t-k;
+      for ( int k0=1; k0<=5; ++k0 ) {
+        int k1 = t-k0;
         if ( k1 < 21 ) break;
         if ( k1 == 21 ) k1 = 11;
         if ( mBoard.value(k1) * player() < 0 ) {
-          score -= Probability.value(k) * 0.33f;
+          score -= Probability.value(k0) * 0.33f;
         }
       }
     } else if ( t < 32 ) {
-      for ( int k=1; k<=5; ++k ) {
-        int k1 = t-k;
+      for ( int k0=1; k0<=5; ++k0 ) {
+        int k1 = t-k0;
         if ( k1 < 26 ) break;
         if ( k1 == 26 ) k1 = 6;
         if ( k1 == 29 ) k1 = 24;
         if ( mBoard.value(k1) * player() < 0 ) {
-          score -= Probability.value(k) * 0.33f;
+          score -= Probability.value(k0) * 0.33f;
         }
       }
     } else {
@@ -262,7 +285,8 @@ class Strategy2 extends Strategy
       waste = m - waste;
       score += (float)( Math.abs( mBoard.value(f) ) * ( 5 - waste) );
     }
-    return score;
+    if ( score > trial.s ) trial.update( score, k, f, t );
+    // return score;
   }
 
 }

@@ -3,7 +3,7 @@
     <string name="app_name">Yutnori</string>
     <string name="app_help">Yutnori Help</string>
 
-    <string name="button_again">Play again</string>
+    <string name="button_again">Play</string>
     <string name="button_quit">Quit</string>
     <string name="button_ok">  OK  </string>
     <string name="button_cancel">CANCEL</string>
@@ -17,6 +17,7 @@
     <string name="state_ready">WAIT</string>
     <string name="state_over">GAME OVER</string>
     <string name="state_hold">ON HOLD</string>
+    <string name="state_skip">SKIP</string>
     <string name="state_start_throw">Decide who starts: THROW</string>
     <string name="state_start_ready">Decide who starts: WAIT</string>
 
@@ -49,6 +50,10 @@
     <string name="connection_refused">Connection refused</string>
     <string name="devices">Bluetooth devices</string>
     <string name="device_status">State: %1$s"</string>
+    <string name="android_skipping">Android skipping ..."</string>
+    <string name="skipping">Skipping ..."</string>
+    <string name="android_nomove">Android cannot move"</string>
+    <string name="nomove">Cannot move ..."</string>
 
     <string name="another_game">%1$s plays a new game</string>
     <string name="not_another_game">%1$s does not play again</string>
@@ -66,8 +71,29 @@
     <string name="yutnori_join">Ask a friend to play together</string>
     <string name="yutnori_android">Play against Android</string>
 
+    <string name="title_yutnori"> Y U T N O R I </string>
+    <string name="title_backskip">Skip Do</string>
+    <string name="title_dospot">Do spot</string>
+    <string name="title_seoul">Seoul</string>
+    <string name="title_busan">Busan</string>
+    <string name="title_back">back</string>
+
+    <string name="special_rules">Special rules</string>
+
+    <string name="malsplit">Mal split</string>
+    <string name="backdo">Back Do</string>
+    <string name="seoul">Seoul</string>
+    <string name="busan">Busan</string>
+    <string name="doskip">Skip Do</string>
+    <string name="dospot">Do Spot</string>
+<!--
     <string name="pref_split_title">Split</string>
     <string name="pref_split_summary">Splitable groups</string>
+-->
+    <string name="pref_special_rules_title">Special rules</string>
+    <string name="pref_special_rules_summary">Enable Yutnori special rules</string>
+    <string name="pref_backyuts_title">Back Yuts</string>
+    <string name="pref_backyuts_summary">Number of Back Yuts</string>
     <string name="pref_level_title">Level</string>
     <string name="pref_level_summary">Game Level</string>
     <string name="pref_engine_title">Engine</string>

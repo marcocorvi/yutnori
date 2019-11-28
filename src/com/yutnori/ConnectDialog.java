@@ -46,7 +46,7 @@ public class ConnectDialog extends Dialog
                            , OnItemClickListener
 {
   private static final int REQUEST_DEVICE    = 1;
-  static final String TAG = "yutnori";
+  // static final String TAG = "Yutnori-TITO"
 
   private TextView mTVaddress;
 

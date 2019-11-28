@@ -30,7 +30,7 @@ import android.bluetooth.BluetoothDevice;
 class ConnectionHandler extends Handler
                         // implements DataListener
 {
-  final static String TAG = "yutnori";
+  final static String TAG = "Yutnori";
   SyncService mSyncService;
   
   private byte mSendCounter;  // send counter
@@ -230,6 +230,7 @@ class ConnectionHandler extends Handler
   static final byte NEWGAME = (byte)11;
   static final byte OKGAME  = (byte)12;
   static final byte PAWNS   = (byte)13;
+  static final byte BACKDO  = (byte)14;
 
   byte increaseCounter( byte cnt ) { return ( cnt == (byte)0xfe )? (byte)0 : (byte)(cnt+1); }
 
@@ -334,6 +335,9 @@ class ConnectionHandler extends Handler
        case PAWNS:
          mApp.execPawns( (int)buffer[2] );
          break;
+       case BACKDO:
+         mApp.execSetBackDo( (int)buffer[2], (int)buffer[3] );
+         break;
      }
   }
 
@@ -362,6 +366,7 @@ class ConnectionHandler extends Handler
          break; 
        case ACCEPT:
        case MOVE:
+       case BACKDO:
          buf = new byte[5];
          buf[0] = mSendCounter;
          buf[1] = key;
@@ -384,6 +389,7 @@ class ConnectionHandler extends Handler
     }
   }
 
+  void sendBackDo( int tito, int skip ) { enqueue( BACKDO, tito, skip ); }
   void sendStart( int move )  { enqueue( START, move, 0 ); }
   void sendThrow( int move )  { enqueue( THROW, move, 0 ); }
   void sendMoved( int index ) { enqueue( MOVED, index, 0 ); }
