@@ -43,11 +43,11 @@ class Moves
     return false;
   }
 
-
   // @return true if moves are all skips 
   //              or there are no moves
   boolean hasAllSkips()
   {
+    if ( size() == 0 ) return true;
     for ( int k=0; k < move.size(); ++k ) {
       if ( getValue( k ) > 0 ) return false;
     }
@@ -92,11 +92,16 @@ class Moves
   synchronized int getValue( int k ) 
   { 
     assert( k >= 0 && k < move.size() );
-    int val = move.get(k).intValue();
-    int ret = val % 10;
-    if ( ! YutnoriPrefs.mTiTo || mRevertDo ) return ret;
-    return ( ret == 1 && val >= 10 && ! mRevertDo )? -ret : ret;
+    return getMoveValue( move.get(k).intValue(), mRevertDo );
   }
+
+  static int getMoveValue( int val, boolean revert_do )
+  {
+    int ret = val % 10;
+    if ( ! YutnoriPrefs.isSpecial() || revert_do ) return ret;
+    return ( ret == 1 && val >= 10 && ! revert_do )? -ret : ret;
+  }
+
 
   // used only by DrawingSurface
   synchronized int getRawValue( int k ) 

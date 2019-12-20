@@ -137,6 +137,8 @@ public class DrawingSurface extends SurfaceView
     }
   }
 
+  synchronized void setBoard( Board board ) { mBoard = board; } 
+
   private Handler previewDoneHandler = new Handler()
   {
     @Override
@@ -427,7 +429,7 @@ public class DrawingSurface extends SurfaceView
   }
 
   // private draw routines ------------------------------------------------------
-  private void drawBoard( Canvas c )
+  private synchronized void drawBoard( Canvas c )
   {
     for ( int k=2; k<32; ++k ) {
       if ( k == 29 ) continue;
@@ -449,7 +451,7 @@ public class DrawingSurface extends SurfaceView
     }
     drawStart( c );
     drawHome( c );
-    if ( YutnoriPrefs.mDoSpot ) drawDoSpot( c );
+    if ( YutnoriPrefs.isDoCage() ) drawDoCage( c );
     drawArrow( c );
   }
 
@@ -490,10 +492,10 @@ public class DrawingSurface extends SurfaceView
     drawCard( c,   mBoard.home(1), 33 );
   }
 
-  private void drawDoSpot( Canvas c )
+  private void drawDoCage( Canvas c )
   {
-    drawCard( c, - mBoard.doSpot(0), 34 );
-    drawCard( c,   mBoard.doSpot(1), 35 );
+    drawCard( c, - mBoard.doCage(0), 34 );
+    drawCard( c,   mBoard.doCage(1), 35 );
   }
 
 

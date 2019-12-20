@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Yutnori</string>
-    <string name="app_help">Yutnori Help</string>
+    <string name="app_name">Yut-Nori</string>
+    <string name="app_help">Yut-Nori Help</string>
 
     <string name="button_again">Play</string>
     <string name="button_quit">Quit</string>
@@ -67,12 +67,13 @@
     <string name="menu_about">ABOUT</string>
     <string name="menu_settings">SETTINGS</string>
 
-    <string name="yutnori_wait">Wait for a friend\'s Yutnori request</string>
+    <string name="yutnori_wait">Wait for a friend\'s Yut-Nori request</string>
     <string name="yutnori_join">Ask a friend to play together</string>
     <string name="yutnori_android">Play against Android</string>
 
-    <string name="title_yutnori"> Y U T N O R I </string>
+    <string name="title_yutnori"> Y U T - N O R I </string>
     <string name="title_backskip">Skip Do</string>
+    <string name="title_docage">Do cage</string>
     <string name="title_dospot">Do spot</string>
     <string name="title_seoul">Seoul</string>
     <string name="title_busan">Busan</string>
@@ -85,13 +86,14 @@
     <string name="seoul">Seoul</string>
     <string name="busan">Busan</string>
     <string name="doskip">Skip Do</string>
+    <string name="docage">Do Cage</string>
     <string name="dospot">Do Spot</string>
 <!--
     <string name="pref_split_title">Split</string>
     <string name="pref_split_summary">Splitable groups</string>
 -->
     <string name="pref_special_rules_title">Special rules</string>
-    <string name="pref_special_rules_summary">Enable Yutnori special rules</string>
+    <string name="pref_special_rules_summary">Enable Yut-Nori special rules</string>
     <string name="pref_backyuts_title">Back Yuts</string>
     <string name="pref_backyuts_summary">Number of Back Yuts</string>
     <string name="pref_level_title">Level</string>
@@ -100,10 +102,12 @@
     <string name="pref_engine_summary">Game Engine</string>
     <string name="pref_delay_title">Speed</string>
     <string name="pref_delay_summary">App speed</string>
+    <string name="pref_rules_title">Rules</string>
+    <string name="pref_rules_summary">Yut-Nori rules</string>
 
 <string name="about_text">
-Yutnori is a Korean traditional game with two players.\n\n
-You can play with a friend, connecting your two Yutnori\'s,\n
+Yut-Nori is a Korean traditional game with two players.\n\n
+You can play with a friend, connecting your two Yut-Nori\'s,\n
 or you can play against Android.\n\n
 Enjoy.
 </string>

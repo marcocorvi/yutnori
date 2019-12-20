@@ -136,7 +136,12 @@ class Strategy2 extends Strategy
   int doMovePlayer( Moves moves, int doze )
   {
     // Log.v( TAG, "Android [2] do Move Player " + moves.size() );
+    if ( moves.size() == 0 ) return State.NONE;
     // moves.print();
+    int s = checkSkips( moves );
+    // Log.v(TAG, "Android[2] check skip returns " + s );
+    if ( s != State.FALL_THRU ) return s;
+
     Trial[] tried = new Trial[33];
     for ( int k=0; k<33; ++k ) tried[k] = new Trial();
     Weight wei_from = new Weight();
@@ -147,9 +152,10 @@ class Strategy2 extends Strategy
       for ( int k = 0; k < moves.size(); ++k) {
         int m = moves.getValue(k);
         if ( m < 0 ) continue;
-        int t = 1 + m;
+        int t  = 1 + m;
+        int tm = (m > 0)? 1+m : 0 ;
         // TODO compute the score to get from 0 to "t"
-        computeScore( k, 0, t, m, wei_from, wei_to, tried[m] );
+        computeScore( k, 0, t, m, wei_from, wei_to, tried[tm] );
       }
     }
     for (int f=2; f<32; ++f ) {
@@ -157,13 +163,19 @@ class Strategy2 extends Strategy
       if ( mBoard.value(f) * player() > 0 ) {
         for ( int k = 0; k < moves.size(); ++k) {
           int m = moves.getValue(k);
-          if ( m < 0 ) continue;
+          int kkm = k + m;
+          if ( YutnoriPrefs.isDoSpot() && kkm == 1 ) kkm = 21; // DO_SPOT to CHAM_MEOKI
+          
           int[] pos = new int[2];
           mBoard.nextPositions( f, m, pos );
           int t = pos[0];
-          computeScore( k, f, t, m, wei_from, wei_to, tried[m] );
+          if ( t > 0 ) {
+            computeScore( k, f, t, m, wei_from, wei_to, tried[t] );
+            // Log.v(TAG, "score " + f + " - " + t + ": " + tried[t].s );
+          }
           if ( ( t = pos[1] ) > 0 ) {
-            computeScore( k, f, t, m, wei_from, wei_to, tried[m] );
+            computeScore( k, f, t, m, wei_from, wei_to, tried[t] );
+            // Log.v(TAG, "score " + f + " - " + t + ": " + tried[t].s );
           }
         }
       }

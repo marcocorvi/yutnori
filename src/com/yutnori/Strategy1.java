@@ -38,7 +38,7 @@ import android.util.Log;
 
 class Strategy1 extends Strategy
 {
-  // final static String TAG = "Yutnori-TITO";
+  final static String TAG = "Yutnori-TITO";
 
   private static final float WF_GET  = 0.8f; // weight increment to get you
   private static final float WF_GET2 = 0.2f; // weight increment to get you
@@ -180,31 +180,43 @@ class Strategy1 extends Strategy
   @Override
   int doMovePlayer( Moves moves, int doze )
   {
-    // Log.v( TAG, "Android [1] do Move Player " + moves.size() );
+    if ( moves.size() == 0 ) return State.NONE;
+    // moves.print( "Strategy-1" );
+    int s = checkSkips( moves );
+    if ( s != State.FALL_THRU ) return s;
+
     int max = moves.size();
+    // Log.v( TAG, "Android [1] do Move Player continues - moves nr. " + max );
     Moves composite_moves = new Moves();
     int kk = 0;
     for ( int k1=0; k1<max; ++k1) {
-      composite_moves.add( moves.getValue(k1) );
-    }
-    for ( int k1=0; k1<max-1; ++k1 ) {
-      for ( int k2=k1+1; k2<max; ++k2 ) {
-        composite_moves.add( moves.getValue(k1) + moves.getValue(k2) );
-      }
-    }
-    for ( int k1=0; k1<max-2; ++k1 ) {
-      for ( int k2=k1+1; k2<max-1; ++k2 ) {
-        for ( int k3=k2+1; k3<max; ++k3 ) {
-          composite_moves.add( moves.getValue(k1) + moves.getValue(k2) + moves.getValue(k3) );
+      int m1 = moves.getValue(k1);
+      // if ( m1 > 0 )
+      {
+        composite_moves.add( m1 );
+        for ( int k2=k1+1; k2<max; ++k2 ) {
+          int m12 = m1 + moves.getValue(k2);
+          // if ( m12 > 0 )
+          {
+            composite_moves.add( m12 );
+            for ( int k3=k2+1; k3<max; ++k3 ) {
+              int m123 = m12 + moves.getValue(k3);
+              // if ( m123 > 0 ) 
+              {
+                composite_moves.add( m123 );
+              }
+            }
+          }
         }
       }
     }
-    // Log.v( TAG, "android composite moves " + composite_moves.size() );
+    // Log.v( TAG, "android composite moves nr. " + composite_moves.size() );
     composite_moves.sortUnique( );
 
     FromTo ft = new FromTo();
     int m0 = bestMove( composite_moves, ft );
     // composite_moves.print("Best " + m0 + " " + ft.from + "->" + ft.to );
+
     // Log.v( TAG, "best move " + m0 + " from " + ft.from + " to " + ft.to );
     if ( m0 >= 0 ) {
       if ( try1( moves, doze, m0, ft )
@@ -214,7 +226,7 @@ class Strategy1 extends Strategy
       }
     } else { 
       // Log.v( TAG, "back move " + m0 );
-      if ( YutnoriPrefs.mTiTo ) m0 = -1;
+      if ( YutnoriPrefs.isSpecial() ) m0 = -1;
       if ( try1( moves, doze, m0, ft ) ) {
         return State.THROW; // 1;
       }
@@ -384,11 +396,53 @@ class Strategy1 extends Strategy
     updateWeightTo( wei_to );
   
     for ( int k = 0; k < moves.size(); ++k) {
-      int v   = moves.getValue(k);
       float s;
+      int v   = moves.getValue(k);
+      if ( v < 0 ) {
+        
+        if ( YutnoriPrefs.isDoCage() ) {
+          if ( mBoard.playerDoCage( Player.ANDROID ) > 0 ) {
+            ft0.from = 33;
+            ft0.to   = 21;
+            return v;
+          }
+        } else if ( YutnoriPrefs.isSeoul() ) { 
+          if ( mBoard.playerStart( Player.ANDROID ) > 0 ) {
+            ft0.from = 1;
+            ft0.to   = 24;
+            return v;
+          }
+        } else if ( YutnoriPrefs.isBusan() ) { 
+          if ( mBoard.playerStart( Player.ANDROID ) > 0 ) {
+            ft0.from = 1;
+            ft0.to   = 11;
+            return v;
+          }
+        } else if ( YutnoriPrefs.isDoSpot() && mBoard.value(2)*player() > 0 ) {
+          int t = 21;
+          s = wei_to.value(t) - wei_from.value(2);
+          int b = mBoard.value(t) * player();
+          if ( b > 0 ) {
+            s += b * WF_JOIN0;
+          }
+          s -= positionDanger( t ) * WF_DANGER;
+          s *= yut_random();
+          // Log.v(TAG, "DoSpot 2-21: score " + s + "/" + score );
+          if ( s > score ) {
+            score = s;
+            ft0.from = 2;
+            ft0.to   = t;
+          }
+        } else if ( YutnoriPrefs.isDoNone() ) {
+          if ( mBoard.countPlayer( Player.ANDROID ) == 0 ) {
+            v = -v;
+          } 
+        }
+      }
+
       if ( v > 0 ) {
         s  = movingHomeScore( v, ft, wei_from );
-        // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": home score " + s );
+        // Log.v( TAG, "move home " + v + " " + ft.from + "-" + ft.to + ": home score " + s );
         // if ( ft.from >= 0 ) Log.v("yutnori", " weights " + wei_from.value(32) + " " + wei_from.value( ft.from ) );
         if ( s > score ) {
           score = s;
@@ -399,7 +453,7 @@ class Strategy1 extends Strategy
       }
 
       s = movingBackScore( v, ft, wei_from, wei_to );
-      // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": back score " + s );
+      // Log.v( TAG, "move back " + v + " " + ft.from + "-" + ft.to + ": back score " + s );
       if ( s > score ) {
         score = s;
         ft0.from = ft.from;
@@ -408,7 +462,7 @@ class Strategy1 extends Strategy
       }
 
       s = movingForScore( v, ft, wei_from, wei_to );
-      // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
+      // Log.v( TAG, "move for " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
       if ( s > score ) {
         score = s;
         ft0.from = ft.from;
@@ -417,7 +471,7 @@ class Strategy1 extends Strategy
       }
 
       s = movingStartScore( v, ft, wei_from, wei_to );
-      // Log.v( TAG, "move " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
+      // Log.v( TAG, "move start " + v + " " + ft.from + "-" + ft.to + ": fore score " + s );
       if ( s > score ) {
         score = s;
         ft0.from = ft.from;
@@ -430,23 +484,18 @@ class Strategy1 extends Strategy
 
   private float movingStartScore( int move, FromTo ft, Weight wei_from, Weight wei_to ) 
   {
+    if ( ! YutnoriPrefs.isBackDo() ) return SCORE_MIN;
+    if ( YutnoriPrefs.isDoSpot() ) return SCORE_MIN;
+    if ( move > 0 ) return SCORE_MIN;
+    if ( mBoard.value(2) * player() <= 0 ) return SCORE_MIN;
     float score = SCORE_MIN;
     ft.from = -1;
     ft.to   = -1;
-    if ( move > 0 ) return score;
-    for (int k=2; k<= Indices.POS_CORNER1; ++k ) {
-      // if ( k == Indices.POS_SKIP ) continue;
-      int b = mBoard.value(k) * player();
-      if ( b > 0 ) {
-        if ( k + move < 2 ) {
-          float s = (7-k) * player() * WF_START * yut_random();
-          if ( s > score ) {
-            score = s;
-            ft.from = k;
-            ft.to = 1;
-          }
-        }
-      }
+    float s = WF_START * yut_random();
+    if ( s > score ) {
+      score = s;
+      ft.from = 2;
+      ft.to   = 0;
     }
     return score;
   }
@@ -456,7 +505,8 @@ class Strategy1 extends Strategy
     float score = SCORE_MIN;
     ft.from = -1;
     ft.to   = -1;
-    if ( move > 0 && mBoard.start( Indices.yut_index( player() ) ) > 0 ) {
+    int me = Indices.yut_index( player() );
+    if ( move > 0 && mBoard.start( me ) > 0 ) {
       int t = 1 + move;
       float s = wei_to.value(t) - wei_from.value(1);
       int b = mBoard.value(t) * player();
@@ -472,6 +522,35 @@ class Strategy1 extends Strategy
         ft.from = 0;
         ft.to   = t;
       }
+    } 
+    if ( move < 0 ) {
+      int f = 2;
+      if ( mBoard.value(f) * player() > 0 ) {
+        if ( YutnoriPrefs.isDoSpot() ) {
+          // Log.v(TAG, "fore - player at 2");
+          int t = 21;
+          float s = -( wei_to.value(t) - wei_from.value(f) );
+          int b = mBoard.value(t) * player();
+          if ( b > 0 ) {
+            s += b * WF_JOIN0;
+          }
+          s -= positionDanger( t ) * WF_DANGER;
+          s *= yut_random();
+          if ( s > score ) {
+            score = s;
+            ft.from = f;
+            ft.to   = t;
+          }
+        } else if ( YutnoriPrefs.isDoNone() || YutnoriPrefs.isDoSkip() ) {
+          int t = 0;
+          float s = -( wei_to.value(1) - wei_from.value(f) );
+          if ( s > score ) {
+            score = s;
+            ft.from = f;
+            ft.to   = t;
+          }
+        }
+      } 
     }
     for (int k=2; k< Indices.POS_HOME; ++k ) {
       if ( k == Indices.POS_SKIP ) continue;
@@ -483,7 +562,7 @@ class Strategy1 extends Strategy
           mBoard.nextPositions( k, move, pos );
           for ( int j=0; j<2; ++j ) {
             int t = pos[j];
-            if ( t > 0  && t < Indices.POS_HOME ) {
+            if ( t > 1  && t < Indices.POS_HOME ) {
               float s = b * ( wei_to.value(t) - wei_from.value(k) );
               float danger = positionDanger( t ) * WF_DANGER;
               // printf("danger[%d] = %.2f ", t, danger );
@@ -538,21 +617,34 @@ class Strategy1 extends Strategy
     float score = SCORE_MIN;
     ft.from = -1;
     ft.to   = -1;
-    if ( mBoard.start( Indices.yut_index(player()) ) > 0 && move > 0 ) { // moving from START
-      int t = 1 + move;
-      if ( mBoard.value(t) * player() < 0 ) {
-        float s = wei_to.value(t) - wei_from.value(1) - mBoard.value(t) * player() * ( wei_to.value(t) - wei_from.value(1) );
-        s *= yut_random();
-        if ( s > score ) {
-          score = s;
-          ft.from = 1;
-          ft.to   = t;
+    int me = Indices.yut_index( player() );
+    if ( mBoard.start( me ) > 0 ) {
+      int t = -1;
+      if ( move > 0 ) { // moving from START
+        if ( mBoard.canMovePlayer( Player.ANDROID, 0, 1+move, move ) ) {
+          t = 1 + move;
+        }
+      } else if ( YutnoriPrefs.isDoCage() && mBoard.doCage( me ) > 0 ) {
+        t = 21;
+      }
+      if ( t > 0 ) {
+        int b = mBoard.value(t) * player();
+        if ( b < 0 ) {
+          float s = (1 - b) * ( wei_to.value(t) - wei_from.value(1) );
+          s *= yut_random();
+          if ( s > score ) {
+            score = s;
+            ft.from = 1;
+            ft.to   = t;
+          }
         }
       }
     }
     for (int k=2; k< Indices.POS_HOME; ++k ) {
       if ( k == Indices.POS_SKIP ) continue;
-      if ( (k+move) > 1 ) { // only positions that can be reached
+      int kkm = k + move;
+      if ( YutnoriPrefs.isDoSpot() && k == 2 && kkm == 1 ) kkm = 21;
+      if ( kkm > 1 ) { // only positions that can be reached
         int w = mBoard.value(k) * player();
         if ( w > 0 ) {
           int[] pos = new int[2];

@@ -20,11 +20,20 @@
        android:entryValues="@array/delayValue"
        />
 
-  <android.preference.CheckBoxPreference
+  <!-- android.preference.CheckBoxPreference
        android:key="YUTNORI_SPECIAL_RULES"
        android:title="@string/pref_special_rules_title"
        android:summary="@string/pref_special_rules_summary"
        android:defaultValue="false"
+       / -->
+
+  <com.yutnori.MyListPreference
+       android:key="YUTNORI_SPECIAL"
+       android:title="@string/pref_rules_title"
+       android:summary="@string/pref_rules_summary"
+       android:defaultValue="0"
+       android:entries="@array/rule"
+       android:entryValues="@array/ruleValue"
        />
 
   <com.yutnori.MyListPreference

@@ -17,11 +17,14 @@ import android.util.Log;
 class Strategy extends Player
 {
   static final String TAG = "Yutnori-TITO";
+  State mState;
 
   Strategy( Board b, Moves m, DrawingSurface s, int p ) 
   {
     super( b, m, s, p );
   }
+
+  void setState( State state ) { mState = state; }
 
   // TITO skip -----------------------------------------------------------
   // protected int mSkip = 0;
@@ -33,6 +36,7 @@ class Strategy extends Player
   // }
   // int getSkip() { return mSkip; }
 
+  // this is for an extra skip on BackDo with empty board
   boolean mustSkip() 
   { 
     if ( State.isSkipping( Player.ANDROID ) ) {
@@ -65,21 +69,36 @@ class Strategy extends Player
   {
     // moves.print( "ANDROID" );
     while ( moves.size() > 0 && mBoard.winner() == 0 ) { // TODO find all the possible composite moves
-      int state = State.checkSkip( Player.ANDROID, null, moves, true );
+      int state;
+
+      // state = State.checkSkip( Player.ANDROID, null, moves, true );
+      // if ( state >= 0 ) {
+      //   Log.v(TAG, "ANDROID has skipped - " + State.toString( state ) );
+      //   Delay.sleep( 2 * doze );
+      //   return state; // -1;
+      // }
+
+      state = mBoard.checkBackDo( Player.ANDROID, null, moves, true );
+      // Log.v(TAG, "ANDROID check back do - " + State.toString(state) );
       if ( state >= 0 ) {
-        // Log.v(TAG, "ANDROID has skipped - state READY");
         Delay.sleep( 2 * doze );
-        return state; // -1;
+        if ( state == State.SKIP  ) {
+          // State.clearSkipping( Player.ANDROID );
+          return state;
+        }
+        if ( state == State.THROW )    return state;
+        if ( state != State.MOVE && state != State.TO_START ) return State.NONE; 
       }
-      state = State.checkBackDo( Player.ANDROID, null, mBoard, moves, true );
-      // Log.v(TAG, "ANDROID check back do - state " + state ); // State.toString(state) );
-      if ( state >= 0 ) {
-        Delay.sleep( 2 * doze );
-        if ( state == State.THROW ) return State.THROW; //  1;
-        if ( state != State.MOVE  ) return State.NONE;  // -1;
+
+      if ( state == State.TO_START ) {
+        if ( moves.removeSkip() ) {
+          do_move( 2, 0, 2 * doze );
+        }
+        return State.MOVE; // go again through doMovePlayer 
+        // return State.READY;
       }
       state = doMovePlayer( moves, doze );
-      // Log.v(TAG, "ANDROID move player - state " + state ); // State.toString(state) );
+      // Log.v(TAG, "ANDROID move player - " + State.toString(state) );
       if ( state != State.MOVE ) return state;
     }
     return State.MOVE;
@@ -106,7 +125,7 @@ class Strategy extends Player
   int doMovePlayer( Moves moves, int doze )
   {
     // Log.v( TAG, "Android [0] do Move Player " + moves.size() );
-    moves.print("Android [0]");
+    // moves.print("Android [0]");
 
     if ( moves.size() == 0 ) return State.READY;
     float score = -100;
@@ -122,6 +141,7 @@ class Strategy extends Player
         for ( int j = 0; j < moves.size(); ++j ) {
           int m = moves.getValue( j );
           int kkm = k + m;
+          if ( YutnoriPrefs.isDoSpot() && kkm == 1 ) kkm = 21; // DO_SPOT to CHAM_MEOKI
           float f = ( (kkm % 5) == 1 )? W_CORNER : 1;
           float s = score;
           if ( kkm >= 2 && kkm <= 21 ) {
@@ -144,7 +164,7 @@ class Strategy extends Player
         }
       }
     }
-    Log.v( TAG, "Android border " + jbest + ": " + fbest + " -> " + tbest + " " + score );
+    // Log.v( TAG, "Android border " + jbest + ": " + fbest + " -> " + tbest + " " + score );
     for ( k = 21; k<27; ++k ) {
       int kf = k;
       if (kf == 21) kf = 11;
@@ -181,7 +201,7 @@ class Strategy extends Player
         }
       }
     }
-    Log.v( TAG, "Android diag 1 " + jbest + ": " + fbest + " -> " + tbest + " " + score );
+    // Log.v( TAG, "Android diag 1 " + jbest + ": " + fbest + " -> " + tbest + " " + score );
     for ( k = 26; k<32; ++k ) {
       if ( k == 29 ) continue;
       int kf = k;
@@ -212,7 +232,7 @@ class Strategy extends Player
         }
       }
     } 
-    Log.v( TAG, "Android diag 2 " + jbest + ": " + fbest + " -> " + tbest + " " + score );
+    // Log.v( TAG, "Android diag 2 " + jbest + ": " + fbest + " -> " + tbest + " " + score );
     if ( mBoard.playerStart( me ) > 0 ) {
       int kf = 0;
       for ( int j = 0; j < moves.size(); ++j ) {
@@ -234,19 +254,75 @@ class Strategy extends Player
         }
       }
     }
-    Log.v( TAG, "Android move   " + jbest + ": " + fbest + " -> " + tbest + " " + score );
+    // Log.v( TAG, "Android move   " + jbest + ": " + fbest + " -> " + tbest + " " + score );
     if ( jbest < 0 ) {
-      Log.v( TAG, "[0] cannot find best move " );
-      return State.READY;
+      // Log.v( TAG, "[0] cannot find best move " );
+      return State.NONE;
+      // return State.READY;
     }
     boolean throw_again = do_move( fbest, tbest, 2*doze );
-    Log.v( TAG, "Android move " + jbest + ": " + fbest + " -> " + tbest + " throw again " + throw_again );
+    // Log.v( TAG, "Android move " + jbest + ": " + fbest + " -> " + tbest + " throw again " + throw_again );
     mDrawingSurface.addPosition( tbest );
     moves.shift( jbest );
     Delay.sleep( 1 * doze );
     return throw_again ? State.THROW : State.MOVE;
   }
 
+  // try to do a back-move
+  protected int checkSkips( Moves moves )
+  {
+    if ( ! moves.hasSkip() ) return State.FALL_THRU;
+
+    if ( YutnoriPrefs.isDoCage() ) {
+      if ( mBoard.playerDoCage( player() ) > 0 ) {
+        moves.removeSkip();
+        if ( mBoard.doMoveFromDoCage( player() ) > 0 ) {
+          return State.THROW;
+        }
+        return ( moves.size() > 0 )? State.MOVE : State.NONE;
+      }
+    } else if ( mBoard.playerStart( player() ) > 0 ) {
+      if ( YutnoriPrefs.isSeoul() ) {
+        mBoard.doMoveToSeoulOrBusan( player(), moves, Board.SEOUL );
+        return ( moves.size() > 0 )? State.MOVE : State.NONE;
+      } else if ( YutnoriPrefs.isBusan() ) {
+        mBoard.doMoveToSeoulOrBusan( player(), moves, Board.BUSAN );
+        return ( moves.size() > 0 )? State.MOVE : State.NONE;
+      }
+    } 
+    if ( moves.hasAllSkips() ) {
+      if ( mBoard.countPlayer( player() ) == 0 ) {
+        if ( YutnoriPrefs.isDoCage() ) {
+          moves.removeSkip();
+          if ( mBoard.playerDoCage( player() ) > 0 ) {
+            if ( mBoard.doMoveFromDoCage( player() ) > 0 ) {
+              return State.THROW;
+            }
+          } else {
+            mBoard.doMoveToDoCage( 1, player(), 1 );
+          }
+          return ( moves.size() > 0 )? State.MOVE : State.NONE;
+        } else if ( YutnoriPrefs.isDoSkip() ) {
+          moves.clear();
+          return State.SKIP;
+        } else {
+          moves.setRevertDo();
+        }
+      } else if ( mBoard.hasPlayerOnlyAtStation( player(), 2 ) ) {
+        int pawns = Math.abs( mBoard.playerAtStation( Player.ANDROID, 2 ) );
+        moves.removeSkip();
+        if ( YutnoriPrefs.isDoSpot() ) {
+          // Log.v( TAG, "player at Do-spot: " + pawns );
+          if ( mBoard.doMove( 2, 21, Player.ANDROID, 0 ) ) return  State.THROW;
+        } else {
+          // Log.v( TAG, "player at to-start: " + pawns );
+          mBoard.doMoveToStart( 2, Player.ANDROID );
+        }
+        return ( moves.size() > 0 )? State.MOVE : State.NONE;
+      }
+    }
+    return State.FALL_THRU;
+  }
           
 
   /** randomize scores

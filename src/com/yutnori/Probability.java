@@ -16,6 +16,6 @@ class Probability
 {
   private static final int[] mValue = { 0, 4, 6, 4, 1, 1 };
 
-  static final int value( int k ) { return mValue[k]; }
+  static final int value( int k ) { return (k>=0 && k<6)? mValue[k] : 1; }
 }
 

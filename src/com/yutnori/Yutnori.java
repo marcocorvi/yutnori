@@ -14,9 +14,11 @@ package com.yutnori;
 
 import android.util.Log;
 
-class Yutnori
+import android.content.Context;
+
+class Yutnori 
 {
-  // static final String TAG = "Yutnori-TITO";
+  static final String TAG = "Yutnori-TITO";
 
   private Board mBoard;
   private Moves mMoves;
@@ -55,6 +57,14 @@ class Yutnori
     mEngine = YutnoriPrefs.ENGINE_RANDOM;
   }
 
+  void setBoard( Board board ) 
+  { 
+    mBoard = board;
+    mStrategy0.setBoard( mBoard );
+    mStrategy1.setBoard( mBoard );
+    mStrategy2.setBoard( mBoard );
+  } 
+
   int getEngine() { return mCurrentEngine; }
 
   void setEngine( int engine )
@@ -88,7 +98,7 @@ class Yutnori
   // void reset() { mBoard.reset(); }
 
   // throw dice
-  static int throwYut() 
+  static int throwYut( )
   { 
     return Dice.roll(); 
   }
@@ -102,14 +112,9 @@ class Yutnori
   // }
 
   // check if the other player can move from to with move "m"
-  boolean canMove( int from, int to, int m )
+  boolean canMove( int from, int to, int m ) 
   {
-    if ( from > 1 && from < 32 && mBoard.value(from)*player == 0 ) return false; 
-    if ( /* YutnoriPrefs.mTito > 0 && */ from + m <= 1 && to <= 1 ) return true; // TITO
-    if ( to <= 1 ) to = 32;
-    int[] pos = new int[2];
-    mBoard.nextPositions( from, m, pos );
-    return ( pos[0] == to || pos[1] == to );
+    return mBoard.canMovePlayer( player, from, to, m );
   }
 
   // @return 0 normal, or winner
@@ -126,26 +131,27 @@ class Yutnori
   {
     // Log.v( TAG, "ANDROID turn");
 
-    if ( mStrategy.mustSkip() ) {
-      // Log.v( TAG, "ANDROID must skip ");
-      mMoves.clear();
-      return State.NONE;
-    }
+    // this is for an extra skip on BackDo with empty board
+    // if ( mStrategy.mustSkip() ) {
+    //   // Log.v( TAG, "ANDROID must skip ");
+    //   mMoves.clear();
+    //   return State.NONE;
+    // }
 
     // setStrategy();
     mMoves.clear();
+
     boolean again = true;
     int state = State.NONE;
     do {
       if ( again ) {
         again = false;
         do {
-          int m = throwYut();
+          int m = throwYut( );
           mMoves.add( m );
           Delay.sleep( 2 * doze ); // was 2
         } while ( Math.abs( mMoves.getValue( mMoves.size()-1 ) ) > 3 );
       }
-  
       if ( mStrategy != null ) {
         // mMoves.print( "Android " );
         // int on_board = mBoard.count( player );
@@ -158,9 +164,9 @@ class Yutnori
       Delay.sleep( 1 * doze ); // was 1
       // Log.v( TAG, "PlayOnce winner " + mBoard.winner() + " " + mBoard.home(0) + "/" + mBoard.home(1)
       //             + " moves " + mMoves.size() + " again " + again );
-    } while ( mBoard.winner() == 0 && (again || mMoves.size() > 0) );
+    } while ( mBoard.winner() == 0 && ( again || mMoves.size() > 0 ) );
     // Log.v(TAG, "ANDROID return state " + State.toString( state ) );
-    return state; // State.READY;
+    return state; 
   }
 
 }

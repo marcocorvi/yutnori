@@ -22,10 +22,20 @@
     android:layout_marginTop="8dp" 
     android:gravity="left"
     >
-    <CheckBox android:id="@+id/cb_malsplit"
+    <!-- CheckBox android:id="@+id/cb_malsplit"
        android:layout_width="wrap_content" 
        android:layout_height="wrap_content" 
        android:text="@string/malsplit"
+       / -->
+    <CheckBox android:id="@+id/cb_seoul"
+       android:layout_width="wrap_content" 
+       android:layout_height="wrap_content" 
+       android:text="@string/seoul"
+       />
+    <CheckBox android:id="@+id/cb_busan"
+       android:layout_width="wrap_content" 
+       android:layout_height="wrap_content" 
+       android:text="@string/busan"
        />
     <CheckBox android:id="@+id/cb_backdo"
        android:layout_width="wrap_content" 
@@ -40,16 +50,6 @@
     android:layout_margin="5dp" 
     android:gravity="left"
     >
-    <CheckBox android:id="@+id/cb_seoul"
-       android:layout_width="wrap_content" 
-       android:layout_height="wrap_content" 
-       android:text="@string/seoul"
-       />
-    <CheckBox android:id="@+id/cb_busan"
-       android:layout_width="wrap_content" 
-       android:layout_height="wrap_content" 
-       android:text="@string/busan"
-       />
     <CheckBox android:id="@+id/cb_doskip"
        android:layout_width="wrap_content" 
        android:layout_height="wrap_content" 
@@ -59,6 +59,11 @@
        android:layout_width="wrap_content" 
        android:layout_height="wrap_content" 
        android:text="@string/dospot"
+       />
+    <CheckBox android:id="@+id/cb_docage"
+       android:layout_width="wrap_content" 
+       android:layout_height="wrap_content" 
+       android:text="@string/docage"
        />
   </LinearLayout>
 

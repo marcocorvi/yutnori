@@ -48,4 +48,16 @@
      <item name="three">3</item>
   </string-array>
 
+  <string-array name="rule">
+     <item name="rule0">Normal</item>
+     <item name="rule1">Back Do</item>
+     <item name="rule2">Seoul</item>
+     <item name="ruleR">Busan</item>
+  </string-array>
+  <string-array name="ruleValue">
+     <item name="rule0">0</item>
+     <item name="rule1">1</item>
+     <item name="rule2">2</item>
+     <item name="ruleR">3</item>
+  </string-array>
 </resources>

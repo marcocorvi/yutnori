@@ -52,37 +52,45 @@ If a pawn lands on a station occupied by another pawn of the same player, the pa
 
 
 <h4>SPECIAL GAME RULES</h4>
-These rules are chosen before you start a game and let you customize the play.<br>
-By default the app starts playing a plain Yut-Nori, with no special rules.<br>
+The special rules are additional to the traditional Yut-Nori rules.<br>
+One, two, or three sticks have a <i>BACK</i> mark. When there is only one stick up with the <i>BACK</i> mark visible, that is a <i>back-do</i>,
+the pawns are moved according to a special rule.<br>
+The rules of the game must be chosen before you start to play.<br>
+By default the app starts playing a plain Yut-Nori, with no stick with the <i>BACK</i> mark and no special rule.<br>
+If you enabled the special rules through the proper setting, you can choose the rule before starting the game.<br>
 <p>
 
-<b>Mal split</b>. In traditional Yut-Nori when there is more than one pawn at a station, you can decide how many to move.
+<!-- b>Mal split</b>. In traditional Yut-Nori when there is more than one pawn at a station, you can decide how many to move.
 You can choose wheather to play with the <i>split</i> rule, or to have to move the pawns from a station as a whole.<br>
 To select how many pawns to move, after selecting the station with the pawns, tap it a second time and pick the number of pawns to move.
-Next tap the station we want to move to.<br><p> 
+Next tap the station we want to move to.<br><p --> 
 
+With the <b>Seoul</b> rule, a back-do moves a pawns directly from the START to the <i>Seoul</i> station, the center of the board.
+If there are no pawns at the START, it is a normal <i>do</i>.<br><p>
 
-<b>Back-Do</b>. This is a special rule added to the traditional Yut-Nori rule.<br>
-One, two, or three sticks have a <i>BACK</i> mark. When there is only one stick up, it is a <i>back do</i>.<br>
-There are five different ways to play <i>back-do</i>. You choose which way to play by checking among four checkboxes.
-When none is checked the normal back-do is played.<br><p>
+With the <b>Busan</b> rule, a back-do moves a pawn from the START to the <i>Busan</i> station, the corner opposite to the last station.
+If there are no pawns at the START, it is a normal <i>do</i>.<br><p>
+
+<b>Back-Do</b>.
+There are three checkboxes to choose the <i>back-do</i> rule, either <i>Skip Do</i>, or <i>Do Spot</i>, or <i>Do Cage</i>.<br>
+When no checkbox is checked the normal back-do is played.<br><p>
 
 In the <b>Normal</b> play, a back-do moves the pawns from a station one step backward.
-If the player has pawns in the first station, they are moved to START. Otherwise the <i>back-do</i> has the effect of a normal <i>do</i>.<br><p>
+Pawns in the first station (the Do-station) go to START. 
+If there are no pawns on the board the <i>back-do</i> has the effect of a normal <i>do</i>:
+a pawn is moved from START to the Do-station.<br><p>
 
-In the <b>Seoul</b> play, a back-do moves a pawns directly from the START to the <i>Seoul</i> station, the center of the board.
-If there are no pawns at the START, it is a normal <i>do</i>.<br><p>
+<b>Skip Do</b> is like the normal <i>back-do</i>, but if the player has no pawns on the board he skips the turn.
+<br><p>
 
-In the <b>Busan</b> play, a back-do moves a pawn from the START to the <i>Busan</i> station, the corner opposite to the last station.
-If there are no pawns at the START, it is a normal <i>do</i>.<br><p>
+In <b>Do spot</b> pawns in the Do-station go to the last station, with a <i>back-do</i>.
+If the player has no pawn on the board a <i>back-do</i> is treated as a normal Do, and a pawn is moved from START to the Do-station.
+<br><p>
 
-There are two variants to the normal <i>back-do</i> for the the case the player has no pawn on the board that can be moved backward:
-<ul>
-<li><b>Skip Do</b>. If the player has pawns at the first stations, they are moves to START. Otherwise the player skips the next turn.</li>
-<li><b>Do spot</b>.  If the player has pawns in the <i>Do Spot</i> a <i>back-do</i> moves them to the last station.
-If there is no pawn in the <i>Do Spot</i>, the pawns at the first station are moved to the <i>Do Spot</i>, or, if the first station is empty, a pawn from START is moved to the <i>Do Spot</i>.
-If the player has neither pawns at the first station not at START, nothing is done, and the <i>back-do</i> is ignored.</li>
-</ul>
+In <b>Do cage</b> if the player has pawns on the board, he moves them from a station one step backward.
+Pawns at the Do-station go to START.
+If there are no pawns on the board, a pawn goes from START to the CAGE spot.
+A pawn in the CAGE stays there untin another back-Do is thrown; in this case it goes to the last station.
 <br><p>
 
 
@@ -102,11 +110,11 @@ When it is Android turn, the title becomes red and it shows "WAIT".<br><p>
 When the game is over the title displays the winner and a dialog tells you who won.<br><p>
 
 <b>Special rules</b><br>
-To play a <i>Seoul</i> or a <i>Busan</i>, tap the Yuts in the START.<br>
-To play a <i>skip</i> or skip your turn, tap the Yuts in the middle bottom.<br>
-To move a pawn from START to the <i>Do Spot</i> tap the <i>Do Spot</i>.<br>
-To move the pawn from the first station to the <i>Do Spot</i> or to START, first tap the first station, then the destination.<br>
-To move the pawn(s) from the <i>Do Spot</i> to the final station, tap the <i>Do Spot</i>.<br>
+To play a <i>Seoul</i> or a <i>Busan</i> move, tap the Yuts in the START.<br>
+To skip your turn, tap the screen in the middle bottom.<br>
+To move the pawn from the Do-station to the last station or to START, first tap the first station, then the destination.<br>
+To move a pawn from START to the <i>Do Cage</i> tap START or the <i>Do Cage</i>.<br>
+To move the pawn(s) from the <i>Do Cage</i> to the final station, tap the <i>Do Cage</i>.<br>
 <p>
 
 There are three different play engines for Android. 

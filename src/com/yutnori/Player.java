@@ -30,11 +30,17 @@ class Player
    */
   Player( Board b, Moves m, DrawingSurface surface, int p ) 
   {
-    mBoard = b;
+    setBoard( b );
     mMoves = m;
     mDrawingSurface = surface;
     me     = p;
     other  = -p;
+  }
+
+  void setBoard( Board board ) 
+  { 
+    mBoard = board; 
+    // Log.v("Yutnori set board: ", mBoard.name() );
   }
 
   // assume moves sorted
@@ -48,7 +54,7 @@ class Player
       mDrawingSurface.setHighlight( -1 );
     }
     boolean ret = mBoard.doMove( from, to, me, 0 );
-    // Log.v("yutnori", "Player do move " + from + " -> " + to + " return " + ret );
+    // Log.v("Yutnori-TITO", "Player " + me + " move from " + from + " to " + to + " return " + ret );
     return ret;
   }
 

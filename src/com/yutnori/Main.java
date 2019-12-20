@@ -54,7 +54,7 @@ public class Main extends Activity
                   implements View.OnTouchListener
                            , OnSharedPreferenceChangeListener
 {
-  // final static String TAG = "Yutnori-TITO";
+  static String TAG = "Yutnori-TITO";
 
   final static int sleepAfterHighlight      =  5;
   final static int sleepBeforeCompareStarts = 20;
@@ -96,7 +96,7 @@ public class Main extends Activity
   Moves mMoves;
   int myPawnNr = 0;
   int yourPawnNr = 0;
-  int mMySkip = 0;
+  // int mMySkip = 0;
 
   String  mRemote  = null;     // name of the other yutnori
   boolean mPlaying = false;    // whether it is playing
@@ -155,7 +155,7 @@ public class Main extends Activity
     {
       int ret = v.intValue();
       if ( ret < 0 ) {
-        if ( ! ( YutnoriPrefs.mSeoul || YutnoriPrefs.mBusan ) ) {
+        if ( ! YutnoriPrefs.isSeoulOrBusan( ) ) {
           Toast.makeText( mContext, R.string.android_skipping, Toast.LENGTH_LONG ).show();
           Delay.sleep( sleepAndroid );
         }
@@ -189,12 +189,15 @@ public class Main extends Activity
       sb.append( " - " + mYutnori.getEngine() );
     }
     if ( YutnoriPrefs.mSplitGroup ) { sb.append( " {" ); } else { sb.append( " [" ); }
-    if ( YutnoriPrefs.mTiTo ) {
-      if ( YutnoriPrefs.mTiToSkip )    { sb.append( getResources().getString( R.string.title_backskip ) ); }
-      else if ( YutnoriPrefs.mDoSpot ) { sb.append( getResources().getString( R.string.title_dospot   ) ); }
-      else if ( YutnoriPrefs.mSeoul  ) { sb.append( getResources().getString( R.string.title_seoul    ) ); }
-      else if ( YutnoriPrefs.mBusan  ) { sb.append( getResources().getString( R.string.title_busan    ) ); }
-      else                             { sb.append( getResources().getString( R.string.title_back     ) ); }
+    if ( YutnoriPrefs.isBackDo() ) {
+      if ( YutnoriPrefs.isDoSkip() )      { sb.append( getResources().getString( R.string.title_backskip ) ); }
+      else if ( YutnoriPrefs.isDoSpot() ) { sb.append( getResources().getString( R.string.title_dospot   ) ); }
+      else if ( YutnoriPrefs.isDoCage() ) { sb.append( getResources().getString( R.string.title_docage   ) ); }
+      else if ( YutnoriPrefs.isDoNone() ) { sb.append( getResources().getString( R.string.title_back     ) ); }
+    } else if ( YutnoriPrefs.isSeoul()  ) {
+      sb.append( getResources().getString( R.string.title_seoul    ) ); 
+    } else if ( YutnoriPrefs.isBusan()  )  {
+      sb.append( getResources().getString( R.string.title_busan    ) ); 
     } else {
       sb.append( " " );
     }
@@ -254,21 +257,18 @@ public class Main extends Activity
     YutnoriPrefs.check( sp, k, this );
   }
 
-  void setPrefs( boolean mal_split, boolean tito, boolean do_skip, boolean do_spot, boolean seoul, boolean busan )
+  void setPrefs( boolean mal_split, int rule, int backdo )
   {
-    YutnoriPrefs.mSplitGroup = mal_split;
-    YutnoriPrefs.mTiTo       = tito;
-    YutnoriPrefs.mTiToSkip   = do_skip;
-    YutnoriPrefs.mDoSpot     = do_spot;
-    YutnoriPrefs.mSeoul      = seoul;
-    YutnoriPrefs.mBusan      = busan;
+    YutnoriPrefs.mSplitGroup  = mal_split;
+    YutnoriPrefs.mSpecialRule = rule;
+    YutnoriPrefs.mBackDo      = backdo;
     // Editor editor = mPrefs.edit();
-    // editor.putBoolean( YutnoriPrefs.TITO,      YutnoriPrefs.mTiTo );
-    // editor.putBoolean( YutnoriPrefs.TITO_SKIP, YutnoriPrefs.mTiToSkip );
-    // editor.putBoolean( YutnoriPrefs.SPLIT,     YutnoriPrefs.mSplitGroup );
-    // editor.putBoolean( YutnoriPrefs.SEOUL,     YutnoriPrefs.mSeoul );
-    // editor.putBoolean( YutnoriPrefs.BUSAN,     YutnoriPrefs.mBusan );
+    // editor.putInt( YutnoriPrefs.KEY_SPECIAL, YutnoriPrefs.mSpecialRule );
+    // editor.putInt( YutnoriPrefs.KEY_BACKDO,  YutnoriPrefs.mBackDo );
     // editor.apply();
+
+    // TODO pick Board State and Yutnori
+    resetStatus(  true );
   }
 
   @Override
@@ -292,7 +292,6 @@ public class Main extends Activity
     // mDrawingSurface.makeCards( getResources() );
 
     State.initStateStrings( getResources() );
-    mState = new State( );
 
     // Display display = getWindowManager().getDefaultDisplay();
     // DisplayMetrics dm = new DisplayMetrics();
@@ -305,11 +304,7 @@ public class Main extends Activity
 
     // mIsNotMultitouch = ! getPackageManager().hasSystemFeature( PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH );
 
-    mBoard = mDrawingSurface.getBoard();
-    mMoves = mDrawingSurface.getMoves();
-    mYutnori   = new Yutnori(   mBoard, mMoves, mDrawingSurface );
     // mStrategyString = YUT1;
-    setEngine( YutnoriPrefs.mEngine );
 
     mDrawingSurface.setOnTouchListener(this);
 
@@ -317,7 +312,6 @@ public class Main extends Activity
     mConnection = new ConnectionHandler( this );
     startRemote();
 
-    setTheTitle();
     mRemote  = null;
     mPlaying = true;
     
@@ -333,6 +327,12 @@ public class Main extends Activity
     //   // Log.v( TAG, "Disclose " + k + " = " + v );
     // }
     // mDisclosureIndex = 0;
+    mBoard = mDrawingSurface.getBoard();
+    mMoves = mDrawingSurface.getMoves();
+    mYutnori = new Yutnori( mBoard, mMoves, mDrawingSurface );
+    mState   = new State();
+    setEngine( YutnoriPrefs.mEngine );
+    setTheTitle();
   }
 
   void setStartAs( int start )
@@ -359,6 +359,675 @@ public class Main extends Activity
     }
   }
 
+  // ------------------------------------------------------------------------
+
+  @Override
+  protected synchronized void onResume()
+  {
+    super.onResume();
+    // Log.v( TAG, "Main Activity onResume " );
+    mDrawingSurface.isDrawing = true;
+  }
+
+  @Override
+  protected synchronized void onPause() 
+  { 
+    super.onPause();
+    // Log.v( TAG, "Main Activity onPause " );
+    mDrawingSurface.isDrawing = false;
+  }
+
+  @Override
+  protected synchronized void onStart()
+  {
+    super.onStart();
+    // Log.v( TAG, "Main Activity onStart ");
+  }
+
+  @Override
+  protected synchronized void onStop()
+  {
+    super.onStop();
+    // Log.v( TAG, "Main Activity onStop ");
+    if ( mConnected ) {
+      if ( mConnection != null ) mConnection.disconnect();
+    }
+  }
+
+  @Override
+  protected synchronized void onDestroy()
+  {
+    super.onDestroy();
+    // Log.v( TAG, "Main activity onDestroy");
+    stopRemote();
+  }
+
+  // ------------------------------------------------------------------------
+  
+  // private void dumpEvent( MotionEventWrap ev )
+  // {
+  //   String name[] = { "DOWN", "UP", "MOVE", "CANCEL", "OUTSIDE", "PTR_DOWN", "PTR_UP", "7?", "8?", "9?" };
+  //   StringBuilder sb = new StringBuilder();
+  //   int action = ev.getAction();
+  //   int actionCode = action & MotionEvent.ACTION_MASK;
+  //   sb.append( "Event action_").append( name[actionCode] );
+  //   if ( actionCode == MotionEvent.ACTION_POINTER_DOWN || actionCode == MotionEvent.ACTION_POINTER_UP ) {
+  //     sb.append( "(pid " ).append( action>>MotionEvent.ACTION_POINTER_ID_SHIFT ).append( ")" );
+  //   }
+  //   sb.append( " [" );
+  //   for (int i=0; i<ev.getPointerCount(); ++i ) {
+  //     sb.append( "#" ).append( i );
+  //     sb.append( "(pid " ).append( ev.getPointerId(i) ).append( ")=" ).append( (int)(ev.getX(i)) ).append( "." ).append( (int)(ev.getY(i)) );
+  //     if ( i+1 < ev.getPointerCount() ) sb.append( ":" );
+  //   }
+  //   sb.append( "]" );
+  //   Log.v( TAG, sb.toString() );
+  // }
+  
+  // ------------------------------------------------------------------------
+  int mStartPos = -1;
+
+  @Override
+  public boolean onTouch( View view, MotionEvent rawEvent )
+  {
+    MotionEventWrap event = MotionEventWrap.wrap(rawEvent);
+    // dumpEvent( event );
+
+    int act = event.getAction();
+    int action = act & MotionEvent.ACTION_MASK;
+    int id = 0;
+
+    if (action == MotionEvent.ACTION_POINTER_DOWN) {
+      return true;
+    } else if ( action == MotionEvent.ACTION_POINTER_UP) {
+      int np = event.getPointerCount();
+      if ( np > 2 ) return true;
+      /* fall through */
+    }
+
+    if (action == MotionEvent.ACTION_DOWN) {
+
+    // ---------------------------------------- MOVE
+    } else if ( action == MotionEvent.ACTION_MOVE ) {
+
+    // ---------------------------------------- UP
+    } else if (action == MotionEvent.ACTION_UP) {
+      float x_canvas = event.getX(id);
+      float y_canvas = event.getY(id);
+      int pos = mDrawingSurface.getIndex( (int)x_canvas, (int)y_canvas );
+      // Log.v(TAG, "USER tap at pos " + pos );
+      if ( pos ==  0 ) pos =  1; // start
+      if ( pos == 33 ) pos = 32; // home
+      // Log.v( TAG, "onTouch() " + pos + " X-Y " + x_canvas + " " + y_canvas + " state " + mState.toString() );
+      // if ( mState.isHold() && mDisclosureIndex >= 0 ) {
+      //   if ( pos == mDisclosure[ mDisclosureIndex ] ) {
+      //     mDisclosureIndex ++;
+      //     if ( mDisclosureIndex == 1 ) {
+      //       Toast.makeText( this, "One tap to temporary full mode", Toast.LENGTH_SHORT).show();
+      //     } else if ( mDisclosureIndex == 2 ) {
+      //       YutnoriPrefs.mDisclosed = true;
+      //       Toast.makeText( this, "Temporary enabled full mode", Toast.LENGTH_SHORT).show();
+      //     } else if ( mDisclosureIndex == mDisclosure.length ) {
+      //       YutnoriPrefs.setDisclosed( mPrefs );
+      //       Toast.makeText( this, "Permanently enabled full mode", Toast.LENGTH_SHORT).show();
+      //       mDisclosureIndex = -1;
+      //     }
+      //   } else {
+      //     mDisclosureIndex = -1;
+      //   }
+      // }
+      if ( mPlaying ) {
+        int state = -1;
+        state = State.checkSkip( mPlayer, mState, mMoves, true );
+        // Log.v( TAG, "USER check skip - state " + State.toString(state) );
+
+        if ( state >= 0 ) {
+          Toast.makeText( this, R.string.skipping, Toast.LENGTH_SHORT ).show();
+          Delay.sleep( sleepBeforeAndroid );
+        } else { // not skipped turn
+          // String old_state = mState.toString();
+          if ( mState.isMove() ) {
+            if ( playMove( pos, (int)x_canvas, (int)y_canvas ) ) return true;
+          } else if ( mState.isToStart() ) {
+            if ( playToStart( (int)x_canvas, (int)y_canvas ) ) return true;
+          } else if ( mState.isStart() ) {
+            playStart( (int)x_canvas, (int)y_canvas );
+          } else if ( mState.isThrowOrSkip() ) {
+            playThrowOrSkip( (int)x_canvas, (int)y_canvas );
+          }
+        }
+        // Log.v( TAG, "onTouch() UP. State " + old_state + " -> " + mState.toString() );
+        setTheTitle();
+        if ( mState.isReady() ) {
+          mPlaying = false;
+          if ( mConnected ) {
+            mConnection.sendDone();
+          } else {
+            new PlayAndroid( this ).execute();
+          }
+          // if ( mBoard.winner() != 0 ) {
+          //   mState.setOver();
+          //   alertWinner();
+          // }
+        } else if ( mState.isOver() ) {
+          alertWinner();
+        }
+      }
+    }
+    return true;
+  }
+
+
+
+  private boolean playMove( int pos, int x, int y )
+  {
+    int state = mBoard.checkBackDo( mPlayer, mState, mMoves, true );
+    // Log.v( TAG, "USER playMove: check back-do - state " + State.toString(state) );
+
+    if ( state == State.TO_START ) {
+      // Toast.makeText( this, "to start", Toast.LENGTH_SHORT ).show();
+      mStartPos = 2;
+      mDrawingSurface.setHighlight( mStartPos );
+      Delay.sleep( sleepAfterHighlight );
+      mDrawingSurface.resetPawnNr();
+      mMoving = true;
+      mState.setToStart(); 
+      return true;
+    } else if ( state >= 0 ) {
+      if ( mState.isSkip() ) {
+        Toast.makeText( this, R.string.nomove, Toast.LENGTH_SHORT ).show();
+        mState.setReady();
+      }
+    } else { // normal move
+      if ( YutnoriPrefs.mSplitGroup && mDrawingSurface.isShowingPawnNrs() ) {
+        int nr = mDrawingSurface.getPawnNr( x, y );
+        // Log.v( TAG, "Play got pawns " + nr );
+        if ( nr >= 1 ) {
+          myPawnNr = nr;
+          mDrawingSurface.pressedPawn = myPawnNr - 1;
+        }
+        if ( mConnected ) mConnection.sendPawns( myPawnNr );
+        mDrawingSurface.setHighlight( mStartPos );
+        Delay.sleep( sleepAfterHighlight );
+        mDrawingSurface.resetPawnNr();
+        return true;
+      }
+      if ( mMoving && ( pos > 1 || YutnoriPrefs.isSpecial() ) ) {
+        if ( YutnoriPrefs.mSplitGroup && pos == mStartPos ) {
+          int nr = mBoard.value( pos );
+          // Log.v( TAG, "Play set pawn nr " + nr + " pos " + pos );
+          if ( nr > 1 ) {
+            mDrawingSurface.setPawnNr( nr, pos );
+            return true;
+          }
+        }
+
+        int m = mBoard.posDifference( mStartPos, pos );
+        // Log.v(TAG, "Play try to move: from " + mStartPos + " to " + pos + " board diff " + m );
+        // mMoves.print();
+
+        int k = -1;
+        if ( m > Board.HOME ) { // going home
+          m -= Board.HOME; 
+          k = mMoves.minMove( m );
+        } else if ( m < Board.START ) { // going start
+          m -= Board.START; // move to range -1 .. -4
+          k = mMoves.hasMove( m );
+        } else {
+          k = mMoves.hasMove( m );
+        }
+        // Log.v( TAG, "Play pos-diff " + pos + "-" + mStartPos + " " + m + " move-index " + k );
+        if ( k >= 0 && mYutnori.canMove( mStartPos, pos, m ) ) {
+          if ( mConnected ) {
+            mConnection.sendMoved( k ); 
+            mConnection.sendMove( mStartPos, pos );
+          }
+          mMoves.shift( k );
+          if ( mBoard.doMove( mStartPos, pos, mPlayer, myPawnNr ) ) { 
+            // Log.v(TAG, "play-move new state THROW" );
+            mState.setThrow();
+            // mDrawingSurface.refresh(); // this is a race cond with drawing thread
+          } else if ( mBoard.winner() != 0 ) {
+            mState.setOver();
+            yourPawnNr = 0;
+            if ( mConnected ) mConnection.sendDone();
+          } else {
+            mState.setMoveOrReady( mMoves.size() > 0 );
+          }
+        } else {
+          // Log.v( TAG, "Play cannot move " + m );
+        }
+        mStartPos = -1;
+        mDrawingSurface.setHighlight( mStartPos );
+        mMoving = false;
+        if ( mConnected ) mConnection.sendHighlight( -1 );
+      } else if ( pos >= 1 && pos <= 31) {
+        // Log.v( TAG, "Play pos " + pos + " board " + mBoard.value(pos) );
+        if ( (pos == 1 && mBoard.start(pos) > 0 ) || (pos > 1 && mBoard.value( pos ) > 0 ) ) {
+          mStartPos = pos;
+          myPawnNr = mBoard.value( pos );
+          mDrawingSurface.setHighlight( mStartPos );
+          if ( mConnected ) mConnection.sendHighlight( mStartPos );
+          mMoving = true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean playToStart( int x, int y )
+  {
+    // Log.v( TAG, "USER playToStart");
+    if ( YutnoriPrefs.mSplitGroup && mDrawingSurface.isShowingPawnNrs() ) {
+      int nr = mDrawingSurface.getPawnNr( x, y );
+      // Log.v( TAG, "Play got pawns " + nr );
+      if ( nr >= 1 ) {
+        myPawnNr = nr;
+        mDrawingSurface.pressedPawn = myPawnNr - 1;
+      }
+      if ( mConnected ) mConnection.sendPawns( myPawnNr );
+      mDrawingSurface.setHighlight( mStartPos );
+      Delay.sleep( sleepAfterHighlight );
+      mDrawingSurface.resetPawnNr();
+      return true;
+    }
+    // if ( pos < 1 ) pos = 1;
+    int pos = 1;
+    int m = mBoard.posDifference( mStartPos, pos );
+    // Log.v(TAG, "Play try to move to start: from " + mStartPos + " to " + pos + " board diff " + m );
+    // mMoves.print();
+
+    int k = -1;
+    if ( m < Board.START ) { // going start
+      m -= Board.START; // move to range -1 .. -4
+      k = mMoves.hasMove( m );
+    }
+    // Log.v( TAG, "Play pos-diff " + pos + "-" + mStartPos + " " + m + " move-index " + k );
+    if ( k >= 0 && mYutnori.canMove( mStartPos, pos, m ) ) {
+      if ( mConnected ) {
+        mConnection.sendMoved( k ); 
+        mConnection.sendMove( mStartPos, pos );
+      }
+      mMoves.shift( k );
+      mBoard.doMove( mStartPos, pos, mPlayer, myPawnNr );
+      mState.setReady();
+    }
+    return false;
+  }
+
+  private void playStart( int x, int y )
+  {
+    // Log.v( TAG, "USER playStart");
+    if ( mDrawingSurface.isThrow( x, y ) ) {
+      mThisStart = Yutnori.throwYut( );
+      mMoves.add( mThisStart );
+      if ( mConnected ) mConnection.sendStart( mThisStart );
+      compareStarts( State.WAIT, State.WAIT );
+    }
+  }
+
+  private void playThrowOrSkip( int x, int y )
+  {
+    // Log.v( TAG, "USER playThrowOrSkip player " + mPlayer );
+    if ( mDrawingSurface.isThrow( x, y ) ) {
+      int m = Yutnori.throwYut( );
+      // Log.v( TAG, "  move " + m );
+      if ( mConnected ) mConnection.sendThrow( m );
+      if ( YutnoriPrefs.isSpecial() ) {
+        if ( Moves.getMoveValue( m, false ) == -1 ) {
+          if ( mMoves.hasAllSkips() ) {
+            if ( mBoard.countPlayer( mPlayer ) == 0 ) {
+              // Log.v(TAG, "moves has all skip - empty board ");
+              // mMySkip ++;
+              if ( YutnoriPrefs.isSeoulOrBusan() ) {
+                mMoves.add( m );
+                mState.setMove();
+              } else if ( YutnoriPrefs.isDoNone() ) {
+                mMoves.addAndRevert( m, true );
+                mState.setMove();
+              } else if ( YutnoriPrefs.isDoSkip() ) {
+                mMoves.add( m );
+                State.setSkipping( mPlayer );
+                // mState.setReady();
+                mState.setMove();
+              } else if ( YutnoriPrefs.isDoSpot() ) {
+                // mMoves.add( m );    // this is to skip
+                // mState.setReady();
+                mMoves.addAndRevert( m, true ); // this is to revert and move as normal do
+                mState.setMove();
+              } else if ( YutnoriPrefs.isDoCage() ) {
+                mMoves.add( m );
+                mState.setMove();
+              }
+            } else if ( mBoard.hasPlayerOnlyAtStation( mPlayer, 2 ) ) {
+              // Log.v(TAG, "moves has all skip - mals only at DO " );
+              mMoves.add( m );
+              if ( YutnoriPrefs.isSeoulOrBusan() ) {
+              } else if ( YutnoriPrefs.isDoNone() ) {
+              } else if ( YutnoriPrefs.isDoSkip() ) {
+                State.setSkipping( mPlayer );
+              } else if ( YutnoriPrefs.isDoSpot() ) {
+              } else if ( YutnoriPrefs.isDoCage() ) {
+              }
+              mState.setMove();
+            } else {
+              // Log.v(TAG, "moves has all skip - mals on board");
+              mMoves.add( m );
+              mState.setMove();
+            }
+          } else {
+            // Log.v(TAG, "moves has some no-skip" );
+            mMoves.add( m );
+            mState.setMove();
+          }
+        } else {
+          mMoves.add( m );
+          mState.setMoveOrThrow( ! Moves.rethrow(m) ); // Math.abs(m) < 4 );
+        }
+      } else {
+        mMoves.add( m );
+        mState.setMoveOrThrow( ! Moves.rethrow(m) ); // Math.abs(m) < 4 );
+      }
+      // mMoves.print( "USER" );
+    }
+  }
+
+  // ------------------------------------------------------------------------
+
+  // @Override
+  // public boolean onLongClick( View view ) 
+  // {
+  //   Button b = (Button)view;
+  //   return true;
+  // }
+
+  // @Override
+  // public void onClick(View view)
+  // {
+  //   Button b = (Button)view;
+  // }
+
+  // ------------------------------------------------------------------------
+
+  // @Override
+  // public boolean onSearchRequested()
+  // {
+  //   // Intent intent = new Intent( this, TopoDroidPreferences.class );
+  //   // intent.putExtra( TopoDroidPreferences.PREF_CATEGORY, TopoDroidPreferences.PREF_CATEGORY_PLOT );
+  //   // startActivity( intent );
+  //   return true;
+  // }
+
+  @Override
+  public boolean onKeyDown( int code, KeyEvent event )
+  {
+    switch ( code ) {
+      case KeyEvent.KEYCODE_BACK: // HARDWARE BACK (4)
+        // super.onBackPressed();
+        askExit();
+        return true;
+      case KeyEvent.KEYCODE_SEARCH:
+      // case KeyEvent.KEYCODE_MENU:   // HARDWRAE MENU (82)
+        return onSearchRequested();
+      case KeyEvent.KEYCODE_VOLUME_UP:   // (24)
+      case KeyEvent.KEYCODE_VOLUME_DOWN: // (25)
+      default:
+        // Log.v( TAG, "key down: code " + code );
+    }
+    return false;
+  }
+
+  void askExit()
+  {
+    Resources res = getResources();
+    String title = res.getString( R.string.ask_quit );
+    String ok = res.getString( R.string.button_ok );
+    String no = res.getString( R.string.button_cancel );
+    dismissAlert();
+    mAlert = new YutnoriAlertDialog( this, res, title, ok, no,
+      new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick( DialogInterface dialog, int btn ) {
+          mExited = true;
+          finish();
+        }
+    }, null );
+  }
+
+  // ------------------------------------------------------------------------
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu)
+  {
+    super.onCreateOptionsMenu( menu );
+    mMenuNew      = menu.add( R.string.menu_new  );
+    // mMenuYut      = menu.add( YUT2   );
+    mMenuJoin     = menu.add( R.string.menu_join );
+    /* if ( YutnoriPrefs.mDisclosed ) */ mMenuSettings = menu.add( R.string.menu_settings );
+    mMenuHelp     = menu.add( R.string.menu_help );
+    mMenuAbout    = menu.add( R.string.menu_about );
+    return true;
+  }
+
+  private void resetStatus( boolean playing )
+  {
+    mPlaying = playing;
+    mMoving  = false;
+    Board board = null;
+    switch ( YutnoriPrefs.mSpecialRule ) {
+      case YutnoriPrefs.NONE:  board = new Board(); break;
+      case YutnoriPrefs.SEOUL:
+      case YutnoriPrefs.BUSAN: board = new BoardSeoul(); break;
+      case YutnoriPrefs.BACKDO: 
+        switch ( YutnoriPrefs.mBackDo ) {
+          case YutnoriPrefs.DO_NONE: board = new BoardDoNone(); break;
+          case YutnoriPrefs.DO_SKIP: board = new BoardDoSkip(); break;
+          case YutnoriPrefs.DO_SPOT: board = new BoardDoSpot(); break;
+          case YutnoriPrefs.DO_CAGE: board = new BoardDoCage(); break;
+        }
+    }
+    if ( board != null && board != mBoard ) {
+      mBoard = board;
+      mDrawingSurface.setBoard( mBoard );
+      mYutnori.setBoard( mBoard );
+    } 
+    // Log.v( TAG, "reset status " + YutnoriPrefs.mSpecialRule + " " + YutnoriPrefs.mBackDo + " " + playing + " board " + mBoard.name() );
+    mBoard.reset();
+    mMoves.clear();
+    
+  }
+
+  void setEngine( int engine ) { mYutnori.setEngine( engine ); }
+
+  void startHelp()
+  {
+    startActivity( new Intent( Intent.ACTION_VIEW ).setClass( this, ManualDialog.class ) );
+  }
+
+  void doNewGame()
+  {
+    resetStatus( true );
+    YutnoriPrefs.doPos = true;
+    if ( mConnected ) {
+      mConnection.sendNewGame( );
+    } else {
+      setEngine( YutnoriPrefs.mEngine );
+      mDrawingSurface.resetPawns();
+      execReset( State.THROW );
+      alertNumber( R.string.color_none );
+    }
+    setTheTitle();
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item)
+  {
+    if ( item == mMenuNew ) {
+      if ( YutnoriPrefs.isSpecial() ) {
+        (new NewGameDialog( this, this, getResources().getString(R.string.special_rules) ) ).show();
+      } else {
+        doNewGame();
+      }
+     
+    // } else if ( item == mMenuYut ) {
+    //   if ( mYutnori.mStrategy == mStrategy1 ) {
+    //     mMenuYut.setTitle( YUT1 );
+    //     // mStrategyString = YUT2;
+    //     mYutnori.mStrategy = mStrategy2;
+    //   } else {
+    //     mMenuYut.setTitle( YUT2 );
+    //     // mStrategyString = YUT1;
+    //     mYutnori.mStrategy = mStrategy1;
+    //   }
+    } else if ( item == mMenuJoin ) {
+      mConnectDialog = new ConnectDialog( this, this );
+      mConnectDialog.show();
+      
+    } else if ( item == mMenuSettings /* && YutnoriPrefs.mDisclosed */ ) {
+      startActivity( new Intent( this, YutnoriPreferences.class ) );
+    } else if ( item == mMenuHelp ) {
+      startHelp();
+    } else if ( item == mMenuAbout ) {
+      String version = "";
+      int version_code = 0;
+      try {
+        version = getPackageManager().getPackageInfo( getPackageName(), 0 ).versionName;
+        version_code = getPackageManager().getPackageInfo( getPackageName(), 0 ).versionCode;
+      } catch ( NameNotFoundException e ) { }
+      new AboutDialog( this, version, version_code ).show();
+    }
+    return true;
+  }
+
+  // ----------------------------------------------------------------------------------
+  private void compareStarts( int state1, int state2 )
+  {
+    if ( mThisStart >= 0 && mOtherStart >= 0 ) {
+      Delay.sleep( sleepBeforeCompareStarts );
+      String str = null;
+      if ( mThisStart > mOtherStart ) {
+        str = getResources().getString(R.string.you_start);
+        mState.setThrow();
+      } else if ( mThisStart < mOtherStart ) {
+        if ( mConnected ) {
+          str = getResources().getString(R.string.friend_start);
+        } else {
+          str = getResources().getString(R.string.i_start);
+        }
+        mState.setReady();
+      } else { 
+        mState.setState( state1 );
+      }
+      if ( str != null ) {
+        Resources res = getResources();
+        String ok = res.getString( R.string.button_ok );
+        dismissAlert();
+        mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
+      }
+      resetStarts();
+      mMoves.clear();
+    } else {
+      mState.setState( state2 );
+    }
+    setTheTitle();
+  }
+
+  private void alertNumber( int str_nr )
+  {
+    Resources res = getResources();
+    String str = res.getString( str_nr );
+    String ok  = res.getString( R.string.button_ok );
+    dismissAlert();
+    mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
+  }
+
+  private void alertString( String str )
+  {
+    Resources res = getResources();
+    String ok  = res.getString( R.string.button_ok );
+    dismissAlert();
+    mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
+  }
+
+  void execPawns( int nr ) 
+  {
+    yourPawnNr = nr;
+    mDrawingSurface.pressedPawn = yourPawnNr - 1;
+    Delay.sleep( sleepAfterExecPawns );
+    mDrawingSurface.resetPawnNr();
+  }
+
+  void execNewGame( int pos )
+  {
+    YutnoriPrefs.setPos( pos );
+    YutnoriPrefs.doPos = true;
+
+    Resources res = getResources();
+    String title = String.format( res.getString( R.string.ask_new_game, mRemote ) );
+    String ok = res.getString( R.string.accept );
+    String no = res.getString( R.string.decline );
+    dismissAlert();
+    mAlert = new YutnoriAlertDialog( this, res, title, ok, no, 
+      new DialogInterface.OnClickListener() {
+        @Override public void onClick( DialogInterface dialog, int btn ) { doAcceptNewGame( ); }
+      },
+      new DialogInterface.OnClickListener() {
+        @Override public void onClick( DialogInterface dialog, int btn ) { doDeclineNewGame( ); }
+      }
+    );
+  }
+
+  void execOkGame( int bool )
+  {
+    Resources res = getResources();
+    String str;
+    String ok = res.getString( R.string.button_ok );
+    if ( bool == 1 ) {
+      // startNewGame();
+      str = String.format( res.getString( R.string.another_game ), mRemote );
+    } else {
+      // disconnectRemoteYutnori();
+      str = String.format( res.getString( R.string.not_another_game ), mRemote );
+    }
+    dismissAlert();
+    mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
+  }
+
+  void doDeclineNewGame()
+  {
+    mConnection.sendOkGame( 0 );
+    // disconnectRemoteYutnori(); // let the peer disconnect
+  }
+
+  void doAcceptNewGame()
+  {
+    mConnection.sendOkGame( 1 );
+    startNewGame();
+  }
+
+  private void startNewGame()
+  {
+    int off = 0;
+    if ( mLastWinner == 0 ) {
+      mState.setWait();
+      if ( mDrawingSurface.mColor == 1 ) off = 1;
+      mDrawingSurface.setStartColor( off );
+      mConnection.sendReset( State.START );
+      execReset( State.WAIT );
+      mConnection.sendOffset( off );
+    } else if ( mLastWinner == 1 ) {
+      // mState.setThrow();
+      mConnection.sendReset( State.READY );
+      execReset( State.THROW );
+    } else { // mLastWinner == -1
+      // mState.setReady();
+      mConnection.sendReset( State.THROW );
+      execReset( State.READY );
+    }
+  }
+
+  // ======================================================================================
+
   static int getConnectionType() { return ( mConnection == null )? SyncService.STATE_NONE : mConnection.getType(); }
   static int getAcceptState()    { return ( mConnection == null )? SyncService.STATE_NONE : mConnection.getAcceptState(); }
   static int getConnectState()   { return ( mConnection == null )? SyncService.STATE_NONE : mConnection.getConnectState(); }
@@ -366,19 +1035,12 @@ public class Main extends Activity
   static String getConnectedDeviceName()     { return ( mConnection == null )? null : mConnection.getConnectedDeviceName(); }
   static String getConnectionStateTitleStr() { return ( mConnection == null )? EMPTY : mConnection.getConnectionStateTitleStr(); }
 
-  void execSetBackDo( int tito, int skip ) 
-  {
-    YutnoriPrefs.mTiTo       = (tito == 1);
-    YutnoriPrefs.mTiToSkip   = (skip == 1);
-    YutnoriPrefs.mTiToFreeze = true;
-  }
-
   static void syncRemoteYutnori( BluetoothDevice device ) 
   {
     if ( mConnection != null ) {
       mConnection.syncDevice( device );
       // sync TITO settings
-      mConnection.sendBackDo( (YutnoriPrefs.mTiTo?1:0), (YutnoriPrefs.mTiToSkip?1:0) );
+      mConnection.sendBackDo( YutnoriPrefs.mSpecialRule, YutnoriPrefs.mBackDo );
       YutnoriPrefs.mTiToFreeze = true;
     }
   }
@@ -538,6 +1200,13 @@ public class Main extends Activity
     }
   }
 
+  void execSetBackDo( int special, int backdo ) 
+  {
+    YutnoriPrefs.setSpecial( special );
+    YutnoriPrefs.mBackDo       = backdo;
+    YutnoriPrefs.mTiToFreeze   = true;
+  }
+
   void execReset( int state )
   {
     // Log.v( TAG, "exec RESET state " + state );
@@ -629,548 +1298,5 @@ public class Main extends Activity
     }
     setTheTitle(); 
   } 
-
-  // ------------------------------------------------------------------------
-
-  @Override
-  protected synchronized void onResume()
-  {
-    super.onResume();
-    // Log.v( TAG, "Main Activity onResume " );
-    mDrawingSurface.isDrawing = true;
-  }
-
-  @Override
-  protected synchronized void onPause() 
-  { 
-    super.onPause();
-    // Log.v( TAG, "Main Activity onPause " );
-    mDrawingSurface.isDrawing = false;
-  }
-
-  @Override
-  protected synchronized void onStart()
-  {
-    super.onStart();
-    // Log.v( TAG, "Main Activity onStart ");
-  }
-
-  @Override
-  protected synchronized void onStop()
-  {
-    super.onStop();
-    // Log.v( TAG, "Main Activity onStop ");
-    if ( mConnected ) {
-      if ( mConnection != null ) mConnection.disconnect();
-    }
-  }
-
-  @Override
-  protected synchronized void onDestroy()
-  {
-    super.onDestroy();
-    // Log.v( TAG, "Main activity onDestroy");
-    stopRemote();
-  }
-
-  // ------------------------------------------------------------------------
-  
-  // private void dumpEvent( MotionEventWrap ev )
-  // {
-  //   String name[] = { "DOWN", "UP", "MOVE", "CANCEL", "OUTSIDE", "PTR_DOWN", "PTR_UP", "7?", "8?", "9?" };
-  //   StringBuilder sb = new StringBuilder();
-  //   int action = ev.getAction();
-  //   int actionCode = action & MotionEvent.ACTION_MASK;
-  //   sb.append( "Event action_").append( name[actionCode] );
-  //   if ( actionCode == MotionEvent.ACTION_POINTER_DOWN || actionCode == MotionEvent.ACTION_POINTER_UP ) {
-  //     sb.append( "(pid " ).append( action>>MotionEvent.ACTION_POINTER_ID_SHIFT ).append( ")" );
-  //   }
-  //   sb.append( " [" );
-  //   for (int i=0; i<ev.getPointerCount(); ++i ) {
-  //     sb.append( "#" ).append( i );
-  //     sb.append( "(pid " ).append( ev.getPointerId(i) ).append( ")=" ).append( (int)(ev.getX(i)) ).append( "." ).append( (int)(ev.getY(i)) );
-  //     if ( i+1 < ev.getPointerCount() ) sb.append( ":" );
-  //   }
-  //   sb.append( "]" );
-  //   Log.v( TAG, sb.toString() );
-  // }
-  
-  // ------------------------------------------------------------------------
-  int mStartPos = -1;
-
-  @Override
-  public boolean onTouch( View view, MotionEvent rawEvent )
-  {
-    MotionEventWrap event = MotionEventWrap.wrap(rawEvent);
-    // dumpEvent( event );
-
-    int act = event.getAction();
-    int action = act & MotionEvent.ACTION_MASK;
-    int id = 0;
-
-    if (action == MotionEvent.ACTION_POINTER_DOWN) {
-      return true;
-    } else if ( action == MotionEvent.ACTION_POINTER_UP) {
-      int np = event.getPointerCount();
-      if ( np > 2 ) return true;
-      /* fall through */
-    }
-
-    if (action == MotionEvent.ACTION_DOWN) {
-
-    // ---------------------------------------- MOVE
-    } else if ( action == MotionEvent.ACTION_MOVE ) {
-
-    // ---------------------------------------- UP
-    } else if (action == MotionEvent.ACTION_UP) {
-      float x_canvas = event.getX(id);
-      float y_canvas = event.getY(id);
-      int pos = mDrawingSurface.getIndex( (int)x_canvas, (int)y_canvas );
-      // Log.v(TAG, "USER tap at pos " + pos );
-      if ( pos ==  0 ) pos =  1; // start
-      if ( pos == 33 ) pos = 32; // home
-      // Log.v( TAG, "onTouch() " + pos + " X-Y " + x_canvas + " " + y_canvas + " state " + mState.toString() );
-      // if ( mState.isHold() && mDisclosureIndex >= 0 ) {
-      //   if ( pos == mDisclosure[ mDisclosureIndex ] ) {
-      //     mDisclosureIndex ++;
-      //     if ( mDisclosureIndex == 1 ) {
-      //       Toast.makeText( this, "One tap to temporary full mode", Toast.LENGTH_SHORT).show();
-      //     } else if ( mDisclosureIndex == 2 ) {
-      //       YutnoriPrefs.mDisclosed = true;
-      //       Toast.makeText( this, "Temporary enabled full mode", Toast.LENGTH_SHORT).show();
-      //     } else if ( mDisclosureIndex == mDisclosure.length ) {
-      //       YutnoriPrefs.setDisclosed( mPrefs );
-      //       Toast.makeText( this, "Permanently enabled full mode", Toast.LENGTH_SHORT).show();
-      //       mDisclosureIndex = -1;
-      //     }
-      //   } else {
-      //     mDisclosureIndex = -1;
-      //   }
-      // }
-      if ( mPlaying ) {
-        int state = State.checkSkip( mPlayer, mState, mMoves, false );
-        // Log.v( TAG, "USER check skip - state " + State.toString(state) );
-
-        if ( state >= 0 ) {
-          Toast.makeText( this, R.string.skipping, Toast.LENGTH_SHORT ).show();
-          Delay.sleep( sleepBeforeAndroid );
-        } else { // not skipped turn
-          // String old_state = mState.toString();
-          if ( mState.isMove() ) {
-            state = State.checkBackDo( mPlayer, mState, mBoard, mMoves, true );
-            // Log.v( TAG, "USER move: check back-do - state " + State.toString(state) );
-            if ( state >= 0 ) {
-              if ( mState.isSkip() ) {
-                Toast.makeText( this, R.string.nomove, Toast.LENGTH_SHORT ).show();
-                mState.setReady();
-              }
-            } else { // normal move
-              if ( YutnoriPrefs.mSplitGroup && mDrawingSurface.isShowingPawnNrs() ) {
-                int nr = mDrawingSurface.getPawnNr( (int)x_canvas, (int)y_canvas );
-                // Log.v( TAG, "Play got pawns " + nr );
-                if ( nr >= 1 ) {
-                  myPawnNr = nr;
-                  mDrawingSurface.pressedPawn = myPawnNr - 1;
-                }
-                if ( mConnected ) mConnection.sendPawns( myPawnNr );
-                mDrawingSurface.setHighlight( mStartPos );
-                Delay.sleep( sleepAfterHighlight );
-                mDrawingSurface.resetPawnNr();
-                return true;
-              }
-              if ( mMoving && ( pos > 1 || YutnoriPrefs.mTiTo ) ) {
-                if ( YutnoriPrefs.mSplitGroup && pos == mStartPos ) {
-                  int nr = mBoard.value( pos );
-                  // Log.v( TAG, "Play set pawn nr " + nr + " pos " + pos );
-                  if ( nr > 1 ) {
-                    mDrawingSurface.setPawnNr( nr, pos );
-                    return true;
-                  }
-                }
-
-                int m = Board.posDifference( mStartPos, pos );
-                // Log.v(TAG, "Play try to move: from " + mStartPos + " to " + pos + " board diff " + m );
-                // mMoves.print();
-
-                int k = -1;
-                if ( m > Board.HOME ) { // going home
-                  m -= Board.HOME; 
-                  k = mMoves.minMove( m );
-                } else if ( m < Board.START ) { // going start
-                  m += Board.START; // move to range -1 .. -4
-                  k = mMoves.minMove( m );
-                } else {
-                  k = mMoves.hasMove( m );
-                }
-                // Log.v( TAG, "Play pos-diff " + pos + "-" + mStartPos + " " + m + " move-index " + k );
-                if ( k >= 0 && mYutnori.canMove( mStartPos, pos, m ) ) {
-                  if ( mConnected ) {
-                    mConnection.sendMoved( k ); 
-                    mConnection.sendMove( mStartPos, pos );
-                  }
-                  mMoves.shift( k );
-                  if ( mBoard.doMove( mStartPos, pos, mPlayer, myPawnNr ) ) { 
-                    // Log.v(TAG, "new state THROW" );
-                    mState.setThrow();
-                    // mDrawingSurface.refresh(); // this is a race cond with drawing thread
-                  } else if ( mBoard.winner() != 0 ) {
-                    mState.setOver();
-                    yourPawnNr = 0;
-                    if ( mConnected ) mConnection.sendDone();
-                  } else {
-                    mState.setMoveOrReady( mMoves.size() > 0 );
-                  }
-                } else {
-                  // Log.v( TAG, "Play cannot move " + m );
-                }
-                mStartPos = -1;
-                mDrawingSurface.setHighlight( mStartPos );
-                mMoving = false;
-                if ( mConnected ) mConnection.sendHighlight( -1 );
-              } else if ( pos >= 1 && pos <= 31) {
-                // Log.v( TAG, "Play pos " + pos + " board " + mBoard.value(pos) );
-                if ( (pos == 1 && mBoard.start(pos) > 0 ) || (pos > 1 && mBoard.value( pos ) > 0 ) ) {
-                  mStartPos = pos;
-                  myPawnNr = mBoard.value( pos );
-                  mDrawingSurface.setHighlight( mStartPos );
-                  if ( mConnected ) mConnection.sendHighlight( mStartPos );
-                  mMoving = true;
-                }
-              }
-            }
-          } else if ( mState.isStart() ) {
-            if ( mDrawingSurface.isThrow( (int)x_canvas, (int)y_canvas ) ) {
-              mThisStart = Yutnori.throwYut();
-              mMoves.add( mThisStart );
-              if ( mConnected ) mConnection.sendStart( mThisStart );
-              compareStarts( State.WAIT, State.WAIT );
-            }
-          } else if ( mState.isThrowOrSkip() ) {
-            if ( mDrawingSurface.isThrow( (int)x_canvas, (int)y_canvas ) ) {
-              int m = Yutnori.throwYut();
-              if ( mConnected ) mConnection.sendThrow( m );
-              if ( YutnoriPrefs.mTiTo ) {
-                if ( m == -1 ) {
-                  if ( mBoard.countPlayer( mPlayer ) == 0 && mMoves.hasAllSkips() ) {
-                    mMySkip ++;
-                    if ( YutnoriPrefs.mTiToSkip ) {
-                      mMoves.add( m );
-                      mState.setReady();
-                    } else {
-                      if ( YutnoriPrefs.mSeoul || YutnoriPrefs.mBusan ) {
-                        mMoves.add( m );
-                      } else {
-                        mMoves.addAndRevert( m, ! YutnoriPrefs.mDoSpot );
-                      }
-                      mState.setMove();
-                    }
-                  }
-                  // else if ( YutnoriPrefs.mTiToSkip == 2 ) mMySkip += mMoves.getSkipCount();
-                } else {
-                  mMoves.add( m );
-                  mState.setMoveOrThrow( ! Moves.rethrow(m) ); // Math.abs(m) < 4 );
-                }
-              } else {
-                mMoves.add( m );
-                mState.setMoveOrThrow( ! Moves.rethrow(m) ); // Math.abs(m) < 4 );
-              }
-              // mMoves.print( "USER" );
-            }
-          }
-        }
-        // Log.v( TAG, "onTouch() UP. State " + old_state + " -> " + mState.toString() );
-        setTheTitle();
-        if ( mState.isReady() ) {
-          mPlaying = false;
-          if ( mConnected ) {
-            mConnection.sendDone();
-          } else {
-            new PlayAndroid( this ).execute();
-          }
-          // if ( mBoard.winner() != 0 ) {
-          //   mState.setOver();
-          //   alertWinner();
-          // }
-        } else if ( mState.isOver() ) {
-          alertWinner();
-        }
-      }
-    }
-    return true;
-  }
-
-  // ------------------------------------------------------------------------
-
-  // @Override
-  // public boolean onLongClick( View view ) 
-  // {
-  //   Button b = (Button)view;
-  //   return true;
-  // }
-
-  // @Override
-  // public void onClick(View view)
-  // {
-  //   Button b = (Button)view;
-  // }
-
-  // ------------------------------------------------------------------------
-
-  // @Override
-  // public boolean onSearchRequested()
-  // {
-  //   // Intent intent = new Intent( this, TopoDroidPreferences.class );
-  //   // intent.putExtra( TopoDroidPreferences.PREF_CATEGORY, TopoDroidPreferences.PREF_CATEGORY_PLOT );
-  //   // startActivity( intent );
-  //   return true;
-  // }
-
-  @Override
-  public boolean onKeyDown( int code, KeyEvent event )
-  {
-    switch ( code ) {
-      case KeyEvent.KEYCODE_BACK: // HARDWARE BACK (4)
-        // super.onBackPressed();
-        askExit();
-        return true;
-      case KeyEvent.KEYCODE_SEARCH:
-      // case KeyEvent.KEYCODE_MENU:   // HARDWRAE MENU (82)
-        return onSearchRequested();
-      case KeyEvent.KEYCODE_VOLUME_UP:   // (24)
-      case KeyEvent.KEYCODE_VOLUME_DOWN: // (25)
-      default:
-        // Log.v( TAG, "key down: code " + code );
-    }
-    return false;
-  }
-
-  void askExit()
-  {
-    Resources res = getResources();
-    String title = res.getString( R.string.ask_quit );
-    String ok = res.getString( R.string.button_ok );
-    String no = res.getString( R.string.button_cancel );
-    dismissAlert();
-    mAlert = new YutnoriAlertDialog( this, res, title, ok, no,
-      new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick( DialogInterface dialog, int btn ) {
-          mExited = true;
-          finish();
-        }
-    }, null );
-  }
-
-  // ------------------------------------------------------------------------
-
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu)
-  {
-    super.onCreateOptionsMenu( menu );
-    mMenuNew      = menu.add( R.string.menu_new  );
-    // mMenuYut      = menu.add( YUT2   );
-    mMenuJoin     = menu.add( R.string.menu_join );
-    /* if ( YutnoriPrefs.mDisclosed ) */ mMenuSettings = menu.add( R.string.menu_settings );
-    mMenuHelp     = menu.add( R.string.menu_help );
-    mMenuAbout    = menu.add( R.string.menu_about );
-    return true;
-  }
-
-  private void resetStatus( boolean playing )
-  {
-    mPlaying = playing;
-    mMoving  = false;
-    mBoard.reset();
-    mMoves.clear();
-  }
-
-  void setEngine( int engine ) { mYutnori.setEngine( engine ); }
-
-  void startHelp()
-  {
-    startActivity( new Intent( Intent.ACTION_VIEW ).setClass( this, ManualDialog.class ) );
-  }
-
-  void doNewGame()
-  {
-    resetStatus( true );
-    YutnoriPrefs.doPos = true;
-    if ( mConnected ) {
-      mConnection.sendNewGame( );
-    } else {
-      setEngine( YutnoriPrefs.mEngine );
-      mDrawingSurface.resetPawns();
-      execReset( State.THROW );
-      alertNumber( R.string.color_none );
-    }
-    setTheTitle();
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item)
-  {
-    if ( item == mMenuNew ) {
-      if ( YutnoriPrefs.mSpecialRules ) {
-        (new NewGameDialog( this, this, getResources().getString(R.string.special_rules) ) ).show();
-      } else {
-        doNewGame();
-      }
-     
-    // } else if ( item == mMenuYut ) {
-    //   if ( mYutnori.mStrategy == mStrategy1 ) {
-    //     mMenuYut.setTitle( YUT1 );
-    //     // mStrategyString = YUT2;
-    //     mYutnori.mStrategy = mStrategy2;
-    //   } else {
-    //     mMenuYut.setTitle( YUT2 );
-    //     // mStrategyString = YUT1;
-    //     mYutnori.mStrategy = mStrategy1;
-    //   }
-    } else if ( item == mMenuJoin ) {
-      mConnectDialog = new ConnectDialog( this, this );
-      mConnectDialog.show();
-      
-    } else if ( item == mMenuSettings /* && YutnoriPrefs.mDisclosed */ ) {
-      startActivity( new Intent( this, YutnoriPreferences.class ) );
-    } else if ( item == mMenuHelp ) {
-      startHelp();
-    } else if ( item == mMenuAbout ) {
-      String version = "";
-      int version_code = 0;
-      try {
-        version = getPackageManager().getPackageInfo( getPackageName(), 0 ).versionName;
-        version_code = getPackageManager().getPackageInfo( getPackageName(), 0 ).versionCode;
-      } catch ( NameNotFoundException e ) { }
-      new AboutDialog( this, version, version_code ).show();
-    }
-    return true;
-  }
-
-
-  private void compareStarts( int state1, int state2 )
-  {
-    if ( mThisStart >= 0 && mOtherStart >= 0 ) {
-      Delay.sleep( sleepBeforeCompareStarts );
-      String str = null;
-      if ( mThisStart > mOtherStart ) {
-        str = getResources().getString(R.string.you_start);
-        mState.setThrow();
-      } else if ( mThisStart < mOtherStart ) {
-        if ( mConnected ) {
-          str = getResources().getString(R.string.friend_start);
-        } else {
-          str = getResources().getString(R.string.i_start);
-        }
-        mState.setReady();
-      } else { 
-        mState.setState( state1 );
-      }
-      if ( str != null ) {
-        Resources res = getResources();
-        String ok = res.getString( R.string.button_ok );
-        dismissAlert();
-        mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
-      }
-      resetStarts();
-      mMoves.clear();
-    } else {
-      mState.setState( state2 );
-    }
-    setTheTitle();
-  }
-
-  private void alertNumber( int str_nr )
-  {
-    Resources res = getResources();
-    String str = res.getString( str_nr );
-    String ok  = res.getString( R.string.button_ok );
-    dismissAlert();
-    mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
-  }
-
-  private void alertString( String str )
-  {
-    Resources res = getResources();
-    String ok  = res.getString( R.string.button_ok );
-    dismissAlert();
-    mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
-  }
-
-  void execPawns( int nr ) 
-  {
-    yourPawnNr = nr;
-    mDrawingSurface.pressedPawn = yourPawnNr - 1;
-    Delay.sleep( sleepAfterExecPawns );
-    mDrawingSurface.resetPawnNr();
-  }
-
-  void execNewGame( int pos )
-  {
-    YutnoriPrefs.setPos( pos );
-    YutnoriPrefs.doPos = true;
-
-    Resources res = getResources();
-    String title = String.format( res.getString( R.string.ask_new_game, mRemote ) );
-    String ok = res.getString( R.string.accept );
-    String no = res.getString( R.string.decline );
-    dismissAlert();
-    mAlert = new YutnoriAlertDialog( this, res, title, ok, no, 
-      new DialogInterface.OnClickListener() {
-        @Override public void onClick( DialogInterface dialog, int btn ) { doAcceptNewGame( ); }
-      },
-      new DialogInterface.OnClickListener() {
-        @Override public void onClick( DialogInterface dialog, int btn ) { doDeclineNewGame( ); }
-      }
-    );
-  }
-
-  void execOkGame( int bool )
-  {
-    Resources res = getResources();
-    String str;
-    String ok = res.getString( R.string.button_ok );
-    if ( bool == 1 ) {
-      // startNewGame();
-      str = String.format( res.getString( R.string.another_game ), mRemote );
-    } else {
-      // disconnectRemoteYutnori();
-      str = String.format( res.getString( R.string.not_another_game ), mRemote );
-    }
-    dismissAlert();
-    mAlert = new YutnoriAlertDialog( this, res, str, ok, null, null, null );
-  }
-
-  void doDeclineNewGame()
-  {
-    mConnection.sendOkGame( 0 );
-    // disconnectRemoteYutnori(); // let the peer disconnect
-  }
-
-  void doAcceptNewGame()
-  {
-    mConnection.sendOkGame( 1 );
-    startNewGame();
-  }
-
-  private void startNewGame()
-  {
-    int off = 0;
-    if ( mLastWinner == 0 ) {
-      mState.setWait();
-      if ( mDrawingSurface.mColor == 1 ) off = 1;
-      mDrawingSurface.setStartColor( off );
-      mConnection.sendReset( State.START );
-      execReset( State.WAIT );
-      mConnection.sendOffset( off );
-    } else if ( mLastWinner == 1 ) {
-      // mState.setThrow();
-      mConnection.sendReset( State.READY );
-      execReset( State.THROW );
-    } else { // mLastWinner == -1
-      // mState.setReady();
-      mConnection.sendReset( State.THROW );
-      execReset( State.READY );
-    }
-  }
 
 }
