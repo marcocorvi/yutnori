@@ -171,18 +171,20 @@ class BoardDoCage extends BoardDoNone
   // @param moves
   // @param clear     if set clear moves when necessary
   // @return new state or -1 if no action has been taken
-  int checkBackDo( int player, State state, Moves moves, boolean clear ) 
+  int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = State.NONE;
     // moves.print( name() + " check back-do (" + player + ")" );
     if ( ! YutnoriPrefs.isDoCage() || ! moves.hasSkip() ) {
       return ret;
     }
+    int k = moves.getSkip();
     if ( this.countPlayer( player ) == 0 ) {
       if ( this.playerStart( player ) == 0 ) {
         if ( moves.removeSkip() ) {
           // Log.v(TAG, name() + " skip from cage [1] " );
           int move = this.doMoveFromDoCage( player );
+          if ( sender != null ) sender.sendMyMove( k, 34, 21, 1 );
           if ( move == 1 ) {
             ret = State.THROW;
           } else if ( move == 0 ) {
@@ -200,6 +202,7 @@ class BoardDoCage extends BoardDoNone
           if ( moves.removeSkip() ) {
             // Log.v(TAG, name() + " skip from cage [2]" );
             int move = this.doMoveFromDoCage( player );
+            if ( sender != null ) sender.sendMyMove( k, 34, 21, 1 );
             if ( move == 1 ) { // sent opponent to START
               ret = State.THROW;
             } else if ( move == 0 ) {
@@ -216,6 +219,7 @@ class BoardDoCage extends BoardDoNone
           if ( moves.hasAllSkips() ) {
             // Log.v(TAG, name() + " move to cage " + player );
             this.doMoveToDoCage( 1, player, 1 );
+            if ( sender != null ) sender.sendMyMove( k, 0, 34, 1 );
             if ( clear ) moves.clear();
             ret = State.READY;
           } else {
@@ -229,6 +233,7 @@ class BoardDoCage extends BoardDoNone
         if ( moves.removeSkip() ) {
           // Log.v(TAG, name() + " skip from cage " + player );
           int move = this.doMoveFromDoCage( player );
+          if ( sender != null ) sender.sendMyMove( k, 34, 21, 1 );
           if ( move == 1 ) {
             ret = State.THROW;
           } else if ( move == 0 ) {

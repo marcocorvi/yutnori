@@ -30,7 +30,7 @@ import android.bluetooth.BluetoothDevice;
 class ConnectionHandler extends Handler
                         // implements DataListener
 {
-  final static String TAG = "Yutnori";
+  final static String TAG = "Yutnori-EXEC";
   SyncService mSyncService;
   
   private byte mSendCounter;  // send counter
@@ -179,7 +179,7 @@ class ConnectionHandler extends Handler
 
   private boolean writeBytes( byte[] buffer ) 
   {
-    // Log.v( TAG, "ConnectionHandler write CNT " + buffer[0] + " key " + buffer[1] );
+    Log.v( TAG, "ConnectionHandler write CNT " + buffer[0] + " key " + buffer[1] );
     return mSyncService.writeBuffer( buffer );
   }
 
@@ -213,7 +213,7 @@ class ConnectionHandler extends Handler
 
   // -----------------------------------------
 
-  static final byte SHUTDOWN = (byte)0;
+  static final byte SHUTDOWN = (byte)0xfc;
   static final byte SYNC     = (byte)0xfd;
   static final byte ACK = (byte)0xfe;
   static final byte EOL = (byte)0xff;
@@ -231,12 +231,15 @@ class ConnectionHandler extends Handler
   static final byte OKGAME  = (byte)12;
   static final byte PAWNS   = (byte)13;
   static final byte BACKDO  = (byte)14;
+  static final byte SKIP    = (byte)15;
+  static final byte CAGE_TO = (byte)16;
+  static final byte CAGE_FR = (byte)17;
 
-  byte increaseCounter( byte cnt ) { return ( cnt == (byte)0xfe )? (byte)0 : (byte)(cnt+1); }
+  byte increaseCounter( byte cnt ) { return ( cnt == (byte)0xf0 )? (byte)0 : (byte)(cnt+1); }
 
   boolean doAcknowledge( int cnt )
   {
-    // Log.v( TAG, "ACK write <" + cnt + ">" );
+    Log.v( TAG, "ACK write <" + cnt + ">" );
     mAck[0] = (byte)cnt;
     mAck[1] = ACK;
     mAck[2] = EOL;
@@ -246,7 +249,7 @@ class ConnectionHandler extends Handler
    // tell the peer my send counter
    boolean doSyncCounter( )
    {
-     // Log.v( TAG, "SYNC write <" + mSendCounter + ">" );
+     Log.v( TAG, "SYNC write <" + mSendCounter + ">" );
      mAck[0] = (byte)mSendCounter;
      mAck[1] = SYNC;
      mAck[2] = EOL;
@@ -257,7 +260,7 @@ class ConnectionHandler extends Handler
    // the received command is terminated by 0xff
    void onRecv( int bytes, byte[] buffer ) 
    {
-     // Log.v( TAG, "recv " + bytes + " length " + + buffer.length + " cnt " + buffer[0] + " key " + buffer[1] 
+     Log.v( TAG, "recv " + bytes + " length " + + buffer.length + " cnt " + buffer[0] + " key " + buffer[1] );
      //   + " " + ( (bytes>=3)? buffer[2] : "") + " " + ( (bytes>=4)? buffer[3] : "") 
      //   + " " + ( (bytes>=5)? buffer[4] : "") );
 
@@ -306,7 +309,7 @@ class ConnectionHandler extends Handler
          mApp.execHighlight( (int)buffer[2] );
          break;
        case MOVE:
-         mApp.execMove( (int)buffer[2], (int)buffer[3] );
+         mApp.execMove( (int)buffer[2], (int)buffer[3], (int)buffer[4] );
          break;
        case HIGHOFF:
          mApp.execHighlight( -1 );
@@ -336,7 +339,10 @@ class ConnectionHandler extends Handler
          mApp.execPawns( (int)buffer[2] );
          break;
        case BACKDO:
-         mApp.execSetBackDo( (int)buffer[2], (int)buffer[3] );
+         mApp.execSetBackDo( (int)buffer[2], (int)buffer[3], (int)buffer[4] );
+         break;
+       case SKIP:
+         mApp.execSkip( (int)buffer[2] );
          break;
      }
   }
@@ -345,7 +351,29 @@ class ConnectionHandler extends Handler
   // the buffer has two header bytes, followed by the command string, terminated by 0xff
   //
   // data must be terminated by adding 0xff
-  private void enqueue( byte key, int v1, int v2 )
+  private void enqueue( byte key )
+  {
+    byte[] buf = null;
+    switch ( key ) {
+       case DONE:
+       case HIGHOFF:
+         buf = new byte[3];
+         buf[0] = mSendCounter;
+         buf[1] = key;
+         buf[2] = EOL;
+         break;
+       default:
+         Log.v( TAG, "enqueue-0 key " + key );
+         break;
+    }
+    if ( buf != null ) {
+      mBufferQueue.add( buf );
+      Log.v( TAG, "enqueue-0 <" + mSendCounter + "|" + key + "> queue " + mBufferQueue.size() );
+      mSendCounter = increaseCounter( mSendCounter );
+    }
+  }
+
+  private void enqueue( byte key, int v1 )
   {
     byte[] buf = null;
     switch ( key ) {
@@ -358,15 +386,29 @@ class ConnectionHandler extends Handler
        case OKGAME:
        case NEWGAME:
        case PAWNS:
+       case SKIP:
          buf = new byte[4];
          buf[0] = mSendCounter;
          buf[1] = key;
          buf[2] = (byte)v1;
          buf[3] = EOL;
          break; 
+       default:
+         Log.v( TAG, "enqueue-1 key " + key );
+         break;
+    }
+    if ( buf != null ) {
+      mBufferQueue.add( buf );
+      Log.v( TAG, "enqueue-1 <" + mSendCounter + "|" + key + "> " + v1 + " queue " + mBufferQueue.size() );
+      mSendCounter = increaseCounter( mSendCounter );
+    }
+  }
+
+  private void enqueue( byte key, int v1, int v2 ) 
+  {
+    byte[] buf = null;
+    switch ( key ) {
        case ACCEPT:
-       case MOVE:
-       case BACKDO:
          buf = new byte[5];
          buf[0] = mSendCounter;
          buf[1] = key;
@@ -374,44 +416,66 @@ class ConnectionHandler extends Handler
          buf[3] = (byte)v2;
          buf[4] = EOL;
          break;
-       case DONE:
-       case HIGHOFF:
-         buf = new byte[3];
-         buf[0] = mSendCounter;
-         buf[1] = key;
-         buf[2] = EOL;
+       default:
+         Log.v( TAG, "enqueue-2 key " + key );
          break;
     }
     if ( buf != null ) {
       mBufferQueue.add( buf );
-      // Log.v( TAG, "enqueue <" + mSendCounter + "|" + key + "> queue " + mBufferQueue.size() );
+      Log.v( TAG, "enqueue-2 <" + mSendCounter + "|" + key + "> " + v1 + " " + v2 + " queue " + mBufferQueue.size() );
       mSendCounter = increaseCounter( mSendCounter );
     }
   }
 
-  void sendBackDo( int tito, int skip ) { enqueue( BACKDO, tito, skip ); }
-  void sendStart( int move )  { enqueue( START, move, 0 ); }
-  void sendThrow( int move )  { enqueue( THROW, move, 0 ); }
-  void sendMoved( int index ) { enqueue( MOVED, index, 0 ); }
+  private void enqueue( byte key, int v1, int v2, int v3 )
+  {
+    byte[] buf = null;
+    switch ( key ) {
+       case MOVE:
+       case BACKDO:
+         buf = new byte[6];
+         buf[0] = mSendCounter;
+         buf[1] = key;
+         buf[2] = (byte)v1;
+         buf[3] = (byte)v2;
+         buf[4] = (byte)v3;
+         buf[5] = EOL;
+         break;
+       default:
+         Log.v( TAG, "enqueue-3 key " + key );
+         break;
+    }
+    if ( buf != null ) {
+      mBufferQueue.add( buf );
+      Log.v( TAG, "enqueue-3 <" + mSendCounter + "|" + key + "> " + v1 + " " + v2 + " " + v3  + " queue " + mBufferQueue.size() );
+      mSendCounter = increaseCounter( mSendCounter );
+    }
+  }
+
+  void sendBackDo( int tito, int skip, int backyuts ) { enqueue( BACKDO, tito, skip, backyuts ); }
+  void sendStart( int move )  { enqueue( START, move ); }
+  void sendThrow( int move )  { enqueue( THROW, move ); }
+  void sendMoved( int index ) { enqueue( MOVED, index ); }
+  void sendSkip(  int clear ) { enqueue( SKIP,  clear ); }
 
   void sendHighlight( int pos )     
   { 
-    if ( pos >= 0 ) enqueue( HIGH, pos, 0 );
-    else            enqueue( HIGHOFF, 0, 0 );
+    if ( pos >= 0 ) enqueue( HIGH, pos );
+    else            enqueue( HIGHOFF );
   }
 
-  void sendMove( int from, int to )
+  void sendMove( int from, int to, int pawns )
   {
-    enqueue( MOVE, from, to );
+    enqueue( MOVE, from, to, pawns );
     if ( YutnoriPrefs.mPos > YutnoriPrefs.POS_NO ) Delay.sleep( 5 );
   }
 
-  void sendDone( )            { enqueue( DONE, 0, 0 );  }
-  void sendNewGame( )         { enqueue( NEWGAME, YutnoriPrefs.mPos, 0 );  }
-  void sendOkGame( int bool ) { enqueue( OKGAME, bool, 0 );  }
-  void sendPawns( int nr )    { enqueue( PAWNS, nr, 0 );  }
-  void sendReset( int state ) { enqueue( RESET, state, 0 ); }
-  void sendOffset( int off )  { enqueue( OFFSET, off, 0 ); }
+  void sendDone( )            { enqueue( DONE );  }
+  void sendNewGame( )         { enqueue( NEWGAME, YutnoriPrefs.mPos );  }
+  void sendOkGame( int bool ) { enqueue( OKGAME, bool );  }
+  void sendPawns( int nr )    { enqueue( PAWNS, nr );  }
+  void sendReset( int state ) { enqueue( RESET, state ); }
+  void sendOffset( int off )  { enqueue( OFFSET, off ); }
 
   void sendAccept( int bool, int pos )
   {
@@ -443,6 +507,7 @@ class ConnectionHandler extends Handler
       mRunning = true;
       int cnt = 0;
       byte lastByte = (byte)0xff;
+      ConnectionQueueItem old_item = null;
       // Log.v( "DistoX", "SendThread running ...");
       while( mRun ) {
         try {
@@ -454,23 +519,32 @@ class ConnectionHandler extends Handler
             // write( buffer );
             ConnectionQueueItem item = mBufferQueue.peek();
             if ( item != null ) {
-              byte[] buffer = item.mData;
-              if ( buffer[0] == lastByte ) {
-                ++ cnt;
-              }
-              // Log.v( TAG, "lastByte " + lastByte + " cnt " + cnt );
-              if ( cnt > 4 ) {
-                // bail-out
-                disconnect( /* mDevice */ );
-                mApp.connStateChanged( 51 );
-              } else {
-                lastByte = buffer[0];
-                // Log.v( TAG, "data write <" + buffer[0] + "|" + buffer[1] + ">" );
-                if ( writeBytes( item.mData ) ) {
-                  cnt = 0;
-                } else {
-                  ++ cnt;
+              if ( item != old_item ) {
+                old_item = item;
+                byte[] buffer = item.mData;
+                if ( buffer[0] == lastByte ) {
+                  ++cnt;
                 }
+                // Log.v( TAG, "lastByte " + lastByte + " cnt " + cnt );
+                if ( cnt > 4 ) {
+                  // bail-out
+                  disconnect( /* mDevice */ );
+                  mApp.connStateChanged( 51 );
+                } else {
+                  lastByte = buffer[0];
+                  Log.v( TAG, "data write <" + buffer[0] + "|" + buffer[1] + ">" );
+                  if ( writeBytes( item.mData ) ) {
+                    cnt = 0;
+                  } else {
+                    ++ cnt;
+                  }
+                }
+              // } else {
+              //   ++ cnt;
+              //   if ( cnt > 8 ) {
+              //     disconnect( /* mDevice */ );
+              //     mApp.connStateChanged( 51 );
+              //   }
               }
             }
             Thread.sleep( SLEEP_DEQUE );   
@@ -521,7 +595,7 @@ class ConnectionHandler extends Handler
         break;
       case SyncService.MESSAGE_READ: // 3
         int bytes = msg.arg1;
-        // Log.v( TAG, "READ bytes " + bytes );
+        // Log.v( TAG, "READ " + bytes + " bytes" );
         byte[] buffer = ( byte[] ) msg.obj;
         onRecv( bytes, buffer );
         break;

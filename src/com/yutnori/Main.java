@@ -53,6 +53,7 @@ import android.util.Log;
 public class Main extends Activity
                   implements View.OnTouchListener
                            , OnSharedPreferenceChangeListener
+                           , ISender
 {
   static String TAG = "Yutnori-TITO";
 
@@ -181,10 +182,12 @@ public class Main extends Activity
   protected void setTheTitle( )
   {
     if ( mExited ) return;
+    boolean long_title = false;
+
     // Log.v( TAG, "setTheTitle state " + mState.toString() + " Remote " + mRemote );
     mLastWinner = mBoard.winner();
     StringBuilder sb = new StringBuilder();
-    sb.append( getResources().getString( R.string.title_yutnori ) );
+    if ( long_title ) sb.append( getResources().getString( R.string.title_yutnori ) ); 
     if ( ! mConnected ) {
       sb.append( " - " + mYutnori.getEngine() );
     }
@@ -206,7 +209,7 @@ public class Main extends Activity
     if ( mRemote == null ) {
       // sb.append( mStrategyString );
     } else {
-      sb.append( " <" + mRemote + ">" );
+      if ( long_title ) sb.append( " <" + mRemote + ">" ); 
     }
 
     if ( mLastWinner == 1 ) {
@@ -344,12 +347,12 @@ public class Main extends Activity
         setTheTitle();
         alertNumber( R.string.color_none );
         break;
-      case 1:
+      case 1: // wait a friend
         mPlaying = false;
         mState.setHold();
         setTheTitle();
         break;
-      case 2:
+      case 2: // ask a friend 
         mPlaying = true;
         mState.setHold();
         setTheTitle();
@@ -517,11 +520,26 @@ public class Main extends Activity
     return true;
   }
 
+  // @param pawns   nr of pawns to move - 0: all the pawns
+  public void sendMyMove( int k, int from, int to, int pawns )
+  {
+    if ( mConnected ) {
+      Log.v("Yutnori-EXEC", "send my move " + k + " from " + from + " to " + to );
+      mConnection.sendMoved( k ); 
+      mConnection.sendMove( from, to, pawns );
+    }
+  }
 
+  public void sendMySkip( boolean clear )
+  {
+    if ( mConnected ) {
+      mConnection.sendSkip( clear? 1 : 0 ); 
+    }
+  }
 
   private boolean playMove( int pos, int x, int y )
   {
-    int state = mBoard.checkBackDo( mPlayer, mState, mMoves, true );
+    int state = mBoard.checkBackDo( mPlayer, mState, mMoves, true, this );
     // Log.v( TAG, "USER playMove: check back-do - state " + State.toString(state) );
 
     if ( state == State.TO_START ) {
@@ -578,10 +596,7 @@ public class Main extends Activity
         }
         // Log.v( TAG, "Play pos-diff " + pos + "-" + mStartPos + " " + m + " move-index " + k );
         if ( k >= 0 && mYutnori.canMove( mStartPos, pos, m ) ) {
-          if ( mConnected ) {
-            mConnection.sendMoved( k ); 
-            mConnection.sendMove( mStartPos, pos );
-          }
+          sendMyMove( k, mStartPos, pos, myPawnNr );
           mMoves.shift( k );
           if ( mBoard.doMove( mStartPos, pos, mPlayer, myPawnNr ) ) { 
             // Log.v(TAG, "play-move new state THROW" );
@@ -644,10 +659,7 @@ public class Main extends Activity
     }
     // Log.v( TAG, "Play pos-diff " + pos + "-" + mStartPos + " " + m + " move-index " + k );
     if ( k >= 0 && mYutnori.canMove( mStartPos, pos, m ) ) {
-      if ( mConnected ) {
-        mConnection.sendMoved( k ); 
-        mConnection.sendMove( mStartPos, pos );
-      }
+      sendMyMove( k, mStartPos, pos, myPawnNr );
       mMoves.shift( k );
       mBoard.doMove( mStartPos, pos, mPlayer, myPawnNr );
       mState.setReady();
@@ -661,7 +673,10 @@ public class Main extends Activity
     if ( mDrawingSurface.isThrow( x, y ) ) {
       mThisStart = Yutnori.throwYut( );
       mMoves.add( mThisStart );
-      if ( mConnected ) mConnection.sendStart( mThisStart );
+      if ( mConnected ) {
+        Log.v("Yutnori-EXEC", "send start " + mThisStart );
+        mConnection.sendStart( mThisStart );
+      }
       compareStarts( State.WAIT, State.WAIT );
     }
   }
@@ -902,13 +917,17 @@ public class Main extends Activity
   // ----------------------------------------------------------------------------------
   private void compareStarts( int state1, int state2 )
   {
-    if ( mThisStart >= 0 && mOtherStart >= 0 ) {
+    int me    = mThisStart % 10;
+    int other = mOtherStart % 10;
+    Log.v("Yutnori-EXEC", "compare " + me + " " + other );
+    if ( me >= 0 && other >= 0 ) {
       Delay.sleep( sleepBeforeCompareStarts );
       String str = null;
-      if ( mThisStart > mOtherStart ) {
+      if ( me > other ) {
         str = getResources().getString(R.string.you_start);
+        mConnection.sendBackDo( YutnoriPrefs.mSpecialRule, YutnoriPrefs.mBackDo, YutnoriPrefs.mBackYuts );
         mState.setThrow();
-      } else if ( mThisStart < mOtherStart ) {
+      } else if ( me < other ) {
         if ( mConnected ) {
           str = getResources().getString(R.string.friend_start);
         } else {
@@ -1040,7 +1059,7 @@ public class Main extends Activity
     if ( mConnection != null ) {
       mConnection.syncDevice( device );
       // sync TITO settings
-      mConnection.sendBackDo( YutnoriPrefs.mSpecialRule, YutnoriPrefs.mBackDo );
+      mConnection.sendBackDo( YutnoriPrefs.mSpecialRule, YutnoriPrefs.mBackDo, YutnoriPrefs.mBackYuts );
       YutnoriPrefs.mTiToFreeze = true;
     }
   }
@@ -1068,7 +1087,9 @@ public class Main extends Activity
       mJoining = true;
       mRemote  = device.getName();
       mConnection.connect( device ); 
-      // Log.v( TAG, "connect remote device " + mRemote );
+      // Log.v( "Yutnori-EXEC", "connect remote device " + mRemote + " send rules");
+      // mConnection.sendBackDo( YutnoriPrefs.mSpecialRule, YutnoriPrefs.mBackDo, YutnoriPrefs.mBackYuts );
+      // mConnection.syncDevice( device );
       resetStatus( false );
       mState.setWait();
       setTheTitle();
@@ -1200,11 +1221,21 @@ public class Main extends Activity
     }
   }
 
-  void execSetBackDo( int special, int backdo ) 
+  void execSetBackDo( int special, int backdo, int backyuts ) 
   {
+    Log.v("Yutnori-EXEC", "set special " + special + " backdo " + backdo + " Back-yuts " + backyuts );
     YutnoriPrefs.setSpecial( special );
     YutnoriPrefs.mBackDo       = backdo;
+    YutnoriPrefs.mBackYuts     = backyuts;
     YutnoriPrefs.mTiToFreeze   = true;
+  }
+
+  void execSkip( int clear )
+  {
+    Log.v("Yutnori-EXEC", "skip " + clear );
+    if ( clear != 0 ) mMoves.clear();
+    Toast.makeText( this, R.string.android_skipping, Toast.LENGTH_LONG ).show();
+    Delay.sleep( sleepAndroid );
   }
 
   void execReset( int state )
@@ -1218,18 +1249,25 @@ public class Main extends Activity
 
   void execStart( int move ) 
   {
+    Log.v("Yutnori-EXEC", "other start " + move );
     mOtherStart = move;
     mMoves.add( mOtherStart );
     compareStarts( State.START, State.START );
   }
 
   void execThrow( int move ) { mMoves.add( move ); }
-  void execMove( int from, int to ) 
+  void execMove( int from, int to, int pawns ) 
   { 
-    mBoard.doMove( from, to, Player.ANDROID, yourPawnNr );
+    Log.v("Yutnori-EXEC", "move " + pawns + " from " + from + " to " + to );
+    mBoard.doMove( from, to, Player.ANDROID, pawns );
     mDrawingSurface.addPosition( to );
   }
-  void execMoved( int index ) { mMoves.shift( index ); }
+  void execMoved( int index ) 
+  { 
+    Log.v("Yutnori-EXEC", "moved " + index );
+    mMoves.shift( index );
+  }
+
   void execHighlight( int pos )     
   { 
     if ( pos == 1 ) pos = 0;

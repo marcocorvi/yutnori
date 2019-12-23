@@ -29,6 +29,15 @@ class Moves
   static boolean rethrow( int m ) { return ( ( m % 10 ) >= 4 ); }
 
   void setRevertDo() { mRevertDo = true; }
+
+  // get the index of the first back-do
+  int getSkip()
+  {
+    for ( int k = 0; k < move.size(); ++ k ) {
+      if ( getValue( k ) < 0 ) return k;
+    }
+    return -1;
+  }
   
   // remove a skip move
   // @return true if found and removed a skip move, false otherwise

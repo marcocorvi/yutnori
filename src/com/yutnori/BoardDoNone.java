@@ -63,8 +63,9 @@ class BoardDoNone extends Board
   // @param state     optional state to update
   // @param moves
   // @param clear     if set clear moves when necessary
+  // @param sender    sender to cennected yutnori
   // @return new state or -1 if no action has been taken
-  int checkBackDo( int player, State state, Moves moves, boolean clear ) 
+  int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = State.NONE;
     // moves.print("DoNone check back-do (" + player + ")" );

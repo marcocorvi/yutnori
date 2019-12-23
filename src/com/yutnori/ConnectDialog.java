@@ -187,7 +187,7 @@ public class ConnectDialog extends Dialog
 
   private boolean connectDevice()
   {
-    // Log.v( TAG, "ConnectDialog::connectDevice() state " + mApp.getConnectionStateStr() );
+    // Log.v( TAG, "ConnectDialog::connect Device() state " + mApp.getConnectionStateStr() );
     if ( mName != null ) {
       for ( BluetoothDevice device : mDevices ) {
         if ( mName.equals( device.getName() ) ) {
@@ -264,6 +264,7 @@ public class ConnectDialog extends Dialog
       if ( mApp.getConnectState() != SyncService.STATE_NONE ) {
         Toast.makeText( mContext, R.string.already_connected, Toast.LENGTH_SHORT).show();
       } else if ( connectDevice() ) {
+        Log.v("Yutnori-EXEC", "connect device and close dialog" );
         mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();

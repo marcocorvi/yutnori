@@ -78,7 +78,7 @@ class Strategy extends Player
       //   return state; // -1;
       // }
 
-      state = mBoard.checkBackDo( Player.ANDROID, null, moves, true );
+      state = mBoard.checkBackDo( Player.ANDROID, null, moves, true, null ); // null ISender
       // Log.v(TAG, "ANDROID check back do - " + State.toString(state) );
       if ( state >= 0 ) {
         Delay.sleep( 2 * doze );

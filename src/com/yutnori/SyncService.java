@@ -518,15 +518,15 @@ public class SyncService
             // add buffer to the data 
             if ( buffer[k] == ConnectionHandler.EOL ) {
               // end of message: send to upper layer
-              byte[] tmp = new byte[pos];  
-              for ( int j=0; j<pos; ++j) tmp[j] = data[j];
               // special handle shutdown message 
-              if ( data[0] == 0 && data[1] == ConnectionHandler.SHUTDOWN && data[2] == 0 ) {
+              if ( pos == 3 && data[0] == 0 && data[1] == ConnectionHandler.SHUTDOWN && data[2] == 0 ) {
                 cancelCT(); // mConnectRun = false;
                             // setConnectState( STATE_NONE );
                 mRemoteDevice = null;
-              } else {
-                // Log.v( TAG, "read <" + data[0] + "|" + data[1] + ">" );
+              } else if ( pos > 0 ) {
+                byte[] tmp = new byte[pos];  
+                for ( int j=0; j<pos; ++j) tmp[j] = data[j];
+                Log.v( "Yutnori-EXEC", "read <" + data[0] + "|" + data[1] + ">" );
                 mHandler.obtainMessage( MESSAGE_READ, pos, -1, tmp).sendToTarget();
                 pos = 0;
               }

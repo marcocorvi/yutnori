@@ -66,6 +66,16 @@ class ConnectionQueue
 
   ConnectionQueueItem peek() { return mHead; }
 
+  ConnectionQueueItem pop()
+  {
+    if ( mHead == null ) return null;
+    ConnectionQueueItem ret = mHead;
+    mHead = mHead.next;
+    mHead.prev = null;
+    -- mSize;
+    return ret;
+  }
+
   boolean isEmpty() { return mSize <= 0; }
 
   ConnectionQueueItem find( byte id ) 

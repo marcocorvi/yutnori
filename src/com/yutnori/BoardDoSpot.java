@@ -65,7 +65,7 @@ class BoardDoSpot extends BoardDoNone
   // @param moves
   // @param clear     if set clear moves when necessary
   // @return new state or -1 if no action has been taken
-  int checkBackDo( int player, State state, Moves moves, boolean clear ) 
+  int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = State.NONE;
     // moves.print( name() + " check back-do (" + player + ")" );

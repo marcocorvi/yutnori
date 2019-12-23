@@ -55,7 +55,7 @@ class BoardSeoul extends Board
   // @param moves
   // @param clear     if set clear moves when necessary
   // @return new state or -1 if no action has been taken
-  int checkBackDo( int player, State state, Moves moves, boolean clear ) 
+  int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = State.NONE;
     // moves.print("Seoul check back-do (" + player + ")" );
@@ -63,26 +63,25 @@ class BoardSeoul extends Board
       // Log.v( TAG, name() + " NO BACK_DO");
       return ret;
     }
-    int type = ( YutnoriPrefs.isSeoul() ? Board.SEOUL : Board.BUSAN );
+    int k = moves.getSkip();
+    int to = ( YutnoriPrefs.isSeoul() ? Board.SEOUL : Board.BUSAN );
     if ( this.countPlayer( player ) == 0 ) { // board is empty - start is not empty
-      int move = this.doMoveToSeoulOrBusan( player, moves, type );
+      int move = this.doMoveToSeoulOrBusan( player, moves, to );
       // Log.v(TAG, name() + "[2] move to S " + move );
       if ( move == -1 ) { // cannot move (empty START)
         ret = State.MOVE;
-      } else if ( move == 0 ) {
-        ret = ( moves.size() > 0 )? State.MOVE : State.READY;
-      } else { 
-        ret = State.THROW;
+      } else {
+        ret = (move != 0)? State.THROW : ( moves.size() > 0 )? State.MOVE : State.READY;
+        if ( sender != null ) sender.sendMyMove( k, 1, to, 1 );
       }
     } else { // board not empty
-      int move = this.doMoveToSeoulOrBusan( player, moves, type );
+      int move = this.doMoveToSeoulOrBusan( player, moves, to );
       // Log.v(TAG, name() + "[3] move to S " + move );
       if ( move == -1 ) { // cannot move (empty START)
         ret = State.MOVE;
-      } else if ( move == 0 ) {
-        ret = ( moves.size() > 0 )? State.MOVE : State.READY;
-      } else { 
-        ret = State.THROW;
+      } else {
+        ret = (move != 0)? State.THROW : ( moves.size() > 0 )? State.MOVE : State.READY;
+        if ( sender != null ) sender.sendMyMove( k, 1, to, 1 );
       }
     }
     // Log.v( TAG, name() + " check back do returns " + State.toString(ret) );
