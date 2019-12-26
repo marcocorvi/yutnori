@@ -33,18 +33,20 @@ class Dice
       int back = 0;
       int ret = 0;
       for (int k = 0; k<4; ++k) {
-        ret += ( Math.random() > 0.5 )? 1 : 0;
-        if ( YutnoriPrefs.isSpecial() ) {
-          if ( YutnoriPrefs.isSeoulOrBusan() ) {
-            if ( k < 1 ) ++ back;
-          } else {
-            if ( k < YutnoriPrefs.mBackYuts ) ++ back;
+        if ( Math.random() > 0.5 ) {
+          if ( YutnoriPrefs.isSpecial() ) {
+            if ( YutnoriPrefs.isSeoulOrBusan() ) {
+              if ( k < 1 ) ++ back;
+            } else {
+              if ( k < YutnoriPrefs.mBackYuts ) ++ back;
+            }
           }
+          ret += 1;
         }
       }
       if ( ret == 0 ) ret = 5;
       // Log.v( "Yutnori-TITO", "Dice roll " + ret + " back " + back );
       return ( ret + 10 * back );
     }
-};
+}
 

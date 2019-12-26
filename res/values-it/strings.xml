@@ -55,11 +55,11 @@
     <string name="android_nomove">Android non puo\' muovere</string>
     <string name="nomove">Non posso muovere ...</string>
 
-    <string name="NONE">NONE</string>
-    <string name="LISTEN">LISTEN</string>
-
     <string name="another_game">%1$s gioca di nuovo</string>
     <string name="not_another_game">%1$s non gioca</string>
+
+    <string name="NONE">NONE</string>
+    <string name="LISTEN">LISTEN</string>
 
     <string name="menu_new">NUOVO</string>
     <string name="menu_join">CONNETTI</string>
@@ -71,34 +71,43 @@
     <string name="yutnori_join">Connettiti ad un altro Yutnori</string>
     <string name="yutnori_android">Gioca contro Android</string>
 
-    <string name="title_yutnori"> Y U T N O R I </string>
-    <string name="title_backskip">Do-salta</string>
-    <string name="title_dospot">Do-casa</string>
-    <string name="title_seoul">Seul</string>
-    <string name="title_busan">Pusan</string>
-    <string name="title_back">Retro Do</string>
+    <!-- UNUSED string name="title_yutnori"> Y U T N O R I </string -->
+    <string name="title_traditional"> Y U T N O R I </string>
+    <string name="title_seoul">Seul Yutnori</string>
+    <string name="title_busan">Pusan Yutnori</string>
+    <string name="title_backdo">Back Do Yutnori</string>
+    <string name="title_skipdo">Skip Do Yutnori</string>
+    <string name="title_docage">Do cage Yutnori</string>
+    <string name="title_dospot">Do spot Yutnori</string>
 
     <string name="special_rules">Regole speciali</string>
 
+    <!-- UNUSED string name="backyuts">Back yuts</string -->
+    <string name="backyut_one">1</string>
+    <string name="backyut_two">2</string>
+    <string name="backyut_three">3 back yuts</string>
+
     <string name="malsplit">Separa pedine</string>
-    <string name="backdo">Retro Do</string>
+
     <string name="seoul">Seul</string>
     <string name="busan">Pusan</string>
-    <string name="doskip">Salta Do</string>
-    <string name="dospot">Do casa</string>
+    <string name="backdo">Back Do</string>
+    <string name="doskip">Skip Do</string>
+    <string name="docage">Do Cage</string>
+    <string name="dospot">Do Spot</string>
 <!--
     <string name="pref_split_title">Separazione</string>
     <string name="pref_split_summary">Gruppi separabili</string>
 -->
-    <string name="pref_special_rules_title">Regole speciali</string>
-    <string name="pref_special_rules_summary">Abilita le regole speciali</string>
+    <!-- UNUSED string name="pref_special_rules_title">Regole speciali</string -->
+    <!-- UNUSED string name="pref_special_rules_summary">Abilita le regole speciali</string -->
 
-    <string name="pref_backyuts_title">Retro Yut</string>
-    <string name="pref_backyuts_summary">Numero di yut retro</string>
-    <string name="pref_level_title">Livello</string>
-    <string name="pref_level_summary">Livello di gioco</string>
-    <string name="pref_engine_title">Engine</string>
-    <string name="pref_engine_summary">Game Engine</string>
+    <string name="pref_backyuts_title">Back Yut</string>
+    <string name="pref_backyuts_summary">Numero di back-yut</string>
+    <!-- UNUSED string name="pref_level_title">Livello</string -->
+    <!-- UNUSED string name="pref_level_summary">Livello di gioco</string -->
+    <string name="pref_engine_title">Logica Android</string>
+    <string name="pref_engine_summary">Logica di gioco di Android</string>
     <string name="pref_delay_title">Velocità</string>
     <string name="pref_delay_summary">Velocità di display</string>
 

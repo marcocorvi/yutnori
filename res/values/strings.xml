@@ -50,10 +50,11 @@
     <string name="connection_refused">Connection refused</string>
     <string name="devices">Bluetooth devices</string>
     <string name="device_status">State: %1$s"</string>
-    <string name="android_skipping">Android skipping ..."</string>
-    <string name="skipping">Skipping ..."</string>
+    <string name="android_skipping">Android\'s skipping &#8230;</string>
+    <string name="friend_skipping">Your friend\'s skipping &#8230;</string>
+    <string name="skipping">Skipping &#8230;</string>
     <string name="android_nomove">Android cannot move"</string>
-    <string name="nomove">Cannot move ..."</string>
+    <string name="nomove">Cannot move &#8230;"</string>
 
     <string name="another_game">%1$s plays a new game</string>
     <string name="not_another_game">%1$s does not play again</string>
@@ -71,20 +72,27 @@
     <string name="yutnori_join">Ask a friend to play together</string>
     <string name="yutnori_android">Play against Android</string>
 
-    <string name="title_yutnori"> Y U T - N O R I </string>
-    <string name="title_backskip">Skip Do</string>
-    <string name="title_docage">Do cage</string>
-    <string name="title_dospot">Do spot</string>
-    <string name="title_seoul">Seoul</string>
-    <string name="title_busan">Busan</string>
-    <string name="title_back">back</string>
+    <!-- UNUSED string name="title_yutnori"> YUT-NORI </string -->
+    <string name="title_traditional">Y U T N O R I</string>
+    <string name="title_seoul">Seoul Yutnori</string>
+    <string name="title_busan">Busan Yutnori</string>
+    <string name="title_backdo">Back Do Yutnori</string>
+    <string name="title_skipdo">Skip Do Yutnori</string>
+    <string name="title_docage">Do cage Yutnori</string>
+    <string name="title_dospot">Do spot Yutnori</string>
 
     <string name="special_rules">Special rules</string>
 
+    <string name="backyuts"></string>
+    <string name="backyut_one">1</string>
+    <string name="backyut_two">2</string>
+    <string name="backyut_three">3 back yuts</string>
+
     <string name="malsplit">Mal split</string>
-    <string name="backdo">Back Do</string>
+
     <string name="seoul">Seoul</string>
     <string name="busan">Busan</string>
+    <string name="backdo">Back Do</string>
     <string name="doskip">Skip Do</string>
     <string name="docage">Do Cage</string>
     <string name="dospot">Do Spot</string>
@@ -92,18 +100,18 @@
     <string name="pref_split_title">Split</string>
     <string name="pref_split_summary">Splitable groups</string>
 -->
-    <string name="pref_special_rules_title">Special rules</string>
-    <string name="pref_special_rules_summary">Enable Yut-Nori special rules</string>
+    <!-- UNUSED string name="pref_special_rules_title">Special rules</string -->
+    <!-- UNUSED string name="pref_special_rules_summary">Enable Yut-Nori special rules</string -->
     <string name="pref_backyuts_title">Back Yuts</string>
-    <string name="pref_backyuts_summary">Number of Back Yuts</string>
-    <string name="pref_level_title">Level</string>
-    <string name="pref_level_summary">Game Level</string>
-    <string name="pref_engine_title">Engine</string>
-    <string name="pref_engine_summary">Game Engine</string>
+    <string name="pref_backyuts_summary">Default number of Back Yuts: </string>
+    <!-- UNUSED string name="pref_level_title">Level</string -->
+    <!-- UNUSED string name="pref_level_summary">Game Level</string -->
+    <string name="pref_engine_title">Android logic</string>
+    <string name="pref_engine_summary">Android game logic: </string>
     <string name="pref_delay_title">Speed</string>
-    <string name="pref_delay_summary">App speed</string>
+    <string name="pref_delay_summary">App speed: </string>
     <string name="pref_rules_title">Rules</string>
-    <string name="pref_rules_summary">Yut-Nori rules</string>
+    <string name="pref_rules_summary">Default Yut-Nori rules: </string>
 
 <string name="about_text">
 Yut-Nori is a Korean traditional game with two players.\n\n

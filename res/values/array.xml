@@ -17,7 +17,7 @@
      <item name="yut0">Yut-0</item>
      <item name="yut1">Yut-1</item>
      <item name="yut2">Yut-2</item>
-     <item name="yutR">Yut-Random</item>
+     <item name="yutR">Random</item>
   </string-array>
   <string-array name="engineValue">
      <item name="yut0">0</item>
@@ -41,7 +41,6 @@
      <item name="very_fast">4</item>
   </string-array>
 
-
   <string-array name="backyuts">
      <item name="one">1</item>
      <item name="two">2</item>
@@ -49,15 +48,21 @@
   </string-array>
 
   <string-array name="rule">
-     <item name="rule0">Normal</item>
-     <item name="rule1">Back Do</item>
-     <item name="rule2">Seoul</item>
-     <item name="ruleR">Busan</item>
+     <item name="rule0">Traditional</item>
+     <item name="rule1">Seoul</item>
+     <item name="rule2">Busan</item>
+     <item name="rule3">Back-Do</item>
+     <item name="rule4">Skip-Do</item>
+     <item name="rule5">Do-Spot</item>
+     <item name="rule6">Do-Cage</item>
   </string-array>
   <string-array name="ruleValue">
      <item name="rule0">0</item>
      <item name="rule1">1</item>
      <item name="rule2">2</item>
-     <item name="ruleR">3</item>
+     <item name="rule3">3</item>
+     <item name="rule4">4</item>
+     <item name="rule5">5</item>
+     <item name="rule6">6</item>
   </string-array>
 </resources>

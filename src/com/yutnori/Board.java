@@ -20,17 +20,19 @@ class Board
 
   protected int mBoard[];
     // -----------------------------------------
-    //     [16]   15   14   13   12   [11]
-    //      17   31               22   10
-    //      18       30       23        9
-    //                   24 
-    //      19       25       28        8
-    //      20   26               27    7
-    //   [21/1]    2    3    4    5   [ 6]
-    //      {0}
+    // {34}  {0}  [16]   15   14   13   12   [11]
+    // {35}  {1}    17   31               22   10
+    //              18       30       23        9
+    //                           24 
+    //              19       25       28        8
+    //      {32}    20   26               27    7
+    //      {33} [21/1]    2    3    4    5   [ 6]
+    //           
 
   static final int SEOUL = 24;
-  static final int BUSAN = 11;
+  static final int BUSAN =  6;
+  static final int CHAM_MOKI  = 21;
+  static final int DO_STATION =  2;
 
   static final int HOME  =  100;
   static final int START = -100;

@@ -179,7 +179,7 @@ class ConnectionHandler extends Handler
 
   private boolean writeBytes( byte[] buffer ) 
   {
-    Log.v( TAG, "ConnectionHandler write CNT " + buffer[0] + " key " + buffer[1] );
+    // Log.v( TAG, "ConnectionHandler write CNT " + buffer[0] + " key " + buffer[1] );
     return mSyncService.writeBuffer( buffer );
   }
 
@@ -239,7 +239,7 @@ class ConnectionHandler extends Handler
 
   boolean doAcknowledge( int cnt )
   {
-    Log.v( TAG, "ACK write <" + cnt + ">" );
+    // Log.v( TAG, "ACK write <" + cnt + ">" );
     mAck[0] = (byte)cnt;
     mAck[1] = ACK;
     mAck[2] = EOL;
@@ -249,7 +249,7 @@ class ConnectionHandler extends Handler
    // tell the peer my send counter
    boolean doSyncCounter( )
    {
-     Log.v( TAG, "SYNC write <" + mSendCounter + ">" );
+     // Log.v( TAG, "SYNC write <" + mSendCounter + ">" );
      mAck[0] = (byte)mSendCounter;
      mAck[1] = SYNC;
      mAck[2] = EOL;
@@ -260,7 +260,7 @@ class ConnectionHandler extends Handler
    // the received command is terminated by 0xff
    void onRecv( int bytes, byte[] buffer ) 
    {
-     Log.v( TAG, "recv " + bytes + " length " + + buffer.length + " cnt " + buffer[0] + " key " + buffer[1] );
+     // Log.v( TAG, "recv " + bytes + " length " + + buffer.length + " cnt " + buffer[0] + " key " + buffer[1] );
      //   + " " + ( (bytes>=3)? buffer[2] : "") + " " + ( (bytes>=4)? buffer[3] : "") 
      //   + " " + ( (bytes>=5)? buffer[4] : "") );
 
@@ -280,7 +280,7 @@ class ConnectionHandler extends Handler
            mBufferQueue.remove( item );
            // Log.v( TAG, "recv ACK <" + cnt + "> removed. queue size " + mBufferQueue.size() );
          } else {
-           Log.e( TAG, "recv ACK <" + cnt + "> not found" );
+           // Log.e( TAG, "recv ACK <" + cnt + "> not found" );
          }
        }
        return;
@@ -351,7 +351,7 @@ class ConnectionHandler extends Handler
   // the buffer has two header bytes, followed by the command string, terminated by 0xff
   //
   // data must be terminated by adding 0xff
-  private void enqueue( byte key )
+  private void enqueue0( byte key )
   {
     byte[] buf = null;
     switch ( key ) {
@@ -363,17 +363,17 @@ class ConnectionHandler extends Handler
          buf[2] = EOL;
          break;
        default:
-         Log.v( TAG, "enqueue-0 key " + key );
+         Log.e( TAG, "enqueue-0 missing key " + key );
          break;
     }
     if ( buf != null ) {
       mBufferQueue.add( buf );
-      Log.v( TAG, "enqueue-0 <" + mSendCounter + "|" + key + "> queue " + mBufferQueue.size() );
+      // Log.v( TAG, "enqueue-0 <" + mSendCounter + "|" + key + "> queue " + mBufferQueue.size() );
       mSendCounter = increaseCounter( mSendCounter );
     }
   }
 
-  private void enqueue( byte key, int v1 )
+  private void enqueue1( byte key, int v1 )
   {
     byte[] buf = null;
     switch ( key ) {
@@ -394,17 +394,17 @@ class ConnectionHandler extends Handler
          buf[3] = EOL;
          break; 
        default:
-         Log.v( TAG, "enqueue-1 key " + key );
+         Log.e( TAG, "enqueue-1 missing key " + key );
          break;
     }
     if ( buf != null ) {
       mBufferQueue.add( buf );
-      Log.v( TAG, "enqueue-1 <" + mSendCounter + "|" + key + "> " + v1 + " queue " + mBufferQueue.size() );
+      // Log.v( TAG, "enqueue-1 <" + mSendCounter + "|" + key + "> " + v1 + " queue " + mBufferQueue.size() );
       mSendCounter = increaseCounter( mSendCounter );
     }
   }
 
-  private void enqueue( byte key, int v1, int v2 ) 
+  private void enqueue2( byte key, int v1, int v2 ) 
   {
     byte[] buf = null;
     switch ( key ) {
@@ -417,17 +417,17 @@ class ConnectionHandler extends Handler
          buf[4] = EOL;
          break;
        default:
-         Log.v( TAG, "enqueue-2 key " + key );
+         Log.e( TAG, "enqueue-2 missing key " + key );
          break;
     }
     if ( buf != null ) {
       mBufferQueue.add( buf );
-      Log.v( TAG, "enqueue-2 <" + mSendCounter + "|" + key + "> " + v1 + " " + v2 + " queue " + mBufferQueue.size() );
+      // Log.v( TAG, "enqueue-2 <" + mSendCounter + "|" + key + "> " + v1 + " " + v2 + " queue " + mBufferQueue.size() );
       mSendCounter = increaseCounter( mSendCounter );
     }
   }
 
-  private void enqueue( byte key, int v1, int v2, int v3 )
+  private void enqueue3( byte key, int v1, int v2, int v3 )
   {
     byte[] buf = null;
     switch ( key ) {
@@ -442,45 +442,45 @@ class ConnectionHandler extends Handler
          buf[5] = EOL;
          break;
        default:
-         Log.v( TAG, "enqueue-3 key " + key );
+         Log.e( TAG, "enqueue-3 missing key " + key );
          break;
     }
     if ( buf != null ) {
       mBufferQueue.add( buf );
-      Log.v( TAG, "enqueue-3 <" + mSendCounter + "|" + key + "> " + v1 + " " + v2 + " " + v3  + " queue " + mBufferQueue.size() );
+      // Log.v( TAG, "enqueue-3 <" + mSendCounter + "|" + key + "> " + v1 + " " + v2 + " " + v3  + " queue " + mBufferQueue.size() );
       mSendCounter = increaseCounter( mSendCounter );
     }
   }
 
-  void sendBackDo( int tito, int skip, int backyuts ) { enqueue( BACKDO, tito, skip, backyuts ); }
-  void sendStart( int move )  { enqueue( START, move ); }
-  void sendThrow( int move )  { enqueue( THROW, move ); }
-  void sendMoved( int index ) { enqueue( MOVED, index ); }
-  void sendSkip(  int clear ) { enqueue( SKIP,  clear ); }
+  void sendBackDo( int tito, int skip, int backyuts ) { enqueue3( BACKDO, tito, skip, backyuts ); }
+  void sendStart( int move )  { enqueue1( START, move ); }
+  void sendThrow( int move )  { enqueue1( THROW, move ); }
+  void sendMoved( int index ) { enqueue1( MOVED, index ); }
+  void sendSkip(  int clear ) { enqueue1( SKIP,  clear ); }
 
   void sendHighlight( int pos )     
   { 
-    if ( pos >= 0 ) enqueue( HIGH, pos );
-    else            enqueue( HIGHOFF );
+    if ( pos >= 0 ) enqueue1( HIGH, pos );
+    else            enqueue0( HIGHOFF );
   }
 
   void sendMove( int from, int to, int pawns )
   {
-    enqueue( MOVE, from, to, pawns );
+    enqueue3( MOVE, from, to, pawns );
     if ( YutnoriPrefs.mPos > YutnoriPrefs.POS_NO ) Delay.sleep( 5 );
   }
 
-  void sendDone( )            { enqueue( DONE );  }
-  void sendNewGame( )         { enqueue( NEWGAME, YutnoriPrefs.mPos );  }
-  void sendOkGame( int bool ) { enqueue( OKGAME, bool );  }
-  void sendPawns( int nr )    { enqueue( PAWNS, nr );  }
-  void sendReset( int state ) { enqueue( RESET, state ); }
-  void sendOffset( int off )  { enqueue( OFFSET, off ); }
+  void sendDone( )            { enqueue0( DONE );  }
+  void sendNewGame( )         { enqueue1( NEWGAME, YutnoriPrefs.mPos );  }
+  void sendOkGame( int bool ) { enqueue1( OKGAME, bool );  }
+  void sendPawns( int nr )    { enqueue1( PAWNS, nr );  }
+  void sendReset( int state ) { enqueue1( RESET, state ); }
+  void sendOffset( int off )  { enqueue1( OFFSET, off ); }
 
   void sendAccept( int bool, int pos )
   {
     mAccepted = (bool == 1);
-    enqueue( ACCEPT, bool, pos );
+    enqueue2( ACCEPT, bool, pos );
   }
 
   // -------------------------------------------------------------------
@@ -532,7 +532,7 @@ class ConnectionHandler extends Handler
                   mApp.connStateChanged( 51 );
                 } else {
                   lastByte = buffer[0];
-                  Log.v( TAG, "data write <" + buffer[0] + "|" + buffer[1] + ">" );
+                  // Log.v( TAG, "data write <" + buffer[0] + "|" + buffer[1] + ">" );
                   if ( writeBytes( item.mData ) ) {
                     cnt = 0;
                   } else {

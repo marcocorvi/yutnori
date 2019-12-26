@@ -157,7 +157,9 @@ public class Main extends Activity
       int ret = v.intValue();
       if ( ret < 0 ) {
         if ( ! YutnoriPrefs.isSeoulOrBusan( ) ) {
-          Toast.makeText( mContext, R.string.android_skipping, Toast.LENGTH_LONG ).show();
+          if ( ! YutnoriPrefs.isDoNone() ) {
+            Toast.makeText( mContext, R.string.android_skipping, Toast.LENGTH_LONG ).show();
+          }
           Delay.sleep( sleepAndroid );
         }
       }
@@ -187,30 +189,32 @@ public class Main extends Activity
     // Log.v( TAG, "setTheTitle state " + mState.toString() + " Remote " + mRemote );
     mLastWinner = mBoard.winner();
     StringBuilder sb = new StringBuilder();
-    if ( long_title ) sb.append( getResources().getString( R.string.title_yutnori ) ); 
-    if ( ! mConnected ) {
-      sb.append( " - " + mYutnori.getEngine() );
-    }
-    if ( YutnoriPrefs.mSplitGroup ) { sb.append( " {" ); } else { sb.append( " [" ); }
+    // if ( long_title ) 
+    //   sb.append( getResources().getString( R.string.title_yutnori ) ); 
+    // if ( YutnoriPrefs.mSplitGroup ) { sb.append( " {" ); } else { sb.append( " [" ); }
     if ( YutnoriPrefs.isBackDo() ) {
-      if ( YutnoriPrefs.isDoSkip() )      { sb.append( getResources().getString( R.string.title_backskip ) ); }
-      else if ( YutnoriPrefs.isDoSpot() ) { sb.append( getResources().getString( R.string.title_dospot   ) ); }
-      else if ( YutnoriPrefs.isDoCage() ) { sb.append( getResources().getString( R.string.title_docage   ) ); }
-      else if ( YutnoriPrefs.isDoNone() ) { sb.append( getResources().getString( R.string.title_back     ) ); }
+      if ( YutnoriPrefs.isDoSkip() )      { sb.append( getResources().getString( R.string.title_skipdo ) ); }
+      else if ( YutnoriPrefs.isDoSpot() ) { sb.append( getResources().getString( R.string.title_dospot ) ); }
+      else if ( YutnoriPrefs.isDoCage() ) { sb.append( getResources().getString( R.string.title_docage ) ); }
+      else if ( YutnoriPrefs.isDoNone() ) { sb.append( getResources().getString( R.string.title_backdo ) ); }
     } else if ( YutnoriPrefs.isSeoul()  ) {
       sb.append( getResources().getString( R.string.title_seoul    ) ); 
     } else if ( YutnoriPrefs.isBusan()  )  {
       sb.append( getResources().getString( R.string.title_busan    ) ); 
     } else {
-      sb.append( " " );
+      sb.append( getResources().getString( R.string.title_traditional   ) );
     }
-    if ( YutnoriPrefs.mSplitGroup ) { sb.append( "} " ); } else { sb.append( "] " ); }
-
-    if ( mRemote == null ) {
-      // sb.append( mStrategyString );
-    } else {
-      if ( long_title ) sb.append( " <" + mRemote + ">" ); 
-    }
+    // if ( ! mConnected ) {
+    //   // sb.append( "-" );
+    //   // sb.append( mYutnori.getEngine() );
+    // } else {
+    //   if ( mRemote == null ) {
+    //     // sb.append( mStrategyString );
+    //   } else {
+    //     if ( long_title ) sb.append( " " + mRemote ); 
+    //   }
+    // }
+    // if ( YutnoriPrefs.mSplitGroup ) { sb.append( "} " ); } else { sb.append( "] " ); }
 
     if ( mLastWinner == 1 ) {
       mState.setOver();
@@ -218,7 +222,7 @@ public class Main extends Activity
     } else if ( mLastWinner == -1 ) {
       mState.setOver();
     }
-    sb.append( " " + mState.toString() );
+    sb.append( " - " + mState.toString() );
     setTitle( sb.toString() );
     setTitleColor( ( mState.isReady() )? 0xffff0000 : 0xff000000 );
   }
@@ -257,7 +261,7 @@ public class Main extends Activity
 
   public void onSharedPreferenceChanged( SharedPreferences sp, String k ) 
   {
-    YutnoriPrefs.check( sp, k, this );
+    YutnoriPrefs.checkPreference( sp, k, this );
   }
 
   void setPrefs( boolean mal_split, int rule, int backdo )
@@ -481,7 +485,7 @@ public class Main extends Activity
       // }
       if ( mPlaying ) {
         int state = -1;
-        state = State.checkSkip( mPlayer, mState, mMoves, true );
+        state = State.checkSkip( mPlayer, mState, mMoves, true, this );
         // Log.v( TAG, "USER check skip - state " + State.toString(state) );
 
         if ( state >= 0 ) {
@@ -524,7 +528,7 @@ public class Main extends Activity
   public void sendMyMove( int k, int from, int to, int pawns )
   {
     if ( mConnected ) {
-      Log.v("Yutnori-EXEC", "send my move " + k + " from " + from + " to " + to );
+      // Log.v("Yutnori-EXEC", "send my move " + k + " from " + from + " to " + to );
       mConnection.sendMoved( k ); 
       mConnection.sendMove( from, to, pawns );
     }
@@ -533,6 +537,7 @@ public class Main extends Activity
   public void sendMySkip( boolean clear )
   {
     if ( mConnected ) {
+      // Log.v("Yutnori", "send my skip " + clear );
       mConnection.sendSkip( clear? 1 : 0 ); 
     }
   }
@@ -540,7 +545,7 @@ public class Main extends Activity
   private boolean playMove( int pos, int x, int y )
   {
     int state = mBoard.checkBackDo( mPlayer, mState, mMoves, true, this );
-    // Log.v( TAG, "USER playMove: check back-do - state " + State.toString(state) );
+    // Log.v( TAG, "USER play move: " + mBoard.name() + " check back-do - state " + State.toString(state) );
 
     if ( state == State.TO_START ) {
       // Toast.makeText( this, "to start", Toast.LENGTH_SHORT ).show();
@@ -674,7 +679,7 @@ public class Main extends Activity
       mThisStart = Yutnori.throwYut( );
       mMoves.add( mThisStart );
       if ( mConnected ) {
-        Log.v("Yutnori-EXEC", "send start " + mThisStart );
+        // Log.v("Yutnori-EXEC", "send start " + mThisStart );
         mConnection.sendStart( mThisStart );
       }
       compareStarts( State.WAIT, State.WAIT );
@@ -878,11 +883,11 @@ public class Main extends Activity
   public boolean onOptionsItemSelected(MenuItem item)
   {
     if ( item == mMenuNew ) {
-      if ( YutnoriPrefs.isSpecial() ) {
+      // if ( YutnoriPrefs.isSpecial() ) {
         (new NewGameDialog( this, this, getResources().getString(R.string.special_rules) ) ).show();
-      } else {
-        doNewGame();
-      }
+      // } else {
+      //   doNewGame();
+      // }
      
     // } else if ( item == mMenuYut ) {
     //   if ( mYutnori.mStrategy == mStrategy1 ) {
@@ -919,7 +924,7 @@ public class Main extends Activity
   {
     int me    = mThisStart % 10;
     int other = mOtherStart % 10;
-    Log.v("Yutnori-EXEC", "compare " + me + " " + other );
+    // Log.v("Yutnori-EXEC", "compare " + me + " " + other );
     if ( me >= 0 && other >= 0 ) {
       Delay.sleep( sleepBeforeCompareStarts );
       String str = null;
@@ -1223,7 +1228,7 @@ public class Main extends Activity
 
   void execSetBackDo( int special, int backdo, int backyuts ) 
   {
-    Log.v("Yutnori-EXEC", "set special " + special + " backdo " + backdo + " Back-yuts " + backyuts );
+    // Log.v("Yutnori-EXEC", "set special " + special + " backdo " + backdo + " Back-yuts " + backyuts );
     YutnoriPrefs.setSpecial( special );
     YutnoriPrefs.mBackDo       = backdo;
     YutnoriPrefs.mBackYuts     = backyuts;
@@ -1232,9 +1237,9 @@ public class Main extends Activity
 
   void execSkip( int clear )
   {
-    Log.v("Yutnori-EXEC", "skip " + clear );
+    // Log.v("Yutnori-EXEC", "skip " + clear );
     if ( clear != 0 ) mMoves.clear();
-    Toast.makeText( this, R.string.android_skipping, Toast.LENGTH_LONG ).show();
+    Toast.makeText( this, R.string.friend_skipping, Toast.LENGTH_LONG ).show();
     Delay.sleep( sleepAndroid );
   }
 
@@ -1249,7 +1254,7 @@ public class Main extends Activity
 
   void execStart( int move ) 
   {
-    Log.v("Yutnori-EXEC", "other start " + move );
+    // Log.v("Yutnori-EXEC", "other start " + move );
     mOtherStart = move;
     mMoves.add( mOtherStart );
     compareStarts( State.START, State.START );
@@ -1258,13 +1263,13 @@ public class Main extends Activity
   void execThrow( int move ) { mMoves.add( move ); }
   void execMove( int from, int to, int pawns ) 
   { 
-    Log.v("Yutnori-EXEC", "move " + pawns + " from " + from + " to " + to );
+    // Log.v("Yutnori-EXEC", "move " + pawns + " from " + from + " to " + to );
     mBoard.doMove( from, to, Player.ANDROID, pawns );
     mDrawingSurface.addPosition( to );
   }
   void execMoved( int index ) 
   { 
-    Log.v("Yutnori-EXEC", "moved " + index );
+    // Log.v("Yutnori-EXEC", "moved " + index );
     mMoves.shift( index );
   }
 

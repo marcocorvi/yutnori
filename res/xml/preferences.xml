@@ -40,7 +40,7 @@
        android:key="YUTNORI_BACKYUTS"
        android:title="@string/pref_backyuts_title"
        android:summary="@string/pref_backyuts_summary"
-       android:defaultValue="0"
+       android:defaultValue="1"
        android:entries="@array/backyuts"
        android:entryValues="@array/backyuts"
        />

@@ -50,6 +50,8 @@ class Strategy1 extends Strategy
   private static final float WF_MOVE = 1.0f; // score decrement to get home with big moves
   private static final float WF_DANGER=0.50f;
   private static final float WF_START =0.30f;
+  private static final float WF_SEOUL = 1.8f;
+  private static final float WF_BUSAN = 1.0f;
 
 
   private static final float SCORE_MIN = -1000f;
@@ -69,6 +71,7 @@ class Strategy1 extends Strategy
             w.add(k, WF_GOT * Probability.value(k1) );
           }
         }
+        if ( k == Board.BUSAN && YutnoriPrefs.isBusan() ) w.add( k, WF_BUSAN );
       }
     }
     k = 21;
@@ -98,6 +101,7 @@ class Strategy1 extends Strategy
               w.add(k, WF_GOT * Probability.value(k1) );
             }
           }
+          if ( k == Board.SEOUL && YutnoriPrefs.isSeoul() ) w.add( k, WF_SEOUL );
         }
       }
     }
@@ -331,7 +335,7 @@ class Strategy1 extends Strategy
     boolean throw_again = do_move( ft.from, to3, 2*doze );
     mDrawingSurface.addPosition( to3 );
     moves.shift( k3 );
-    Delay.sleep( 1 * doze ); // was 1
+    Delay.sleep( doze ); // was 1
 
     ft.from = to3; 
     if ( mBoard.winner() != 0 ) return false;
@@ -363,7 +367,7 @@ class Strategy1 extends Strategy
     boolean throw_again = do_move( ft.from, to2, 2*doze );
     mDrawingSurface.addPosition( to2 );
     moves.shift( k2 );
-    Delay.sleep( 1 * doze );
+    Delay.sleep( doze );
 
     ft.from = to2;
     if ( mBoard.winner() != 0 ) return false;
@@ -377,7 +381,7 @@ class Strategy1 extends Strategy
     boolean throw_again = do_move( ft.from, ft.to, 2*doze );
     mDrawingSurface.addPosition( ft.to );
     moves.shift( k1 );
-    Delay.sleep( 1 * doze );
+    Delay.sleep( doze );
 
     if ( mBoard.winner() != 0 ) return false;
     if ( throw_again )          return true;
@@ -403,19 +407,19 @@ class Strategy1 extends Strategy
         if ( YutnoriPrefs.isDoCage() ) {
           if ( mBoard.playerDoCage( Player.ANDROID ) > 0 ) {
             ft0.from = 33;
-            ft0.to   = 21;
+            ft0.to   = Board.CHAM_MOKI;
             return v;
           }
         } else if ( YutnoriPrefs.isSeoul() ) { 
           if ( mBoard.playerStart( Player.ANDROID ) > 0 ) {
             ft0.from = 1;
-            ft0.to   = 24;
+            ft0.to   = Board.SEOUL;
             return v;
           }
         } else if ( YutnoriPrefs.isBusan() ) { 
           if ( mBoard.playerStart( Player.ANDROID ) > 0 ) {
             ft0.from = 1;
-            ft0.to   = 11;
+            ft0.to   = Board.BUSAN;
             return v;
           }
         } else if ( YutnoriPrefs.isDoSpot() && mBoard.value(2)*player() > 0 ) {

@@ -264,7 +264,7 @@ public class ConnectDialog extends Dialog
       if ( mApp.getConnectState() != SyncService.STATE_NONE ) {
         Toast.makeText( mContext, R.string.already_connected, Toast.LENGTH_SHORT).show();
       } else if ( connectDevice() ) {
-        Log.v("Yutnori-EXEC", "connect device and close dialog" );
+        // Log.v("Yutnori-EXEC", "connect device and close dialog" );
         mApp.closeConnectDialog();
       } else {
         Toast.makeText( mContext, R.string.no_device, Toast.LENGTH_SHORT).show();

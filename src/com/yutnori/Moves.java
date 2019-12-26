@@ -81,13 +81,11 @@ class Moves
     return false;
   }
 
-  
-
   // shift out a move
   // @param k   index of the move to shift out
   synchronized void shift( int k ) 
   {
-    assert( k < move.size() );
+    assert( k >= 0 && k < move.size() );
     mRevertDo = false;
     for ( ++k; k < move.size(); ++ k ) {
       move.set( k-1, move.get( k ) );
@@ -190,7 +188,7 @@ class Moves
     StringBuffer sb = new StringBuffer();
     sb.append( msg + " moves: (" + mRevertDo + ") " );
     for ( Integer ii : move ) sb.append( " " + ii.intValue() );
-    Log.v("Yutnori-TITO", sb.toString() );
+    Log.i("Yutnori-TITO", sb.toString() );
   }
 
 }

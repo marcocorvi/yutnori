@@ -275,6 +275,7 @@ public class SyncService
     if ( r.doWriteBuffer( buffer ) ) {  // Perform the write unsynchronized
       return true;
     } // else {
+    // Log.v( TAG, "write failed");
     mConnectedThread.cancelCT();
     mConnectedThread = null;
     mRemoteDevice = null;
@@ -526,7 +527,7 @@ public class SyncService
               } else if ( pos > 0 ) {
                 byte[] tmp = new byte[pos];  
                 for ( int j=0; j<pos; ++j) tmp[j] = data[j];
-                Log.v( "Yutnori-EXEC", "read <" + data[0] + "|" + data[1] + ">" );
+                // Log.v( "Yutnori-EXEC", "read <" + data[0] + "|" + data[1] + ">" );
                 mHandler.obtainMessage( MESSAGE_READ, pos, -1, tmp).sendToTarget();
                 pos = 0;
               }

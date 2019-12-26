@@ -37,6 +37,7 @@ class BoardDoSkip extends BoardDoNone
   // @param moves
   // @param clear     if set clear moves when necessary
   // @return new state or -1 if no action has been taken
+  @Override
   int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender )
   {
     int ret = State.NONE;
@@ -49,6 +50,7 @@ class BoardDoSkip extends BoardDoNone
     if ( this.countPlayer( player ) == 0 ) { // board is empty - start is not empty
       if ( moves.hasAllSkips() ) {
         // FIXME_SKIPPING set this to skip a turn after a back-do with empty board
+        Log.v("Yutnori", " do skip clear moves sender " + sender.toString() );
         State.setSkipping( player );
         if ( clear ) moves.clear();
         if ( sender != null ) sender.sendMySkip( clear );

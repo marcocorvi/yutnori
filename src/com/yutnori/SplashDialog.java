@@ -40,6 +40,9 @@ public class SplashDialog extends Dialog
   private RadioButton mCBwait;
   private RadioButton mCBjoin;
   private RadioButton mCBandroid;
+  private RadioButton mCBone;
+  private RadioButton mCBtwo;
+  private RadioButton mCBthree;
 
   // private CheckBox mCBmalsplit;
   private CheckBox mCBbackdo;
@@ -72,52 +75,37 @@ public class SplashDialog extends Dialog
     mCBandroid = (RadioButton) findViewById( R.id.cb_android );
     mCBandroid.setChecked( true );
 
+    mCBone   = (RadioButton) findViewById( R.id.cb_one );
+    mCBtwo   = (RadioButton) findViewById( R.id.cb_two );
+    mCBthree = (RadioButton) findViewById( R.id.cb_three );
+
+    if ( YutnoriPrefs.mBackYuts == 3 ) { mCBthree.setChecked( true ); }
+    else if ( YutnoriPrefs.mBackYuts == 2 ) { mCBtwo.setChecked( true ); }
+    else { mCBone.setChecked( true ); }
+
     // mCBmalsplit   = (CheckBox) findViewById( R.id.cb_malsplit );
-    mCBbackdo     = (CheckBox) findViewById( R.id.cb_backdo );
-    mCBseoul      = (CheckBox) findViewById( R.id.cb_seoul    );
-    mCBbusan      = (CheckBox) findViewById( R.id.cb_busan    );
-
+    mCBseoul  = (CheckBox) findViewById( R.id.cb_seoul    );
+    mCBbusan  = (CheckBox) findViewById( R.id.cb_busan    );
+    mCBbackdo = (CheckBox) findViewById( R.id.cb_backdo );
     mCBdoskip = (CheckBox) findViewById( R.id.cb_doskip );
-    mCBdospot     = (CheckBox) findViewById( R.id.cb_dospot   );
-    mCBdocage     = (CheckBox) findViewById( R.id.cb_docage   );
+    mCBdospot = (CheckBox) findViewById( R.id.cb_dospot   );
+    mCBdocage = (CheckBox) findViewById( R.id.cb_docage   );
 
-    if ( YutnoriPrefs.isSpecial() ) {
-      switch ( YutnoriPrefs.mSpecialRule ) {
-        case YutnoriPrefs.BACKDO:
-          mCBbackdo.setChecked( true );
-          break;
-        case YutnoriPrefs.SEOUL:
-          mCBseoul.setChecked( true );
-          break;
-        case YutnoriPrefs.BUSAN:
-          mCBbusan.setChecked( true );
-          break;
-      }
-      mCBbackdo.setOnClickListener( this );
-      mCBseoul.setOnClickListener( this );
-      mCBbusan.setOnClickListener( this );
+    mCBseoul.setChecked( YutnoriPrefs.isSeoul() );
+    mCBbusan.setChecked( YutnoriPrefs.isBusan() );
+    mCBbackdo.setChecked( YutnoriPrefs.isDoNone() );
+    mCBdoskip.setChecked( YutnoriPrefs.isDoSkip() );
+    mCBdospot.setChecked( YutnoriPrefs.isDoSpot() );
+    mCBdocage.setChecked( YutnoriPrefs.isDoCage() );
 
-      switch ( YutnoriPrefs.mBackDo ) {
-        case YutnoriPrefs.DO_SKIP:
-          mCBdoskip.setChecked( true );
-          break;
-        case YutnoriPrefs.DO_SPOT:
-          mCBdospot.setChecked( true );
-          break;
-        case YutnoriPrefs.DO_CAGE:
-          mCBdocage.setChecked( true );
-          break;
-      }
-      mCBdoskip.setOnClickListener( this );
-      mCBdospot.setOnClickListener( this );
-      mCBdocage.setOnClickListener( this );
+    mCBbackdo.setOnClickListener( this );
+    mCBseoul.setOnClickListener( this );
+    mCBbusan.setOnClickListener( this );
+    mCBdoskip.setOnClickListener( this );
+    mCBdospot.setOnClickListener( this );
+    mCBdocage.setOnClickListener( this );
 
-      // mCBmalsplit.setChecked( YutnoriPrefs.mSplitGroup );
-    } else {
-      findViewById( R.id.special_rules ).setVisibility( View.GONE );
-      findViewById( R.id.backdo_rules  ).setVisibility( View.GONE );
-    }
-
+    // mCBmalsplit.setChecked( YutnoriPrefs.mSplitGroup );
 
     mBTok = (Button) findViewById( R.id.btn_ok );
     mBThelp = (Button) findViewById( R.id.btn_help );
@@ -126,28 +114,49 @@ public class SplashDialog extends Dialog
 
     setTitle( mApp.getResources().getString( R.string.app_name ) );
 
+    // showBackDos( mCBbackdo.isChecked() );
   }
+          
+  // private void showBackDos( boolean show )
+  // {
+  //   if ( show ) {
+  //     findViewById( R.id.backdo_rules  ).setVisibility( View.VISIBLE );
+  //   } else {
+  //     findViewById( R.id.backdo_rules  ).setVisibility( View.INVISIBLE );
+  //   }
+  // }
 
   @Override
   public void onClick(View v) 
   {
     switch ( v.getId() ) {
       case R.id.btn_ok:
-        if ( YutnoriPrefs.isSpecial() ) {
-          int rule = mCBbackdo.isChecked() ? YutnoriPrefs.BACKDO :
-                     mCBseoul.isChecked() ? YutnoriPrefs.SEOUL :
-                     mCBbusan.isChecked() ? YutnoriPrefs.BUSAN :
-                     YutnoriPrefs.NONE;
-          int backdo = mCBdoskip.isChecked() ? YutnoriPrefs.DO_SKIP :
-                       mCBdospot.isChecked() ? YutnoriPrefs.DO_SPOT :
-                       mCBdocage.isChecked() ? YutnoriPrefs.DO_CAGE :
-                       YutnoriPrefs.DO_NONE;
+        // if ( YutnoriPrefs.isSpecial() ) {
+          int rule   = YutnoriPrefs.NONE;
+          int backdo = YutnoriPrefs.DO_NONE;
+          if ( mCBseoul.isChecked() ) {
+            rule = YutnoriPrefs.SEOUL;
+          } else if ( mCBbusan.isChecked() ) {
+            rule = YutnoriPrefs.BUSAN;
+          } else if ( mCBbackdo.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+          } else if ( mCBdoskip.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+            backdo = YutnoriPrefs.DO_SKIP;
+          } else if ( mCBdospot.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+            backdo = YutnoriPrefs.DO_SPOT;
+          } else if ( mCBdocage.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+            backdo = YutnoriPrefs.DO_CAGE;
+          }
+          YutnoriPrefs.mBackYuts = mCBthree.isChecked() ? 3 : mCBtwo.isChecked() ? 2 : 1;
           mApp.setPrefs(
             false, // mCBmalsplit.isChecked(), 
             rule,
             backdo
           );
-        }
+        // }
         onBackPressed();
         break;
       case R.id.btn_help:
@@ -155,38 +164,62 @@ public class SplashDialog extends Dialog
         break;
       case R.id.cb_doskip:
         if ( mCBdoskip.isChecked() ) {
+          mCBseoul.setChecked( false );
+          mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          // mCBdoskip.setChecked( false );
           mCBdospot.setChecked( false );
           mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_dospot:
         if ( mCBdospot.isChecked() ) {
+          mCBseoul.setChecked( false );
+          mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
           mCBdoskip.setChecked( false );
+          // mCBdospot.setChecked( false );
           mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_docage:
         if ( mCBdocage.isChecked() ) {
+          mCBseoul.setChecked( false );
+          mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
           mCBdoskip.setChecked( false );
           mCBdospot.setChecked( false );
+          // mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_seoul:
         if ( mCBseoul.isChecked() ) {
-          mCBbackdo.setChecked( false );
+          // mCBseoul.setChecked( false );
           mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_busan:
         if ( mCBbusan.isChecked() ) {
-          mCBbackdo.setChecked( false );
           mCBseoul.setChecked( false );
+          // mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_backdo:
         if ( mCBbackdo.isChecked() ) {
           mCBseoul.setChecked( false );
           mCBbusan.setChecked( false );
+          // mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          mCBdocage.setChecked( false );
         }
         break;
     }

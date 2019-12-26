@@ -33,6 +33,43 @@
   </RadioGroup>
 
 
+  <LinearLayout android:id="@+id/backdo_nr"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_margin="5dp" 
+    android:gravity="left"
+    >
+    <TextView 
+      android:layout_width="wrap_content" 
+      android:layout_height="wrap_content" 
+      android:text="@string/backyuts"
+      />
+    <RadioGroup 
+      android:id="@+id/backyuts_nr"
+      android:layout_width="fill_parent" 
+      android:layout_height="wrap_content"
+      android:orientation="horizontal" 
+      android:layout_marginTop="10dp" 
+      >
+      <RadioButton android:id="@+id/cb_one"
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/backyut_one"
+         />
+      <RadioButton android:id="@+id/cb_two"
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/backyut_two"
+         />
+       <RadioButton android:id="@+id/cb_three"
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/backyut_three"
+         />
+    </RadioGroup>
+  </LinearLayout>
+
   <LinearLayout android:id="@+id/special_rules"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"

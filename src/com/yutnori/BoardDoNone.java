@@ -65,6 +65,7 @@ class BoardDoNone extends Board
   // @param clear     if set clear moves when necessary
   // @param sender    sender to cennected yutnori
   // @return new state or -1 if no action has been taken
+  @Override
   int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = State.NONE;

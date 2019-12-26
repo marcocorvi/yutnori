@@ -2,25 +2,28 @@
 
 <resources>
 
-  <!-- TODO string-array name="level">
-     <item name="plain">plain</item>
-     <item name="stealth">stealth</item>
-     <item name="obscure">obscure</item>
-  </string-array -->
+  <string-array name="engine">
+     <item name="yut0">로직-0</item>
+     <item name="yut1">로직-1</item>
+     <item name="yut2">로직-2</item>
+     <item name="yutR">랜덤</item>
+  </string-array>
 
-  <!-- TODO string-array name="engine">
-     <item name="yut0">Yut-0</item>
-     <item name="yut1">Yut-1</item>
-     <item name="yut2">Yut-2</item>
-     <item name="yutR">Yut-Random</item>
-  </string-array -->
+  <string-array name="delay">
+     <item name="very_slow">아주 느림</item>
+     <item name="slow">느림</item>
+     <item name="normal">정상</item>
+     <item name="fast">빠름</item>
+     <item name="very_fast">아주 빠름</item>
+  </string-array>
 
-  <!-- TODO string-array name="delay">
-     <item name="very_slow">very slow</item>
-     <item name="slow">slow</item>
-     <item name="normal">normal</item>
-     <item name="fast">fast</item>
-     <item name="very_fast">very fast</item>
-  </string-array -->
-
+  <string-array name="rule">
+     <item name="rule0">전통 윷놀이</item>
+     <item name="rule1">서울놀이</item>
+     <item name="rule2">부산놀이</item>
+     <item name="rule3">평뒷도놀이</item>
+     <item name="rule4">낙뒷도놀이</item>
+     <item name="rule5">날뒷도놀이</item>
+     <item name="rule6">옥뒷도놀이</item>
+  </string-array>
 </resources>

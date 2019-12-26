@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.widget.TextView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
 import android.widget.LinearLayout;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -45,6 +46,10 @@ public class NewGameDialog extends Dialog
   private CheckBox mCBseoul;
   private CheckBox mCBbusan;
 
+  private RadioButton mCBone;
+  private RadioButton mCBtwo;
+  private RadioButton mCBthree;
+
   private Button mBTquit;
   private Button mBTagain;
 
@@ -66,39 +71,49 @@ public class NewGameDialog extends Dialog
     setContentView( R.layout.new_game_dialog );
     getWindow().setLayout( LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT );
 
-    if ( mApp.mConnected ) {
-      findViewById( R.id.special_rules ).setVisibility( View.GONE );
-      findViewById( R.id.backdo_rules  ).setVisibility( View.GONE );
-    } else {
-      // mCBmalsplit   = (CheckBox) findViewById( R.id.cb_malsplit );
-      mCBbackdo     = (CheckBox) findViewById( R.id.cb_backdo );
-      mCBseoul      = (CheckBox) findViewById( R.id.cb_seoul    );
-      mCBbusan      = (CheckBox) findViewById( R.id.cb_busan    );
-      mCBdoskip     = (CheckBox) findViewById( R.id.cb_doskip );
-      mCBdospot     = (CheckBox) findViewById( R.id.cb_dospot   );
-      mCBdocage     = (CheckBox) findViewById( R.id.cb_docage   );
+    // Log.v("Yutnori-NEW", "new game" );
 
-      if ( YutnoriPrefs.isSpecial() ) {
+    // if ( mApp.mConnected ) {
+    //   findViewById( R.id.special_rules ).setVisibility( View.GONE );
+    //   findViewById( R.id.backdo_rules  ).setVisibility( View.GONE );
+    //   findViewById( R.id.backyuts_nr  ).setVisibility( View.GONE );
+    // } else {
+      mCBone   = (RadioButton) findViewById( R.id.cb_one );
+      mCBtwo   = (RadioButton) findViewById( R.id.cb_two );
+      mCBthree = (RadioButton) findViewById( R.id.cb_three );
+
+      if ( YutnoriPrefs.mBackYuts == 3 ) { mCBthree.setChecked( true ); }
+      else if ( YutnoriPrefs.mBackYuts == 2 ) { mCBtwo.setChecked( true ); }
+      else { mCBone.setChecked( true ); }
+
+      // mCBmalsplit   = (CheckBox) findViewById( R.id.cb_malsplit );
+      mCBbackdo = (CheckBox) findViewById( R.id.cb_backdo );
+      mCBseoul  = (CheckBox) findViewById( R.id.cb_seoul    );
+      mCBbusan  = (CheckBox) findViewById( R.id.cb_busan    );
+      mCBdoskip = (CheckBox) findViewById( R.id.cb_doskip );
+      mCBdospot = (CheckBox) findViewById( R.id.cb_dospot   );
+      mCBdocage = (CheckBox) findViewById( R.id.cb_docage   );
+
+      // if ( YutnoriPrefs.isSpecial() ) {
         // mCBmalsplit.setChecked( YutnoriPrefs.mSplitGroup );
-        mCBbackdo.setChecked( YutnoriPrefs.isBackDo() );
         mCBseoul.setChecked( YutnoriPrefs.isSeoul() );
         mCBbusan.setChecked( YutnoriPrefs.isBusan() );
-        mCBbackdo.setOnClickListener( this );
-        mCBseoul.setOnClickListener( this );
-        mCBbusan.setOnClickListener( this );
-
+        mCBbackdo.setChecked( YutnoriPrefs.isDoNone() );
         mCBdoskip.setChecked( YutnoriPrefs.isDoSkip() );
         mCBdospot.setChecked( YutnoriPrefs.isDoSpot() );
         mCBdocage.setChecked( YutnoriPrefs.isDoCage() );
+
+        mCBseoul.setOnClickListener( this );
+        mCBbusan.setOnClickListener( this );
+        mCBbackdo.setOnClickListener( this );
         mCBdoskip.setOnClickListener( this );
         mCBdospot.setOnClickListener( this );
         mCBdocage.setOnClickListener( this );
-      } else {
-        findViewById( R.id.special_rules ).setVisibility( View.GONE );
-        findViewById( R.id.backdo_rules  ).setVisibility( View.GONE );
-      }
-
-    }
+      // } else {
+      //   findViewById( R.id.special_rules ).setVisibility( View.GONE );
+      //   findViewById( R.id.backdo_rules  ).setVisibility( View.GONE );
+      // }
+    // }
 
     mBTagain = (Button) findViewById( R.id.btn_again );
     mBTquit  = (Button) findViewById( R.id.btn_quit );
@@ -109,7 +124,18 @@ public class NewGameDialog extends Dialog
     tv.setText( mTitle );
 
     setTitle( mApp.getResources().getString( R.string.app_name ) );
+
+    // showBackDos( mCBbackdo.isChecked() );
   }
+          
+  // private void showBackDos( boolean show )
+  // {
+  //   if ( show ) {
+  //     findViewById( R.id.backdo_rules  ).setVisibility( View.VISIBLE );
+  //   } else {
+  //     findViewById( R.id.backdo_rules  ).setVisibility( View.INVISIBLE );
+  //   }
+  // }
 
   @Override
   public void onClick(View v) 
@@ -120,59 +146,93 @@ public class NewGameDialog extends Dialog
         mApp.askExit();
         break;
       case R.id.btn_again:
-        if ( ! mApp.mConnected ) { 
-          int rule = mCBbackdo.isChecked() ? YutnoriPrefs.BACKDO :
-                     mCBseoul.isChecked() ? YutnoriPrefs.SEOUL :
-                     mCBbusan.isChecked() ? YutnoriPrefs.BUSAN :
-                     YutnoriPrefs.NONE;
-          int backdo = mCBdoskip.isChecked() ? YutnoriPrefs.DO_SKIP :
-                       mCBdospot.isChecked() ? YutnoriPrefs.DO_SPOT :
-                       mCBdocage.isChecked() ? YutnoriPrefs.DO_CAGE :
-                       YutnoriPrefs.DO_NONE;
+        // if ( ! mApp.mConnected ) { 
+          int rule   = YutnoriPrefs.NONE;
+          int backdo = YutnoriPrefs.DO_NONE;
+          if ( mCBseoul.isChecked() ) {
+            rule = YutnoriPrefs.SEOUL;
+          } else if ( mCBbusan.isChecked() ) {
+            rule = YutnoriPrefs.BUSAN;
+          } else if ( mCBbackdo.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+          } else if ( mCBdoskip.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+            backdo = YutnoriPrefs.DO_SKIP;
+          } else if ( mCBdospot.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+            backdo = YutnoriPrefs.DO_SPOT;
+          } else if ( mCBdocage.isChecked() ) {
+            rule = YutnoriPrefs.BACKDO;
+            backdo = YutnoriPrefs.DO_CAGE;
+          }
+          YutnoriPrefs.mBackYuts = mCBthree.isChecked() ? 3 : mCBtwo.isChecked() ? 2 : 1;
           mApp.setPrefs(
             false, // mCBmalsplit.isChecked(), 
             rule,
             backdo
           );
-        }
+        // }
         dismiss();
         mApp.doNewGame();
         break;
       case R.id.cb_doskip:
         if ( mCBdoskip.isChecked() ) {
+          mCBseoul.setChecked( false );
+          mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          // mCBdoskip.setChecked( false );
           mCBdospot.setChecked( false );
           mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_dospot:
         if ( mCBdospot.isChecked() ) {
+          mCBseoul.setChecked( false );
+          mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
           mCBdoskip.setChecked( false );
+          // mCBdospot.setChecked( false );
           mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_docage:
         if ( mCBdocage.isChecked() ) {
-          mCBdoskip.setChecked( false );
-          mCBdospot.setChecked( false );
-        }
-        break;
-
-      case R.id.cb_backdo:
-        if ( mCBbackdo.isChecked() ) {
           mCBseoul.setChecked( false );
           mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          // mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_seoul:
         if ( mCBseoul.isChecked() ) {
-          mCBbackdo.setChecked( false );
+          // mCBseoul.setChecked( false );
           mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          mCBdocage.setChecked( false );
         }
         break;
       case R.id.cb_busan:
         if ( mCBbusan.isChecked() ) {
-          mCBbackdo.setChecked( false );
           mCBseoul.setChecked( false );
+          // mCBbusan.setChecked( false );
+          mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          mCBdocage.setChecked( false );
+        }
+        break;
+      case R.id.cb_backdo:
+        if ( mCBbackdo.isChecked() ) {
+          mCBseoul.setChecked( false );
+          mCBbusan.setChecked( false );
+          // mCBbackdo.setChecked( false );
+          mCBdoskip.setChecked( false );
+          mCBdospot.setChecked( false );
+          mCBdocage.setChecked( false );
         }
         break;
     }

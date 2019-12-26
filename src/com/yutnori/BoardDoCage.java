@@ -71,7 +71,7 @@ class BoardDoCage extends BoardDoNone
       mBoard[ from ] -= pawn_nr * player;
       mDoCage[ me ]  += pawn_nr;
     }
-    // Log.v( TAG, name() + " move from " + from + " to cage: mals " + mDoCage[me] );
+    Log.v( TAG, name() + " move from " + from + " to cage: mals " + mDoCage[me] );
   }
 
   // return -1 error
@@ -106,7 +106,7 @@ class BoardDoCage extends BoardDoNone
     } else {
       assert( mBoard[from]*player > 0 );
     }
-    // Log.v( TAG, name() + " move " + player + " form " + from + " to " + to );
+    Log.v( TAG, name() + " do move " + player + " form " + from + " to " + to );
     synchronized( this ) {
       if ( to > 1 && to < 34 ) {
         int b = mBoard[to];
@@ -120,6 +120,8 @@ class BoardDoCage extends BoardDoNone
           mBoard[to] += player;
           mStart[me] --;
           // printf("moved me from mStart %d \n", mStart[me] );
+        } else if ( from >= 34 ) {
+          doMoveFromDoCage( player ); // DO_SPOT CAGE
         } else {              // move forward
           if ( pawn_nr == 0 ) pawn_nr = mBoard[from] * player;
           assert ( pawn_nr <= Math.abs(mBoard[from]) );
@@ -171,6 +173,7 @@ class BoardDoCage extends BoardDoNone
   // @param moves
   // @param clear     if set clear moves when necessary
   // @return new state or -1 if no action has been taken
+  @Override
   int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = State.NONE;
@@ -195,7 +198,7 @@ class BoardDoCage extends BoardDoNone
             ret = State.READY;
           }
         } else {
-          Log.v(TAG, name() + " ERROR no skip [1] " + player );
+          Log.i(TAG, name() + " ERROR no skip [1] " + player );
         }
       } else { // board is empty - start is not empty
         if ( this.playerDoCage( player ) > 0 ) {
@@ -213,11 +216,11 @@ class BoardDoCage extends BoardDoNone
               ret = State.READY;
             }
           } else {
-            Log.v(TAG, name() + " ERROR no skip [2] " + player );
+            Log.i(TAG, name() + " ERROR no skip [2] " + player );
           }
         } else { // do-cage is empty
           if ( moves.hasAllSkips() ) {
-            // Log.v(TAG, name() + " move to cage " + player );
+            Log.v(TAG, name() + " move to cage " + player );
             this.doMoveToDoCage( 1, player, 1 );
             if ( sender != null ) sender.sendMyMove( k, 0, 34, 1 );
             if ( clear ) moves.clear();

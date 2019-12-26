@@ -30,7 +30,8 @@ class YutnoriPrefs
   final static String KEY_ENGINE    = "YUTNORI_ENGINE";
   final static String KEY_DELAY     = "YUTNORI_DELAY";
   final static String KEY_SPECIAL   = "YUTNORI_SPECIAL";
-  final static String KEY_BACKDO    = "YUTNORI_BACKDO";
+  // final static String KEY_SPECIAL_RULES   = "YUTNORI_SPECIAL_RULES";
+  // final static String KEY_BACKDO    = "YUTNORI_BACKDO";
 
   final static int POS_NO      = 0; // level
   final static int POS_PARTIAL = 1;
@@ -42,9 +43,12 @@ class YutnoriPrefs
   final static int ENGINE_RANDOM = 3;
 
   final static int NONE   = 0; // must agree with xml/preferences.xml
-  final static int BACKDO = 1;
-  final static int SEOUL  = 2;
-  final static int BUSAN  = 3;
+  final static int SEOUL  = 1;
+  final static int BUSAN  = 2;
+  final static int BACKDO = 3;
+  final static int SKIPDO = 4;
+  final static int SPOTDO = 5;
+  final static int CAGEDO = 6;
 
   final static int DO_NONE = 10;  // revert do
   final static int DO_SKIP = 11;  // skip turn
@@ -62,6 +66,10 @@ class YutnoriPrefs
   static int     mSpecialRule = NONE;
   static int     mBackDo      = DO_NONE;
   static int     mBackYuts    = 1;
+  static int     mDefaultRule        = NONE;
+  static int     mDefaultSpecialRule = NONE;
+  static int     mDefaultBackDo      = DO_NONE;
+  static int     mDefaultBackYuts = 1;
 
   static boolean isSpecial() { return mSpecialRule > 0; }
 
@@ -78,6 +86,41 @@ class YutnoriPrefs
   static void setSpecial( int rule ) 
   {
     mSpecialRule = rule;
+  }
+
+  static void setDefaultRule( int r ) 
+  {
+    mDefaultRule = r;
+    switch ( r ) {
+      case 1:
+        mDefaultSpecialRule = SEOUL;
+        mDefaultBackDo = DO_NONE;
+        break;
+      case 2:
+        mDefaultSpecialRule = BUSAN;
+        mDefaultBackDo = DO_NONE;
+        break;
+      case 3:
+        mDefaultSpecialRule = BACKDO;
+        mDefaultBackDo = DO_NONE;
+        break;
+      case 4:
+        mDefaultSpecialRule = BACKDO;
+        mDefaultBackDo = DO_SKIP;
+        break;
+      case 5:
+        mDefaultSpecialRule = BACKDO;
+        mDefaultBackDo = DO_SPOT;
+        break;
+      case 6:
+        mDefaultSpecialRule = BACKDO;
+        mDefaultBackDo = DO_CAGE;
+        break;
+      default:
+        mDefaultSpecialRule = NONE;
+        mDefaultBackDo = DO_NONE;
+        break;
+    }
   }
 
   static final int[] mDelayUnits = { 500, 200, 100, 50, 20 };
@@ -115,24 +158,28 @@ class YutnoriPrefs
   {
     // mDisclosed  = prefs.getBoolean( YutnoriPrefs.KEY_DISCLOSED, false );
     mSplitGroup   = prefs.getBoolean( YutnoriPrefs.KEY_SPLIT, false );
-    mSpecialRule  = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_SPECIAL, "0" ) );
-    mBackDo       = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKDO, "0" ) );
-    mBackYuts     = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKYUTS, "1" ) );
+    // mSpecialRule  = prefs.getBoolean( YutnoriPrefs.KEY_SPECIAL_RULES, false );
+    setDefaultRule( Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_SPECIAL, "0" ) ) );
+    mSpecialRule = mDefaultSpecialRule;
+    mBackDo      = mDefaultBackDo;
+    // mBackDo       = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKDO, "0" ) );
+    mDefaultBackYuts = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKYUTS, "1" ) );
+    mBackYuts = mDefaultBackYuts;
     setPos(    Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_LEVEL, "0" ) ) );
     setEngine( Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_ENGINE, "3" ) ) );
     setDelay(  Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_DELAY, "2" ) ) );
   }
 
-  static void check( SharedPreferences prefs, String k, Main app )
+  static void checkPreference( SharedPreferences prefs, String k, Main app )
   {
     if ( k.equals( YutnoriPrefs.KEY_LEVEL ) ) {
       setPos( Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_LEVEL, "0" ) ) );
     } else if ( k.equals( YutnoriPrefs.KEY_SPECIAL ) ) {
-      mSpecialRule  = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_SPECIAL, "0" ) );
-    } else if ( k.equals( YutnoriPrefs.KEY_BACKDO ) ) {
-      mBackDo       = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKDO, "0" ) );
+      setDefaultRule( Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_SPECIAL, "0" ) ) );
+    // } else if ( k.equals( YutnoriPrefs.KEY_BACKDO ) ) {
+    //   mBackDo       = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKDO, "0" ) );
     } else if ( k.equals( YutnoriPrefs.KEY_BACKYUTS ) ) {
-      mBackYuts     = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKYUTS, "1" ) );
+      mDefaultBackYuts     = Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_BACKYUTS, "1" ) );
     } else if ( k.equals( YutnoriPrefs.KEY_ENGINE ) ) {
       setEngine( Integer.parseInt( prefs.getString( YutnoriPrefs.KEY_ENGINE, "3" ) ) );
       app.setEngine( mEngine );
@@ -159,6 +206,9 @@ class YutnoriPrefs
     } else if ( key.equals(KEY_DELAY) ) {
       names  = res.getStringArray( R.array.delay );
       values = res.getStringArray( R.array.delayValue );
+    } else if ( key.equals( YutnoriPrefs.KEY_SPECIAL ) ) {
+      names  = res.getStringArray( R.array.rule );
+      values = res.getStringArray( R.array.ruleValue );
     } 
     if ( names != null && values != null ) {
       for (int k=0; k<names.length; ++k ) if ( values[k].equals( value ) ) return names[k];
@@ -177,13 +227,16 @@ class YutnoriPrefs
       return names[ mPos ];
     } else if ( key.equals(KEY_BACKYUTS) ) {
       names  = res.getStringArray( R.array.backyuts );
-      return names[ mBackYuts - 1 ]; // mBackYuts ranges 1, 2, 3
+      return names[ mDefaultBackYuts - 1 ]; // mDefaultBackYuts ranges 1, 2, 3
     } else if ( key.equals(KEY_ENGINE) ) {
       names  = res.getStringArray( R.array.engine );
       return names[ mEngine ];
     } else if ( key.equals(KEY_DELAY) ) {
       names  = res.getStringArray( R.array.delay );
       return names[ mDelayIndex ];
+    } else if ( key.equals( YutnoriPrefs.KEY_SPECIAL ) ) {
+      names  = res.getStringArray( R.array.rule );
+      return names[ mDefaultRule ];
     } 
     return null;
   }

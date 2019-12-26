@@ -38,7 +38,9 @@ class Strategy2 extends Strategy
   private static final float WF_JOIN0  = 0.8f; // score increment to join me at the beginning
   private static final float WF_HOME   = 1.5f; // score increment to get home
   private static final float WF_DANGER = 0.50f;
-  private static final float WF_START =0.30f;
+  private static final float WF_START  = 0.30f;
+  private static final float WF_SEOUL  = 1.80f;
+  private static final float WF_BUSAN  = 1.00f;
   
   private static final float SCORE_MIN = -1000f;
 
@@ -85,7 +87,7 @@ class Strategy2 extends Strategy
             if ( k2 == 21 ) k2 = 11;
             w.add( k2, Math.abs(b) * (k-k1-6) * WF_GET2 * Probability.value(k1) * get );
           }
-          if ( k == 1 ) Log.v("Yutnori-TITO", "w2[1] " + w.value(k) );
+          // if ( k == 1 ) Log.v("Yutnori-TITO", "w2[1] " + w.value(k) );
         } else {
           w.add( k, Math.abs(b) * (k-16) * WF_GET * get );
           for (int k1=1; k1<=5; ++k1 ) {
@@ -103,6 +105,8 @@ class Strategy2 extends Strategy
         }
       } else if ( b*player() > 0 ) {
         w.add( k, Math.abs(b) * Indices.distance(k) * WF_ADD );
+        if ( k == Board.SEOUL && YutnoriPrefs.isSeoul() ) w.add( k, WF_SEOUL );
+        else if ( k == Board.BUSAN && YutnoriPrefs.isBusan() ) w.add( k, WF_BUSAN );
       }
     }
   }

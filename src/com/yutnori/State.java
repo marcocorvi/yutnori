@@ -97,12 +97,13 @@ class State
 
   // return true if something has been done - false : nothing to do 
   // if upon return mState is READY or SKIP caller must clear moves
-  static int checkSkip( int player, State state, Moves moves, boolean clear ) 
+  static int checkSkip( int player, State state, Moves moves, boolean clear, ISender sender ) 
   {
     int ret = NONE;
     if ( YutnoriPrefs.isDoSkip() ) {
       if ( isSkipping(player) ) {
         if ( clear ) moves.clear();
+        if ( sender != null ) sender.sendMySkip( clear );
         clearSkipping( player );
         ret = READY;
       }

@@ -60,6 +60,8 @@ class Strategy extends Player
         danger += mBoard.distance( k, at );
       }
     }
+    if ( at == Board.SEOUL && YutnoriPrefs.isSeoul() ) danger += 5;
+    else if ( at == Board.BUSAN && YutnoriPrefs.isBusan() ) danger += 2;
     return danger;
   }
 
@@ -92,12 +94,14 @@ class Strategy extends Player
 
       if ( state == State.TO_START ) {
         if ( moves.removeSkip() ) {
+          Delay.sleep( doze );
           do_move( 2, 0, 2 * doze );
         }
         return State.MOVE; // go again through doMovePlayer 
         // return State.READY;
       }
-      state = doMovePlayer( moves, doze );
+      state = doMovePlayer( moves, doze );  // this has a sleep
+      Delay.sleep( doze );
       // Log.v(TAG, "ANDROID move player - " + State.toString(state) );
       if ( state != State.MOVE ) return state;
     }
@@ -117,6 +121,8 @@ class Strategy extends Player
   static final float W_STARTG = 1.2f;
   static final float W_CORNER = 1.4f;
   static final float W_DANGER = 0.4f;
+  static final float W_SEOUL  = 1.8f;
+  static final float W_BUSAN  = 1.0f;
 
   static final int[] mDanger = { 0, 4, 6, 4, 1, 1 };
   static final int[] mMHome  = { 0, 6, 3, 2, 1, 1 };
@@ -160,6 +166,7 @@ class Strategy extends Player
             kkm = 32;
             s = W_HOME * mMHome[m];
           }
+          if ( kf == Board.BUSAN && YutnoriPrefs.isBusan() ) s += W_BUSAN;
           if ( s > score ) { score = s; fbest = kf; tbest = kkm; jbest = j; }
         }
       }
@@ -197,6 +204,7 @@ class Strategy extends Player
             kkm = 32;
             s = W_HOME * mMHome[m];
           }
+          if ( kf == Board.SEOUL && YutnoriPrefs.isSeoul() ) s += W_SEOUL;
           if ( s > score ) { score = s; fbest = kf; tbest = kkm; jbest = j; }
         }
       }
@@ -264,7 +272,7 @@ class Strategy extends Player
     // Log.v( TAG, "Android move " + jbest + ": " + fbest + " -> " + tbest + " throw again " + throw_again );
     mDrawingSurface.addPosition( tbest );
     moves.shift( jbest );
-    Delay.sleep( 1 * doze );
+    Delay.sleep( doze );
     return throw_again ? State.THROW : State.MOVE;
   }
 

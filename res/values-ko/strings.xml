@@ -17,7 +17,7 @@
     <string name="state_ready">잠깐만</string>
     <string name="state_over">게임끝</string>
     <string name="state_hold">기다리세요</string>
-    <!-- TODO string name="state_skip">SKIP</string -->
+    <string name="state_skip">건너뜀</string>
     <string name="state_start_throw">차례 정함: 윷 던지기</string>
     <string name="state_start_ready">차례 정함 :잠깐만</string>
 
@@ -28,11 +28,10 @@
     <string name="you_start">먼저 시작 하세요.</string>
     <string name="i_start">Android가 먼저 시작해요.</string>
     <string name="friend_start">친구가 먼저 시작 합니다.</string>
-
-    <!-- TODO string name="sync_conn_failed">Connection failed.</string -->
+    <string name="sync_conn_failed">연결 실패</string>
     <string name="sync_conn_fail">연결실패. ANDROID와 대결.\n청색 말을 사용, 먼저 시작 하세요.</string>
     <string name="sync_conn_lost">연결 끊어짐</string>
-    <!-- string name="sync_conn"> %1$s 에 연결됨</string -->
+    <!-- UNUSED string name="sync_conn"> %1$s 에 연결됨</string -->
 
     <string name="color_red">%1$s에 연결됨.\n누가 먼저 시작할지 결정 합시다.\n붉은색 말을 사용 하세요</string>
     <string name="color_blue">%1$s에 연결됨.\n누가먼저 시작할지 결정 합시다.\n청색 말을 사용하세요</string>
@@ -50,10 +49,11 @@
     <string name="connection_refused">연결 허락이 않됨.</string>
     <string name="devices">블루투스 기기</string>
     <string name="device_status">현재상태: %1$s"</string>
-    <!-- TODO string name="android_skipping">Android skipping ...</string -->
-    <!-- TODO string name="skipping">Skipping ...</string -->
-    <!-- TODO string name="android_nomove">Android cannot move</string -->
-    <!-- TODO string name="nomove">Cannot move ...</string -->
+    <string name="android_skipping">안드로이드 건너뜀</string>
+    <string name="friend_skipping">친구가 낙으로 건너뜀</string>
+    <string name="skipping">건너뜀 ...</string>
+    <string name="android_nomove">안드로이드 말 \'옥\'에 갇힘</string>
+    <string name="nomove">내 말 \'옥\'에 갇힘...</string>
 
     <string name="another_game">%1$s가 새게임을 허용합니다.</string>
     <string name="not_another_game">%1$s가 게임을 원하지 않습니다.</string>
@@ -71,35 +71,46 @@
     <string name="yutnori_join">친구에게 게임 요청</string>
     <string name="yutnori_android">안드로이드 상대 게임</string>
 
-    <!-- TODO string name="title_yutnori"> Y U T N O R I </string -->
-    <!-- TODO string name="title_backskip">Skip Do</string -->
-    <!-- TODO string name="title_dospot">Do spot</string -->
-    <!-- TODO string name="title_seoul">Seoul</string -->
-    <!-- TODO string name="title_busan">Busan</string -->
-    <!-- TODO string name="title_back">back</string -->
+    <!-- UNUSED string name="title_yutnori"> Y U T N O R I </string -->
+    <string name="title_traditional">전통윷놀이</string>
+    <string name="title_seoul">서울윷놀이</string>
+    <string name="title_busan">부산윷놀이</string>
+    <string name="title_backdo">평뒷도놀이</string>
+    <string name="title_skipdo">낙뒷도놀이</string>
+    <string name="title_docage">옥뒷도놀이</string>
+    <string name="title_dospot">날뒷도놀이</string>
 
-    <!-- TODO string name="special_rules">Special rules</string -->
+    <string name="special_rules">특별 규칙</string>
 
-    <!-- TODO string name="malsplit">Mal split</string -->
-    <!-- TODO string name="backdo">Back Do</string -->
-    <!-- TODO string name="seoul">Seoul</string -->
-    <!-- TODO string name="busan">Busan</string -->
-    <!-- TODO string name="doskip">Skip Do</string -->
-    <!-- TODO string name="dospot">Do Spot</string -->
+    <string name="backyuts">뒷도표시 윷가락 수</string>
+    <string name="backyut_one">1</string>
+    <string name="backyut_two">2</string>
+    <string name="backyut_three">3</string>
+
+    <!-- Unused string name="malsplit">Mal split</string -->
+
+    <string name="seoul">서울놀이 </string>
+    <string name="busan">부산놀이</string>
+    <string name="backdo">평뒷도놀이</string>
+    <string name="doskip">낙뒷도놀이</string>
+    <string name="docage">옥뒷도놀이</string>
+    <string name="dospot">날뒷도놀이</string>
 
     <!-- UNUSED string name="pref_split_title">Split</string -->
     <!-- UNUSED string name="pref_split_summary">Splitable groups</string -->
 
-    <!-- TODO string name="pref_special_rules_title">Special rules</string -->
-    <!-- TODO string name="pref_special_rules_summary">Enable Yutnori special rules</string -->
-    <!-- TODO string name="pref_backyuts_title">Back Yuts</string -->
-    <!-- TODO string name="pref_backyuts_summary">Number of Back Yuts</string -->
-    <!-- TODO string name="pref_level_title">Level</string -->
-    <!-- TODO string name="pref_level_summary">Game Level</string -->
-    <!-- TODO string name="pref_engine_title">Engine</string -->
-    <!-- TODO string name="pref_engine_summary">Game Engine</string -->
-    <!-- TODO string name="pref_delay_title">Speed</string -->
-    <!-- TODO string name="pref_delay_summary">App speed</string -->
+    <!-- UNUSED string name="pref_special_rules_title">Special rules</string -->
+    <!-- UNUSED string name="pref_special_rules_summary">Enable Yutnori special rules</string -->
+    <string name="pref_backyuts_title">뒷도 윷</string>
+    <string name="pref_backyuts_summary">뒷도표시 윷가락 수의 디폴트</string>
+    <!-- UNUSED string name="pref_level_title">Level</string -->
+    <!-- UNUSED string name="pref_level_summary">Game Level</string -->
+    <string name="pref_engine_title">게임 로직</string>
+    <string name="pref_engine_summary">안드로이드 게임 로직:</string>
+    <string name="pref_delay_title">속도</string>
+    <string name="pref_delay_summary">안드로이드(이 앱)의 게임 속도</string>
+    <string name="pref_rules_title">게임 규칙</string>
+    <string name="pref_rules_summary">앱의 디폴트 게임</string>
 
 <string name="about_text">
 윷놀이는 한국 전통 민속놀이로, 편을 갈라 윷을 던져 승부를 가리는 놀이 입니다.\n\n
