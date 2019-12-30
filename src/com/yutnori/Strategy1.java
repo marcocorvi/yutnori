@@ -42,7 +42,7 @@ class Strategy1 extends Strategy
 
   private static final float WF_GET  = 0.8f; // weight increment to get you
   private static final float WF_GET2 = 0.2f; // weight increment to get you
-  private static final float WF_GOT  = 0.33f; // weight increment to get caught by you
+  private static final float WF_GOT  = 0.5f; // weight increment to get caught by you
   private static final float WF_ADD  = 0.9f; // weight incrememt to join me
   private static final float WF_JOIN = 0.6f; // score increment to join me forward
   private static final float WF_JOIN0= 0.3f; // score increment to join me at the beginning

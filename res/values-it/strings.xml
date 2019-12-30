@@ -16,7 +16,7 @@
     <string name="state_move">MUOVI</string>
     <string name="state_ready">ATTENDI</string>
     <string name="state_over">FINE GIOCO</string>
-    <string name="state_hold">ASPETTA ...</string>
+    <string name="state_hold">ASPETTA &#8230;</string>
     <string name="state_skip">SALTA</string>
     <string name="state_start_throw">Scelta di chi inizia: LANCIA</string>
     <string name="state_start_ready">Scelta di chi inizia: ATTENDI</string>
@@ -50,10 +50,11 @@
     <string name="connection_refused">Connessione rifiutata</string>
     <string name="devices">Dispositivi Bluetooth</string>
     <string name="device_status">Stato: %1$s"</string>
-    <string name="android_skipping">Android salta ...</string>
-    <string name="skipping">Salto ...</string>
+    <string name="android_skipping">Android salta &#8230;</string>
+    <string name="friend_skipping">Il tuo amico salta &#8230;</string>
+    <string name="skipping">Salti &#8230;</string>
     <string name="android_nomove">Android non puo\' muovere</string>
-    <string name="nomove">Non posso muovere ...</string>
+    <string name="nomove">Non puoi muovere &#8230;</string>
 
     <string name="another_game">%1$s gioca di nuovo</string>
     <string name="not_another_game">%1$s non gioca</string>
@@ -82,7 +83,7 @@
 
     <string name="special_rules">Regole speciali</string>
 
-    <!-- UNUSED string name="backyuts">Back yuts</string -->
+    <!-- UNUSED string name="backyuts"></string -->
     <string name="backyut_one">1</string>
     <string name="backyut_two">2</string>
     <string name="backyut_three">3 back yuts</string>
@@ -103,13 +104,15 @@
     <!-- UNUSED string name="pref_special_rules_summary">Abilita le regole speciali</string -->
 
     <string name="pref_backyuts_title">Back Yut</string>
-    <string name="pref_backyuts_summary">Numero di back-yut</string>
+    <string name="pref_backyuts_summary">Numero di back-yut di default: </string>
     <!-- UNUSED string name="pref_level_title">Livello</string -->
     <!-- UNUSED string name="pref_level_summary">Livello di gioco</string -->
     <string name="pref_engine_title">Logica Android</string>
-    <string name="pref_engine_summary">Logica di gioco di Android</string>
+    <string name="pref_engine_summary">Logica di gioco di Android: </string>
     <string name="pref_delay_title">Velocità</string>
-    <string name="pref_delay_summary">Velocità di display</string>
+    <string name="pref_delay_summary">Velocità di display: </string>
+    <string name="pref_rules_title">Regole</string>
+    <string name="pref_rules_summary">Regole di Yut-Nori di default: </string>
 
 <string name="about_text">
 Yutnori è un gioco da tavola tradizionale della Korea,\n

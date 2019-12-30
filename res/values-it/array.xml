@@ -12,7 +12,7 @@
      <item name="yut0">Yut-0</item>
      <item name="yut1">Yut-1</item>
      <item name="yut2">Yut-2</item>
-     <item name="yutR">Yut a caso</item>
+     <item name="yutR">Casuale</item>
   </string-array>
 
   <string-array name="delay">
@@ -21,6 +21,16 @@
      <item name="normal">normale</item>
      <item name="fast">veloce</item>
      <item name="very_fast">molto veloce</item>
+  </string-array>
+
+  <string-array name="rule">
+     <item name="rule0">Tradizionale</item>
+     <item name="rule1">Seul</item>
+     <item name="rule2">Pusan</item>
+     <item name="rule3">Back-Do</item>
+     <item name="rule4">Skip-Do</item>
+     <item name="rule5">Do-Spot</item>
+     <item name="rule6">Do-Cage</item>
   </string-array>
 
 </resources>

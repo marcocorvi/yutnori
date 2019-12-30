@@ -84,7 +84,7 @@ public class Main extends Activity
 
   private MenuItem mMenuNew      = null;
   // private MenuItem mMenuYut   = null;
-  private MenuItem mMenuJoin     = null;
+  // private MenuItem mMenuJoin     = null;
   private MenuItem mMenuSettings = null;
   private MenuItem mMenuHelp     = null;
   private MenuItem mMenuAbout    = null;
@@ -156,7 +156,7 @@ public class Main extends Activity
     {
       int ret = v.intValue();
       if ( ret < 0 ) {
-        if ( ! YutnoriPrefs.isSeoulOrBusan( ) ) {
+        if ( YutnoriPrefs.isDoSkip() ) {  // if ( ! YutnoriPrefs.isSeoulOrBusan() )
           if ( ! YutnoriPrefs.isDoNone() ) {
             Toast.makeText( mContext, R.string.android_skipping, Toast.LENGTH_LONG ).show();
           }
@@ -822,7 +822,7 @@ public class Main extends Activity
     super.onCreateOptionsMenu( menu );
     mMenuNew      = menu.add( R.string.menu_new  );
     // mMenuYut      = menu.add( YUT2   );
-    mMenuJoin     = menu.add( R.string.menu_join );
+    // mMenuJoin     = menu.add( R.string.menu_join );
     /* if ( YutnoriPrefs.mDisclosed ) */ mMenuSettings = menu.add( R.string.menu_settings );
     mMenuHelp     = menu.add( R.string.menu_help );
     mMenuAbout    = menu.add( R.string.menu_about );
@@ -899,9 +899,9 @@ public class Main extends Activity
     //     // mStrategyString = YUT1;
     //     mYutnori.mStrategy = mStrategy1;
     //   }
-    } else if ( item == mMenuJoin ) {
-      mConnectDialog = new ConnectDialog( this, this );
-      mConnectDialog.show();
+    // } else if ( item == mMenuJoin ) {
+    //   mConnectDialog = new ConnectDialog( this, this );
+    //   mConnectDialog.show();
       
     } else if ( item == mMenuSettings /* && YutnoriPrefs.mDisclosed */ ) {
       startActivity( new Intent( this, YutnoriPreferences.class ) );

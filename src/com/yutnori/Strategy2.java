@@ -211,8 +211,9 @@ class Strategy2 extends Strategy
       if ( moves.size() > 0 ) return State.MOVE;
     } else {
       // Log.v( TAG, "[2] no best move ");
+      return State.NONE;
     }
-    return State.NONE;
+    return State.MOVE;
   }
   
   // @param f   from position

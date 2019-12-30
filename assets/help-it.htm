@@ -20,46 +20,98 @@ Ci sono due modi per giocare con questa app:
 Ci sono due giocatori.<br>
 Ogni giocatore ha quattro pedine (mal).<br>
 La tavola di gioco ha 29 celle disposte sui lati e sulle diagonali di un quadrato.<br>
-All'inizio le pedine stanno sotto la tavola in basso a sinistra.<br>
-Le pedine muovono a partire dalla cella indicata dalla freccia, nel verso di questa (in snso antiorario) e lo scopo del gioco è portare le proprie pedine oltre l'ultima cella, ovvero nella "casa" posta in basso a destra.<br><p>
+All'inizio le pedine stanno nelle caselle di PARTENZA, sotto la tavola in basso a sinistra.<br>
+Le pedine muovono a partire dalla stazione indicata dalla freccia, nel verso di questa (in snso antiorario) e lo scopo del gioco è portare le proprie pedine oltre l'ultima stazione, ovvero nella "CASA" posta in basso a destra.<br><p>
 
-Se una pedina si ferma su un angolo il giocatore ha la scelta se continuare lungo il bordo o prendere la diagonale. Lo stesso vale per la cella centrale dove il giocatore ha la scelta su quale diagonale muovere.<br>
+Se una pedina si ferma su un angolo il giocatore ha la scelta se continuare lungo il bordo o prendere la diagonale. Lo stesso vale per la stazione centrale dove il giocatore ha la scelta su quale diagonale muovere.<br>
+
+Vince il gioco il primo giocatore che porta tutte le sue pedine nella "CASA".<br><p>
+
 Perció ci sono cinque percorsi possibili per le pedine.<br><p>
 <img src="routes.png">
 <br><p>
 
-Per muovere le pedine i giocatori lanciano a turno i bastoncini.<br>
+Per muovere le pedine i giocatori lanciano a turno quattro bastoncini, detti <i>yut</i>.<br>
 Quindi muovono le pedine secondo il risultato del lancio:<br>
 <ul>
-<li>un bastoncino in sù (do): un passo (avanza di una cella)</li>
+<li>uno <i>yut</i> in sù (do): un passo (avanza di una stazione)</li>
 <li>due (gae): due passi</li>
 <li>tre (geol): tre passi</li>
 <li>quattro (yut): quattro passi</li>
-<li>tutti i bastoncini in giú (mo): cinque passi</li>
+<li>tutti gli <i>yut</i> in giú (mo): cinque passi</li>
 </ul>
-Quando un giocatore fa "yut" (4) o "mo" (5) ha diritto ad un lancio supplementare. Perció non c'è limite al numero di mosse che un giocatore puó accumulare prima di muovere. Le mosse vengono effettuate singolarmente e possono essere distribuite su pedine differenti, ma una singola mossa non puó essere partizionata fra due pedine.<br><p> 
+Quando un giocatore fa <i>yut</i> (4) o <i>mo</i> (5) ha diritto ad un lancio supplementare. Perció non c'è limite al numero di mosse che un giocatore puó accumulare prima di muovere. Le mosse vengono effettuate singolarmente e possono essere distribuite su pedine differenti, ma una singola mossa non puó essere partizionata fra due pedine.<br><p> 
 
-Se una pedina cade su una cella occupata da pedine del giocatore avversario, queste vengono rimandate alla partenza e il giocatore ha diritto ad un lancio.<br><p>
+Se una pedina cade su una stazione occupata da pedine del giocatore avversario, queste vengono rimandate alla partenza e il giocatore ha diritto ad un lancio.<br><p>
 
-Se una pedina cade su una cella occupata da pedine dello stesso giocatore, da quel punto in poi queste si muovono in gruppo. [Questo differisce dal gioco tradizionale in cui è ammessa la possibilità di dividere il gruppo].<br><p>
+Se una pedina cade su una stazione occupata da pedine dello stesso giocatore, da quel punto in poi queste si muovono in gruppo.<br><p>
 
-Il gioco finisce quando un giocatore ha spostatop tutte le sue pedine nella "casa"<br><p>
+<h4>REGOLE SPECIALI</h4>
+Alcune regole speciali sono state aggiunte al gioco tradizionale per renderlo piu' interessante.<br>
+Uno, due, o tre <i>yut</i> hanno un segno <i>BACK</i> sulla faccia scura, e sono chiamati <i>back-yut</i>.
+Quando uno solo di questi <i>back-yut</i> e' in su' si ha un <i>back-do</i> e si muovono le pedine secondo
+regole speciali.<br><p>
+
+Per default l'app e` impostata sul modo tradizionale, senza regole speciali.
+Tuttavia allo start-up puoi scegliere di giocare con una regola speciale, e anche il numero di 
+<i>back-yut</i>.
+Puoi anche modificare l'impostazione di default, tramite le impostazioni dell'app.<br><p>
+
+La regola scelta per il gioco e' mostrata nella barra del titolo.<br><p>
+
+Con la regola di <b>Seul</b> un back-do muove una pedina dalla PARTENZA direttamente al centro della tavola.
+Se il giocatore non ha pedine nella sua casella di PARTENZA, e' come un <i>do</i> normale, cioe` muove le pedine un passo in avanti.<br><p>
+
+La regola di <i>Pusan</i> e' simile, ma un <i>back-do</i> muove una pedina dalla PARTENZA al primo angolo della tavola.
+Anche qui, se il giocatore non ha pedine nella sua casella di PARTENZA, e' come un <i>do</i> normale, cioe` muove le pedine un passo in avanti.<br><p>
+
+Nelle altre quattro regole speciali un <i>back-do</i> muove le pedine un passo indietro. Se le pedine sono al centro o nel terzo o quarto angolo della tavola, il giocatore sceglie in che direzione muoverle indietro.<br>
+Le quattro regole si differenziano in base a come muovere quando non ci sono pedine sulla tavola oppure sono solo nella prima stazione (detta <i>Do</i>).<br><p>
+
+Nel <b>Back-Do</b> normale, le pedine nella prima stazione tornano alla PARTENZA. Se non ci sono pedine sulla tavola e' come un <i>do</i> normale, cioe' una pedina va dalla PARTENZA alla prima stazione.<br><p>
+
+<b>Skip Do</b> e' simile, ma se non ci sono pedine sulla tavola il giocatore salta il turno.<br><p>
+
+Nel <b>Do Spot</b>, con un <i>back-do</i>, le pedine nella prima stazione saltano all'ultima stazione.
+Se non ci sono pedine sulla tavola e' come un <i>do</i> normale, cioe' una pedina va dalla PARTENZA alla prima stazione.<br><p>
+
+Infine nel <b>Do Cage</b>
+le pedine nella prima stazione tornano alla PARTENZA. Se non ci sono pedine sulla tavola una pedina passa dalla PARTENZA alla casella sottostante (la GABBIA), e vi resta fino a che il giocatore fa un altro
+<i>back-do</i>, nel qual caso la pedina esce dalla GABBIA e passa direttamente all'ultima stazione.<br><p>
+
+
+
 
 
 <a name="android"><h4>GIOCARE CONTRO ANDROID</h4></a>
 
+
+Nel dialogo iniziale scegli le regole con cui vuoi giocare e il numero di <i>back-yut</i>.
+Poi seleziona "Gioca con Android".<br>
 Le pedine di Android sono ROSSE, le tue BLE e tu cominci.<br><p>
 
-Quando è il tuo turno di lanciare i bastoncini (yut) compare l'icona in basso al centro e la scritta "LANCIA" nel
-titolo in alto. Premi sulla icona dei bastoncini. Il risultato del lancio appare in alto sopra la tavola di gioco.<br><p>
+Quando è il tuo turno di lanciare gli <i>yut)</i> compare l'icona in basso al centro e la scritta "LANCIA" nel
+titolo in alto. Premi sulla icona degli <i>yut</i>. Il risultato del lancio appare in alto sopra la tavola di gioco.<br><p>
 
 Quando hai concluso il tuo lancio (o i tuoi lanci) nel titolo compare "MUOVI". Per spostare una pedina o un gruppo di pedine
-premi sulla cella da cui vuoi partire. Questa viene evidenziata con uno sfondo blu. Premi poi sulla cella dove vuoi
-arrivare. Per spostare una pedina nella stazione terminale premi sulla cella in basso a destra.<br><p>
+premi sulla stazione da cui vuoi partire. Questa viene evidenziata con uno sfondo blu. Premi poi sulla stazione dove vuoi
+arrivare. Per spostare una pedina nella stazione terminale premi sulla stazione in basso a destra.<br><p>
 
 Quando è il turno di Android il titolo diventa rosso e compare la scritta "ATTENDI".<br><p>
 
 Quando il gioco finisce compare un dialogo che dice chi ha vinto. Questo è mostrato anche nel titolo.<br><p>
+
+<b>Regole speciali</b><br>
+Per muovere un <i>back-do</i> secondo le regole Seul o Pusan, premi le pedine nella PARTENZA.<br>
+Per saltare il tuo turno premi sullo schermo in basso al centro.<br>
+Per muovere le pedine dalla prima stazione all'ultima oppure alla PARTENZA, prima selezione le pedine alla 
+prima stazione poi premi sulla casella di destinazione.<br>
+Per muovere una pedina dalla PARTENZA alla GABBIA premi la casella della PARTENZA o quella della GABBIA.<br>
+Per muovere la pedina dalla GABBIA (e mandarla all'ultima stazione) premi sulla GABBIA.<br><p>
+
+Ci sono tre diverse logiche di gioco di Android.
+La scelta e' una delle impostazioni dell'app. Oppure puoi scegliere che l'app ne usi una a caso.
+<br><p>
 
 
 <a name="friend"><h4>GIOCARE CON UN AMICO</h4></a>
@@ -67,27 +119,42 @@ Quando il gioco finisce compare un dialogo che dice chi ha vinto. Questo è most
 Per giocare con un amico entrambi dovete aver installato Yutnori sui vostri Android e aperto il programma.<br>
 Inoltre i due Android devono essere "accoppiati" (paired) via Bluetooth.<br><p>
 
-Uno di voi apre il menu e seleziona "CONNETTI". Compare un dialogo con la lista dei dispositivi Bluetooth acoppiati
-al suo Android. Seleziona quello dell'amico e preme il bottone "Connetti". Sul Yutnori dell'amico compare un dialogo
-che chiede se accetta o meno la connessione. Per giocare assieme deve accettarla.<br><p>
+Nel dialogo di partenza uno di voi seleziona "Aspetta una richiesta di gioco".
+L'altro seleziona "Chiedi di giocare assieme". Dopodiche' deve selezionare il dispositivo android del primo
+e premere il bottone "CONNETTI".
+Sul Yutnori del primo compare un dialogo
+che chiede se accettare o meno la connessione. Per giocare assieme deve accettarla.<br><p>
 
 A questo punto i due Yutnori mostrano un dialogo informativo che vi dice di che colore sono le vostre rispettive pedine,
-e vi invita a lanciare i bastoncini per scegliere chi inizia.<br><p>
+e vi invita a lanciare gli <i>yut</i> per scegliere chi inizia.<br><p>
 
-In questa fase dovete lanciare alternativamente i bastoncini fino a che uno di voi ha un punteggio superiore all'altro.
+In questa fase dovete lanciare alternativamente gli <i>yut</i> fino a che uno di voi ha un punteggio superiore all'altro.
 I lanci vengono mostrati con lo sfondo del colore delle rispettive pedine.<br><p>
 
-Conclusa la scelta di chi inizia, comincia il gioco.<br><p>
+Conclusa la scelta di chi inizia, comincia il gioco.
+Si gioca secondo le regole impostate da colui che ha vinto di iniziare,
+e poi il gioco e` come quando si gioca con Android.
+<br><p>
 
-Al termine del gioco se volete giocare una seconda volta, uno di voi sleziona il menu "NUOVO".
+Al termine del gioco se volete giocare una seconda volta, uno di voi seleziona il menu "NUOVO".
 Colui che ha vinto inizia il gioco.<br><p>
+
+<h4>IMPOSTAZIONI</h4>
+<ul>
+<li><b>Logica</b>: puoi scegliere fra tre logiche di gioco per Android, o lasciare che l'app ne usi una a caso</li>
+<li><b>Velocita'</b>: le pause fra le azioni di Android</li>
+<li><b>Back Yuts</b>: il numero di <i>back yut</i> di default: 1, 2, or 3</li>
+<li><b>Ragola</b>: la regola di gioco di default</li>
+<!-- li><b>Level</b>: three levels with increasing difficulty. The first level is the traditional Yutnori</li -->
+</ul>
 
 
 <h4>MENU</h4>
 
 <ul>
 <li><b>Nuovo</b> Inizia un nuovo gioco.</li>
-<li><b>Collega</b> Connetti ad un altro Yutnoti per giocare con un amico.</li>
+<!-- li><b>Collega</b> Connetti ad un altro Yutnoti per giocare con un amico.</li -->
+<li><b>Impostazioni</b> dell'app.</li>
 <li><b>Aiuto</b> Questo documento.</li>
 <li><b>Info</b> Versione di Yutnori.</li>
 </ul>
