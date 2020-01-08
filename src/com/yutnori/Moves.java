@@ -83,14 +83,16 @@ class Moves
 
   // shift out a move
   // @param k   index of the move to shift out
-  synchronized void shift( int k ) 
+  synchronized boolean  shift( int k ) 
   {
-    assert( k >= 0 && k < move.size() );
+    // assert( k >= 0 && k < move.size() );
+    if ( k < 0 || k >= move.size() ) return false;
     mRevertDo = false;
     for ( ++k; k < move.size(); ++ k ) {
       move.set( k-1, move.get( k ) );
     }
     move.remove( k-1 );
+    return true;
   }
 
   synchronized int size() { return move.size(); }
@@ -106,7 +108,9 @@ class Moves
   {
     int ret = val % 10;
     if ( ! YutnoriPrefs.isSpecial() || revert_do ) return ret;
-    return ( ret == 1 && val >= 10 && ! revert_do )? -ret : ret;
+    // return ( ret == 1 && val >= 10 && ! revert_do )? -ret : ret;
+    if ( val == 11 && ! revert_do ) return -1;
+    return ret;
   }
 
 
@@ -164,13 +168,14 @@ class Moves
     return k0;
   }
 
+  // sort on raw values
   synchronized void sortUnique()
   {
     if ( move.size() < 2 ) return;
     int k = 0;
     while ( k+1 < move.size() ) {
-      int i0 = getValue( k );
-      int i1 = getValue( k+1 );
+      int i0 = getRawValue( k );
+      int i1 = getRawValue( k+1 );
       if ( i0 < i1 ) {
         ++ k;
       } else if ( i0 == i1 ) {

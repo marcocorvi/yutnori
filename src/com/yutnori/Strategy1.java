@@ -52,7 +52,7 @@ class Strategy1 extends Strategy
   private static final float WF_START =0.30f;
   private static final float WF_SEOUL = 1.8f;
   private static final float WF_BUSAN = 1.0f;
-
+  private static final float WF_DOSPOT = 2.0f;
 
   private static final float SCORE_MIN = -1000f;
 
@@ -63,8 +63,12 @@ class Strategy1 extends Strategy
 
   private void updateWeightFrom( Weight w )
   {
-    int k;
-    for (k=2; k<21; ++k ) {
+    int k = Board.DO_STATION; // 2
+    if ( mBoard.value(k) * player() > 0 ) { // my position
+      if ( YutnoriPrefs.isDoSpot() ) w.add( k, WF_DOSPOT );
+    }
+
+    for (k=3; k<21; ++k ) {
       if ( mBoard.value(k) * player() > 0 ) { // my position
         for (int k1=1; k1<=5 && k-k1 > 1; ++k1) {
           if ( mBoard.value(k-k1) * player() < 0 ) { // other position
@@ -187,40 +191,60 @@ class Strategy1 extends Strategy
     if ( moves.size() == 0 ) return State.NONE;
     // moves.print( "Strategy-1" );
     int s = checkSkips( moves );
-    if ( s != State.FALL_THRU ) return s;
+    if ( s != State.FALL_THRU ) {
+      // Log.v( TAG, "Android [1] check skeips " + State.toString( s ) );
+      return s;
+    }
+
+    // moves indices in composite-moves
+    // (0) (0,1) (0,1,...)_n-2 (0,2) (0,2,...)_n-3 ... (0,n-2) (0,n-2,n-1) (0,n-1) ==> 1 + n-1 + (n-1)*(n-2)/2
+    // (1) (1,2) (1,2,...)_n-3 ... (1,n-2) (1,n-2,n-1) (1,n-1) ==> 1 + n-2 + (n-2)*(n-3)/2
+    // ...
+    // (n-4) (n-4,n-3) (n-4,n-3,...)_2 (n-1,n-2) (n-4,n-2,n-1)_1 (n-4,n-1) ==> 1 + 3 + 3*2/2
+    // (n-3) (n-3,n-2) (n-3,n-2,n-1)_1 (n-3,n-1) ==> 1 + 2 + 2*1/2
+    // (n-2) (n-2,n-1) ==> 1 + 1
+    // (n-1) ==> 1
+    //
+    // tot3 = Sum_1..n-2  k*(k+1)/2 = 1/2 ( Sum k^2 + Sum k ) = 1/2 ( (n-2)*(n-1)*(2n-3)/6 + (n-1)*(n-2)/2 )
+    //      = 1/4 (n-1)*(n-2) * ( (2n - 3)/3 +1 )
+    //      = 1/6 n * (n-1) * (n-2) 
+    // tot1 = n
+    // tot2 = n*(n-1)/2
+    // tot = n * ( 1 + (n-1)/2 * ( 1 + (n-2)/3 )
 
     int max = moves.size();
     // Log.v( TAG, "Android [1] do Move Player continues - moves nr. " + max );
     Moves composite_moves = new Moves();
     int kk = 0;
-    for ( int k1=0; k1<max; ++k1) {
+    for ( int k1=0; k1<max; ++k1) {  // N moves
       int m1 = moves.getValue(k1);
-      // if ( m1 > 0 )
-      {
-        composite_moves.add( m1 );
-        for ( int k2=k1+1; k2<max; ++k2 ) {
-          int m12 = m1 + moves.getValue(k2);
-          // if ( m12 > 0 )
-          {
-            composite_moves.add( m12 );
-            for ( int k3=k2+1; k3<max; ++k3 ) {
-              int m123 = m12 + moves.getValue(k3);
-              // if ( m123 > 0 ) 
-              {
-                composite_moves.add( m123 );
-              }
-            }
-          }
+      composite_moves.add( m1 );
+    }
+    for ( int k1=0; k1<max; ++k1 ) { // N*(N-1)/2
+      int m1 = moves.getValue(k1);
+      for ( int k2=k1+1; k2<max; ++k2 ) {
+        int m12 = m1 + moves.getValue(k2);
+        composite_moves.add( m12 );
+      }
+    }
+    for ( int k1=0; k1<max; ++k1 ) { // N*(N-1)*(N-2)/6
+      int m1 = moves.getValue(k1);
+      for ( int k2=k1+1; k2<max; ++k2 ) {
+        int m12 = m1 + moves.getValue(k2);
+        for ( int k3=k2+1; k3<max; ++k3 ) {
+          int m123 = m12 + moves.getValue(k3);
+          composite_moves.add( m123 );
         }
       }
     }
-    // Log.v( TAG, "android composite moves nr. " + composite_moves.size() );
+    // Log.v( TAG, "Android [1] composite moves nr. " + composite_moves.size() );
+    // composite_moves.print("composite");
     composite_moves.sortUnique( );
+    // composite_moves.print("sorted composite");
 
     FromTo ft = new FromTo();
     int m0 = bestMove( composite_moves, ft );
     // composite_moves.print("Best " + m0 + " " + ft.from + "->" + ft.to );
-
     // Log.v( TAG, "best move " + m0 + " from " + ft.from + " to " + ft.to );
     if ( m0 >= 0 ) {
       if ( try1( moves, doze, m0, ft )
@@ -244,7 +268,7 @@ class Strategy1 extends Strategy
     for (int k1=0; k1<moves.size(); ++k1) {
       if ( m0 == moves.getValue(k1) ) {
         boolean ret = found1( moves, doze, mBoard, k1, ft );
-        // Log.v( TAG, "   One at " + k1 + " found " + ret );
+        // Log.v( TAG, "Android [1] try-1 at " + k1 + " move " + m0 + " found " + ret );
         return ret;
       }
     }
@@ -256,11 +280,11 @@ class Strategy1 extends Strategy
     if ( mBoard.winner() != 0 ) return false;
     if ( moves.size() < 2 ) return false;
     for (int k1=0; k1<moves.size(); ++k1 ) {
-      for (int k2=0; k2<moves.size(); ++k2 ) {
-        if ( k2 == k1 ) continue;
-        if ( m0 == moves.getValue(k1)+moves.getValue(k2) ) {
+      int m1 = moves.getValue( k1 );
+      for (int k2=k1+1; k2<moves.size(); ++k2 ) {
+        if ( m0 == m1 + moves.getValue(k2) ) {
           boolean ret = found2( moves, doze, mBoard, k1, k2, ft );
-          // Log.v( TAG, "   Two at " + k1 + " " + k2 + " found " + ret );
+          // Log.v( TAG, "Android [1] try-2 at " + k1 + " " + k2 + " move " + m0 + " found " + ret );
           return ret;
         }
       }
@@ -273,13 +297,13 @@ class Strategy1 extends Strategy
     if ( mBoard.winner() != 0 ) return false;
     if ( moves.size() < 3 ) return false;
     for (int k1=0; k1<moves.size(); ++k1 ) {
-      for (int k2=0; k2<moves.size(); ++k2 ) {
-        if ( k2 == k1 ) continue;
-        for (int k3=0; k3<moves.size(); ++k3 ) {
-          if ( k3 == k1 || k3 == k2 ) continue;
-          if ( m0 == moves.getValue(k1)+moves.getValue(k2)+moves.getValue(k3) ) {
+      int m1 = moves.getValue( k1 );
+      for (int k2=k1+1; k2<moves.size(); ++k2 ) {
+        int m12 = m1 + moves.getValue( k2 );
+        for (int k3=k2+1; k3<moves.size(); ++k3 ) {
+          if ( m0 == m12 + moves.getValue(k3) ) {
             boolean ret = found3( moves, doze, mBoard, k1, k2, k3, ft );
-            // Log.v( TAG, "   Three at " + k1 + " " + k2 + " " + k3 + " found " + ret );
+            // Log.v( TAG, "Android [1] try-3 at " + k1 + " " + k2 + " " + k3 + " move " + m0 + " found " + ret );
             return ret;
           }
         }
@@ -332,12 +356,13 @@ class Strategy1 extends Strategy
     }
     assert( to3 > 1 );
     
+    moves.shift( k3 );
     boolean throw_again = do_move( ft.from, to3, 2*doze );
     mDrawingSurface.addPosition( to3 );
-    moves.shift( k3 );
     Delay.sleep( doze ); // was 1
 
     ft.from = to3; 
+    if ( to3 > 31 ) return false;
     if ( mBoard.winner() != 0 ) return false;
     if ( throw_again )          return true;
     if ( moves.size() == 0 )    return false;
@@ -364,12 +389,13 @@ class Strategy1 extends Strategy
       }
     }
 
+    moves.shift( k2 );
     boolean throw_again = do_move( ft.from, to2, 2*doze );
     mDrawingSurface.addPosition( to2 );
-    moves.shift( k2 );
     Delay.sleep( doze );
 
     ft.from = to2;
+    if ( to2 > 31 ) return false;
     if ( mBoard.winner() != 0 ) return false;
     if ( throw_again )          return true;
     if ( moves.size() == 0 )    return false;
@@ -378,9 +404,9 @@ class Strategy1 extends Strategy
 
   private boolean found1( Moves moves, int doze, Board mBoard, int k1, FromTo ft )
   {
+    moves.shift( k1 );
     boolean throw_again = do_move( ft.from, ft.to, 2*doze );
     mDrawingSurface.addPosition( ft.to );
-    moves.shift( k1 );
     Delay.sleep( doze );
 
     if ( mBoard.winner() != 0 ) return false;
@@ -389,6 +415,8 @@ class Strategy1 extends Strategy
     return false;
   }
 
+  // return value of the best move
+  // moves are already reduced - use raw values
   private int bestMove( Moves moves, FromTo ft0 )
   {
     float score = SCORE_MIN;
@@ -401,7 +429,7 @@ class Strategy1 extends Strategy
   
     for ( int k = 0; k < moves.size(); ++k) {
       float s;
-      int v   = moves.getValue(k);
+      int v   = moves.getRawValue(k);
       if ( v < 0 ) {
         
         if ( YutnoriPrefs.isDoCage() ) {
@@ -452,7 +480,7 @@ class Strategy1 extends Strategy
           score = s;
           ft0.from = ft.from;
           ft0.to   = Indices.POS_HOME;
-          ret = moves.getValue(k);
+          ret = v; // moves.getValue(k);
         }
       }
 
@@ -462,7 +490,7 @@ class Strategy1 extends Strategy
         score = s;
         ft0.from = ft.from;
         ft0.to   = ft.to;
-        ret = moves.getValue(k);
+        ret = v; // moves.getValue(k);
       }
 
       s = movingForScore( v, ft, wei_from, wei_to );
@@ -471,7 +499,7 @@ class Strategy1 extends Strategy
         score = s;
         ft0.from = ft.from;
         ft0.to   = ft.to;
-        ret = moves.getValue(k);
+        ret = v; // moves.getValue(k);
       }
 
       s = movingStartScore( v, ft, wei_from, wei_to );
@@ -480,7 +508,7 @@ class Strategy1 extends Strategy
         score = s;
         ft0.from = ft.from;
         ft0.to   = ft.to;
-        ret = moves.getValue(k);
+        ret = v; // moves.getValue(k);
       }
     }
     return ret;

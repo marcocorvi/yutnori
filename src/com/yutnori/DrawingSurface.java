@@ -37,7 +37,7 @@ import android.util.Log;
 public class DrawingSurface extends SurfaceView
                             implements SurfaceHolder.Callback
 {
-  // static final String TAG = "Yutnori-TITO";
+  static final String TAG = "Yutnori-DRAW";
 
   private Main mApp = null;
 
@@ -52,7 +52,7 @@ public class DrawingSurface extends SurfaceView
   private Boolean _run;
   protected DrawThread thread;
   private Bitmap mBitmap;
-  public boolean isDrawing = true;
+  // public boolean isDrawing = true;
   private SurfaceHolder mHolder; // canvas holder
   private Context mContext;
   private AttributeSet mAttrs;
@@ -76,6 +76,11 @@ public class DrawingSurface extends SurfaceView
 
   Board getBoard() { return mBoard; }
   Moves getMoves() { return mMoves; }
+
+  void setDrawing( boolean draw ) 
+  {
+    if ( thread != null ) thread.isDrawing = draw;
+  }
   
   public DrawingSurface(Context context, AttributeSet attrs) 
   {
@@ -143,13 +148,15 @@ public class DrawingSurface extends SurfaceView
   {
     @Override
     public void handleMessage(Message msg) {
-      isDrawing = false;
+      // Log.v( TAG, "stop drawing" );
+      setDrawing( false );
     }
   };
 
   class DrawThread extends  Thread
   {
     private SurfaceHolder mSurfaceHolder;
+    boolean isDrawing = false;
 
     public DrawThread(SurfaceHolder surfaceHolder)
     {
@@ -177,34 +184,41 @@ public class DrawingSurface extends SurfaceView
   {
     // TODO Auto-generated method stub
     mBitmap =  Bitmap.createBitmap (width, height, Bitmap.Config.ARGB_8888);;
+    // Log.v( TAG, "surface changed w " + width + " h " + height );
+    setDrawing( true );
   }
 
   @Override
   public void surfaceCreated(SurfaceHolder mHolder) 
   {
     // TODO Auto-generated method stub
-    if (thread == null ) {
+    if ( thread == null ) {
       thread = new DrawThread(mHolder);
     }
     thread.setRunning(true);
     thread.start();
+    // Log.v( TAG, "surface created ");
   }
 
   @Override
   public void surfaceDestroyed(SurfaceHolder mHolder) 
   {
     // TODO Auto-generated method stub
-    boolean retry = true;
-    thread.setRunning(false);
-    while (retry) {
-      try {
-        thread.join();
-        retry = false;
-      } catch (InterruptedException e) {
-        // we will try it again and again...
+    // Log.v( TAG, "surface destroyed ");
+    if ( thread != null ) {
+      boolean retry = true;
+      setDrawing( false );
+      thread.setRunning( false );
+      while (retry) {
+        try {
+          thread.join();
+          retry = false;
+        } catch (InterruptedException e) {
+          // we will try it again and again...
+        }
       }
+      thread = null;
     }
-    thread = null;
   }
 
   int mWidth, mHeight;
@@ -467,8 +481,20 @@ public class DrawingSurface extends SurfaceView
       card = ( b == 0 )? mscard[b] : mzcard[b];
     } else if ( pos <= 1 ) {
       card = ( pos == mHighlight )? mscard[b] : mzcard[b];
-    } else if ( pos == 6 || pos == 11 || pos == 16 || pos == 21 || pos == 24 ) {
+    } else if ( pos == 6 ) {
+      if ( b == 0 && YutnoriPrefs.isBusan() ) {
+        card = (pos == mHighlight)? mscard[b] : mYutnori; // mBusan;
+      } else {
+        card = (pos == mHighlight)? mscard[b] : mzcard[b];
+      }
+    } else if ( pos == 11 || pos == 16 || pos == 21 ) {
       card = (pos == mHighlight)? mscard[b] : mzcard[b];
+    } else if ( pos == 24 ) {
+      if ( b == 0 && YutnoriPrefs.isSeoul() ) {
+        card = (pos == mHighlight)? mscard[b] : mYutnori; // mSeoul;
+      } else {
+        card = (pos == mHighlight)? mscard[b] : mzcard[b];
+      }
     } else {
       card = (pos == mHighlight)? mScard[b] : mZcard[b];
     }
@@ -660,6 +686,9 @@ public class DrawingSurface extends SurfaceView
   private static Bitmap mScard0[];
   private static Bitmap mpawn[];
   private static Bitmap mPawn[];
+  private static Bitmap mSeoul;
+  private static Bitmap mBusan;
+  private static Bitmap mYutnori;
 
   private static Bitmap mArrow;
   private static Bitmap mYut[];
@@ -685,7 +714,7 @@ public class DrawingSurface extends SurfaceView
     Matrix m = new Matrix();
     float s = (float)mCardRow / (float)mCardSize;
     m.preScale( s, s );
-    
+
     for ( int k = 0; k < NZ; ++k ) {
       bitmap = BitmapFactory.decodeResource( res, mzcardindex[k] );
       mzcard0[k] = Bitmap.createBitmap( bitmap, 0, 0, mCardSize, mCardSize, m, true);
@@ -697,6 +726,17 @@ public class DrawingSurface extends SurfaceView
       mScard0[k] = Bitmap.createBitmap( bitmap, 0, 0, mCardSize, mCardSize, m, true);
     }
     resetPawns();
+
+    // bitmap = BitmapFactory.decodeResource( res, R.drawable.s0seoul );
+    // mSeoul = Bitmap.createBitmap( bitmap, 0, 0, mCardSize, mCardSize, m, true);
+
+    // bitmap = BitmapFactory.decodeResource( res, R.drawable.s0busan );
+    // mBusan = Bitmap.createBitmap( bitmap, 0, 0, mCardSize, mCardSize, m, true);
+
+    bitmap = BitmapFactory.decodeResource( res, R.drawable.s0yutnori );
+    mYutnori = Bitmap.createBitmap( bitmap, 0, 0, mCardSize, mCardSize, m, true);
+
+
 
     // Log.v( "Yutnori", "scale " + s );
 

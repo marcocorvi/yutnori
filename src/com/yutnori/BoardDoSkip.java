@@ -16,10 +16,12 @@ import android.util.Log;
 
 class BoardDoSkip extends BoardDoNone
 {
-  BoardDoSkip()
-  {
-    super();
-  }
+  BoardDoSkip() { super(); }
+
+  BoardDoSkip( short b[] ) { super( b ); }
+
+  @Override
+  protected short getBoardIndex() { return BOARD_DOSKIP; }
 
   @Override
   String name() { return "Do-Skip"; }
@@ -41,7 +43,7 @@ class BoardDoSkip extends BoardDoNone
   int checkBackDo( int player, State state, Moves moves, boolean clear, ISender sender )
   {
     int ret = State.NONE;
-    // moves.print( name() + " check back-do (" + player + ")" );
+    moves.print( name() + " check back-do (" + player + ")" );
     if ( ! YutnoriPrefs.isDoSkip() || ! moves.hasSkip() ) {
       // Log.v( TAG, name() + " NO BACK_DO");
       return ret;
@@ -50,12 +52,13 @@ class BoardDoSkip extends BoardDoNone
     if ( this.countPlayer( player ) == 0 ) { // board is empty - start is not empty
       if ( moves.hasAllSkips() ) {
         // FIXME_SKIPPING set this to skip a turn after a back-do with empty board
-        Log.v("Yutnori", " do skip clear moves sender " + sender.toString() );
+        // Log.v("Yutnori", "check back do: set " + player + " skipping ");
         State.setSkipping( player );
         if ( clear ) moves.clear();
         if ( sender != null ) sender.sendMySkip( clear );
         // ret = State.READY;
-        ret = State.MOVE;
+        // ret = State.MOVE;
+        ret = State.SKIP;
       } else {
         // normal move;
       }
@@ -65,7 +68,7 @@ class BoardDoSkip extends BoardDoNone
         // Log.v(TAG, name() + "[2] player " + player + " only at 2");
         ret = State.TO_START;
       } else {
-        // Log.v(TAG, name() + "[3] player " + player + " only at other stations than 2");
+        // Log.v(TAG, name() + "[3] player " + player + " at other stations than 2");
         // normal
       }
     }

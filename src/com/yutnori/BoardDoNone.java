@@ -21,6 +21,11 @@ class BoardDoNone extends Board
     super();
   }
 
+  BoardDoNone( short b[] ) { super( b ); }
+
+  @Override
+  protected short getBoardIndex() { return BOARD_DONONE; }
+
   @Override
   String name() { return "Do-None"; }
 

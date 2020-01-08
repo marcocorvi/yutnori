@@ -41,6 +41,7 @@ class Strategy2 extends Strategy
   private static final float WF_START  = 0.30f;
   private static final float WF_SEOUL  = 1.80f;
   private static final float WF_BUSAN  = 1.00f;
+  private static final float WF_DOSPOT = 2.00f;
   
   private static final float SCORE_MIN = -1000f;
 
@@ -107,6 +108,7 @@ class Strategy2 extends Strategy
         w.add( k, Math.abs(b) * Indices.distance(k) * WF_ADD );
         if ( k == Board.SEOUL && YutnoriPrefs.isSeoul() ) w.add( k, WF_SEOUL );
         else if ( k == Board.BUSAN && YutnoriPrefs.isBusan() ) w.add( k, WF_BUSAN );
+        else if ( k == Board.DO_STATION && YutnoriPrefs.isDoSpot() ) w.add( k, WF_DOSPOT );
       }
     }
   }

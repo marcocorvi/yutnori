@@ -55,7 +55,7 @@ public class Main extends Activity
                            , OnSharedPreferenceChangeListener
                            , ISender
 {
-  static String TAG = "Yutnori-TITO";
+  static String TAG = "Yutnori-LIFE";
 
   final static int sleepAfterHighlight      =  5;
   final static int sleepBeforeCompareStarts = 20;
@@ -92,10 +92,10 @@ public class Main extends Activity
   ConnectDialog mConnectDialog = null;
   SplashDialog  mSplashDialog = null;
 
-  Yutnori  mYutnori   = null;
-  Board mBoard;
+  Yutnori mYutnori = null;
+  Board mBoard     = null;
   Moves mMoves;
-  int myPawnNr = 0;
+  int myPawnNr   = 0;
   int yourPawnNr = 0;
   // int mMySkip = 0;
 
@@ -277,6 +277,14 @@ public class Main extends Activity
     // TODO pick Board State and Yutnori
     resetStatus(  true );
   }
+ 
+  void startDrawing()
+  {
+    // Log.v( TAG, "start drawing ");
+    mDrawingSurface.setDrawing( true );
+  }
+
+  boolean doSplashDialog = true;
 
   @Override
   public void onCreate(Bundle savedInstanceState) 
@@ -322,8 +330,10 @@ public class Main extends Activity
     mRemote  = null;
     mPlaying = true;
     
-    mSplashDialog = new SplashDialog( this, this );
-    mSplashDialog.show();
+    // Log.v( TAG, "onCreate splash dialog");
+    // mSplashDialog = new SplashDialog( this, this );
+    // mSplashDialog.show();
+
     // alertNumber( R.string.color_none );
 
     // mDisclosure = new int[4];
@@ -334,12 +344,12 @@ public class Main extends Activity
     //   // Log.v( TAG, "Disclose " + k + " = " + v );
     // }
     // mDisclosureIndex = 0;
+    // Log.v( TAG, "onCreate board and moves");
     mBoard = mDrawingSurface.getBoard();
     mMoves = mDrawingSurface.getMoves();
     mYutnori = new Yutnori( mBoard, mMoves, mDrawingSurface );
     mState   = new State();
     setEngine( YutnoriPrefs.mEngine );
-    setTheTitle();
   }
 
   void setStartAs( int start )
@@ -369,33 +379,40 @@ public class Main extends Activity
   // ------------------------------------------------------------------------
 
   @Override
+  protected synchronized void onStart()
+  {
+    super.onStart();
+    // Log.v( TAG, "on Start ");
+  }
+
+  @Override
   protected synchronized void onResume()
   {
     super.onResume();
-    // Log.v( TAG, "Main Activity onResume " );
-    mDrawingSurface.isDrawing = true;
+    // Log.v( TAG, "on Resume " );
+    setTheTitle();
+    if ( doSplashDialog ) {
+      doSplashDialog = false;
+      mSplashDialog = new SplashDialog( this, this );
+      mSplashDialog.show();
+    }
+    // mDrawingSurface.setDrawing( true );
+    startDrawing();
   }
 
   @Override
   protected synchronized void onPause() 
   { 
     super.onPause();
-    // Log.v( TAG, "Main Activity onPause " );
-    mDrawingSurface.isDrawing = false;
-  }
-
-  @Override
-  protected synchronized void onStart()
-  {
-    super.onStart();
-    // Log.v( TAG, "Main Activity onStart ");
+    // Log.v( TAG, "on Pause " );
+    mDrawingSurface.setDrawing( false );
   }
 
   @Override
   protected synchronized void onStop()
   {
     super.onStop();
-    // Log.v( TAG, "Main Activity onStop ");
+    // Log.v( TAG, "on Stop ");
     if ( mConnected ) {
       if ( mConnection != null ) mConnection.disconnect();
     }
@@ -405,8 +422,39 @@ public class Main extends Activity
   protected synchronized void onDestroy()
   {
     super.onDestroy();
-    // Log.v( TAG, "Main activity onDestroy");
+    // Log.v( TAG, "on Destroy");
     stopRemote();
+  }
+
+  @Override
+  public void onSaveInstanceState( Bundle bundle )
+  {
+    super.onSaveInstanceState( bundle );
+    // Log.v( TAG, "on save instance state");
+    mBoard.saveState( bundle );
+    mState.saveState( bundle );
+    YutnoriPrefs.saveState( bundle );
+  }
+
+  @Override
+  public void onRestoreInstanceState( Bundle bundle )
+  {
+    closeSplashDialog();
+    super.onRestoreInstanceState( bundle );
+    // Log.v( TAG, "on restore instance state");
+    YutnoriPrefs.restoreState( bundle );
+    mState.restoreState( bundle );
+    mBoard = Board.restoreState( bundle );
+    mMoves.clear();
+    if ( mDrawingSurface != null ) {
+      // Log.v( TAG, "on restore set surface board");
+      mDrawingSurface.setBoard( mBoard );
+    }
+    if ( mYutnori != null ) {
+      // Log.v( TAG, "on restore set yutnori board");
+      mYutnori.setBoard( mBoard );
+    }
+    setEngine( YutnoriPrefs.mEngine );
   }
 
   // ------------------------------------------------------------------------
@@ -463,6 +511,7 @@ public class Main extends Activity
       float y_canvas = event.getY(id);
       int pos = mDrawingSurface.getIndex( (int)x_canvas, (int)y_canvas );
       // Log.v(TAG, "USER tap at pos " + pos );
+
       if ( pos ==  0 ) pos =  1; // start
       if ( pos == 33 ) pos = 32; // home
       // Log.v( TAG, "onTouch() " + pos + " X-Y " + x_canvas + " " + y_canvas + " state " + mState.toString() );
@@ -560,7 +609,7 @@ public class Main extends Activity
       if ( mState.isSkip() ) {
         Toast.makeText( this, R.string.nomove, Toast.LENGTH_SHORT ).show();
         mState.setReady();
-      }
+      } 
     } else { // normal move
       if ( YutnoriPrefs.mSplitGroup && mDrawingSurface.isShowingPawnNrs() ) {
         int nr = mDrawingSurface.getPawnNr( x, y );
@@ -632,6 +681,7 @@ public class Main extends Activity
         }
       }
     }
+    
     return false;
   }
 
@@ -725,7 +775,7 @@ public class Main extends Activity
               if ( YutnoriPrefs.isSeoulOrBusan() ) {
               } else if ( YutnoriPrefs.isDoNone() ) {
               } else if ( YutnoriPrefs.isDoSkip() ) {
-                State.setSkipping( mPlayer );
+                // State.setSkipping( mPlayer );
               } else if ( YutnoriPrefs.isDoSpot() ) {
               } else if ( YutnoriPrefs.isDoCage() ) {
               }
@@ -1233,6 +1283,7 @@ public class Main extends Activity
     YutnoriPrefs.mBackDo       = backdo;
     YutnoriPrefs.mBackYuts     = backyuts;
     YutnoriPrefs.mTiToFreeze   = true;
+    setTheTitle();
   }
 
   void execSkip( int clear )

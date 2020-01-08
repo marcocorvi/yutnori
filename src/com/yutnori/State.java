@@ -14,6 +14,7 @@ package com.yutnori;
 import android.util.Log;
 
 import android.content.res.Resources;
+import android.os.Bundle;
 
 class State
 {
@@ -55,6 +56,22 @@ class State
     mState  = READY;
     mSkipping[0] = false;
     mSkipping[1] = false;
+  }
+
+  void saveState( Bundle bundle )
+  {
+    bundle.putShort( "STATE_STATE", (short)mState );
+    bundle.putShort( "STATE_SKIP0", (short)( mSkipping[0] ? 1 : 0 ) );
+    bundle.putShort( "STATE_SKIP1", (short)( mSkipping[1] ? 1 : 0 ) );
+    // Log.v("Yutnori", "State save " + mState + " skip " + mSkipping[0] + " " + mSkipping[1] );
+  }
+
+  void restoreState( Bundle bundle ) 
+  {
+    mState = bundle.getShort( "STATE_STATE" );
+    mSkipping[0] = (bundle.getShort( "STATE_SKIP0" ) == 1);
+    mSkipping[1] = (bundle.getShort( "STATE_SKIP1" ) == 1);
+    // Log.v("Yutnori", "State restore " + mState + " skip " + mSkipping[0] + " " + mSkipping[1] );
   }
 
   int getState() { return mState; }
@@ -102,14 +119,18 @@ class State
     int ret = NONE;
     if ( YutnoriPrefs.isDoSkip() ) {
       if ( isSkipping(player) ) {
+        // Log.v( TAG, "check skip " + player + " is skipping" );
         if ( clear ) moves.clear();
         if ( sender != null ) sender.sendMySkip( clear );
         clearSkipping( player );
         ret = READY;
       }
     }
-    if ( ret >= 0 && state != null ) state.setState( ret );
-    // Log.v( TAG, "check skipping " + player + " returns " + ret );
+    if ( ret >= 0 && state != null ) {
+      // Log.v( TAG, "check skip " + player + " set state " + toString(ret) );
+      state.setState( ret );
+    }
+    // Log.v( TAG, "check skip " + player + " returns " + toString(ret) );
     return ret;
   }
 

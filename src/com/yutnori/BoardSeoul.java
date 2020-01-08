@@ -16,10 +16,12 @@ import android.util.Log;
 
 class BoardSeoul extends Board
 {
-  BoardSeoul()
-  {
-    super();
-  }
+  BoardSeoul() { super(); }
+
+  BoardSeoul( short b[] ) { super( b ); }
+
+  @Override
+  protected short getBoardIndex() { return BOARD_SEOUL; }
 
   @Override
   String name() { return "Seoul"; }
@@ -79,12 +81,16 @@ class BoardSeoul extends Board
       if ( playerStart( player ) > 0 ) {
         int move = this.doMoveToSeoulOrBusan( player, moves, to );
         // Log.v(TAG, name() + "[3] move to S " + move );
-        if ( move == -1 ) { // cannot move (empty START)
-          ret = State.MOVE;
+        if ( move == -1 ) { // cannot move (empty START) - should not happen
+          moves.setRevertDo();
+          ret = State.NONE;
         } else {
           ret = (move != 0)? State.THROW : ( moves.size() > 0 )? State.MOVE : State.READY;
           if ( sender != null ) sender.sendMyMove( k, 1, to, 1 );
         }
+      } else {
+        moves.setRevertDo();
+        ret = State.NONE;
       }
     }
     // Log.v( TAG, name() + " check back do returns " + State.toString(ret) );

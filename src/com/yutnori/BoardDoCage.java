@@ -16,14 +16,17 @@ import android.util.Log;
 
 class BoardDoCage extends BoardDoNone
 {
-  private int mDoCage[] = null;
-
   BoardDoCage()
   {
     super();
-    mDoCage = new int[2];
+    // mCage = new int[2];
     reset();
   }
+
+  BoardDoCage( short b[] ) { super( b ); }
+
+  @Override
+  protected short getBoardIndex() { return BOARD_DOCAGE; }
 
   @Override
   String name() { return "Do-Cage"; }
@@ -33,16 +36,16 @@ class BoardDoCage extends BoardDoNone
   {
     super.reset();
     synchronized( this ) {
-      if ( mDoCage != null ) {
-        mDoCage[0] = 0;
-        mDoCage[1] = 0;
+      if ( mCage != null ) {
+        mCage[0] = 0;
+        mCage[1] = 0;
       }
     }
   }
 
-  int doCage( int k ) { return mDoCage[k]; }
+  int doCage( int k ) { return mCage[k]; }
 
-  int playerDoCage( int player ) { return mDoCage[ Indices.yut_index( player ) ]; }
+  int playerDoCage( int player ) { return mCage[ Indices.yut_index( player ) ]; }
 
 
   boolean canMovePlayer( int player, int from, int to, int m )
@@ -53,35 +56,35 @@ class BoardDoCage extends BoardDoNone
     return super.canMovePlayer( player, from, to, m );
   }
 
-  boolean startToDoCage( int k ) // DO_SPOT CAGE
+  boolean startToCage( int k ) // DO_SPOT CAGE
   {
     if ( mStart[k] == 0 ) return false;
     mStart[k] --;
-    mDoCage[k] ++;
+    mCage[k] ++;
     return true;
   }
 
-  void doMoveToDoCage( int from, int player, int pawn_nr ) // DO_SPOT CAGE
+  void doMoveToCage( int from, int player, int pawn_nr ) // DO_SPOT CAGE
   {
     int me  = Indices.yut_index(player);
     if ( from <= 1 ) {
       mStart[ me ]  -= pawn_nr;
-      mDoCage[ me ] += pawn_nr;
+      mCage[ me ] += pawn_nr;
     } else if ( from == 2 ) {
       mBoard[ from ] -= pawn_nr * player;
-      mDoCage[ me ]  += pawn_nr;
+      mCage[ me ]  += pawn_nr;
     }
-    Log.v( TAG, name() + " move from " + from + " to cage: mals " + mDoCage[me] );
+    // Log.v( TAG, name() + " move from " + from + " to cage: mals " + mCage[me] );
   }
 
   // return -1 error
   //         0 ok move
   //         1 ok move and sent opponent back to START
-  int doMoveFromDoCage( int player )
+  int doMoveFromCage( int player )
   {
     int me  = Indices.yut_index(player);
-    int pawn_nr = mDoCage[ me ];
-    mDoCage[ me ] = 0;
+    int pawn_nr = mCage[ me ];
+    mCage[ me ] = 0;
     // Log.v(TAG, name() + " player " + player + " move from do-cage mals " + pawn_nr );
     if ( pawn_nr < 1 ) return -1; // cannot move from DoSpot
     int b21 = mBoard[21] * player;
@@ -106,7 +109,7 @@ class BoardDoCage extends BoardDoNone
     } else {
       assert( mBoard[from]*player > 0 );
     }
-    Log.v( TAG, name() + " do move " + player + " form " + from + " to " + to );
+    // Log.v( TAG, name() + " do move " + player + " form " + from + " to " + to );
     synchronized( this ) {
       if ( to > 1 && to < 34 ) {
         int b = mBoard[to];
@@ -121,7 +124,7 @@ class BoardDoCage extends BoardDoNone
           mStart[me] --;
           // printf("moved me from mStart %d \n", mStart[me] );
         } else if ( from >= 34 ) {
-          doMoveFromDoCage( player ); // DO_SPOT CAGE
+          doMoveFromCage( player ); // DO_SPOT CAGE
         } else {              // move forward
           if ( pawn_nr == 0 ) pawn_nr = mBoard[from] * player;
           assert ( pawn_nr <= Math.abs(mBoard[from]) );
@@ -136,11 +139,11 @@ class BoardDoCage extends BoardDoNone
         }
       } else { // to == 0, 1 or to == 34, 35
         if ( from < 2 ) {
-          doMoveToDoCage( from, player, pawn_nr ); // DO_SPOT CAGE
+          doMoveToCage( from, player, pawn_nr ); // DO_SPOT CAGE
         } else if ( from == 2 ) {
           // if ( YutnoriPrefs.isDoCage() ) { // This moves from Do-Spot to Do-Cage
           //   // Log.v(TAG, name() + " player " + player + " move to DoSpot from " + from + " mal " + pawn_nr );
-          //   doMoveToDoCage( from, player, pawn_nr ); // DO_SPOT CAGE
+          //   doMoveToCage( from, player, pawn_nr ); // DO_SPOT CAGE
           // } else 
           { // This moves from Do-Spot to START
             int b = mBoard[from];
@@ -178,7 +181,7 @@ class BoardDoCage extends BoardDoNone
   {
     int ret = State.NONE;
     // moves.print( name() + " check back-do (" + player + ")" );
-    if ( ! YutnoriPrefs.isDoCage() || ! moves.hasSkip() ) {
+    if ( ! YutnoriPrefs.isDoCage() ) {
       return ret;
     }
     int k = moves.getSkip();
@@ -186,32 +189,36 @@ class BoardDoCage extends BoardDoNone
       if ( this.playerStart( player ) == 0 ) {
         if ( moves.removeSkip() ) {
           // Log.v(TAG, name() + " skip from cage [1] " );
-          int move = this.doMoveFromDoCage( player );
+          int move = this.doMoveFromCage( player );
           if ( sender != null ) sender.sendMyMove( k, 34, 21, 1 );
           if ( move == 1 ) {
             ret = State.THROW;
           } else if ( move == 0 ) {
             ret = ( moves.size() > 0 )? State.MOVE : State.READY;
           } else {
-            // Log.v(TAG, name() + " ERROR State bad doMoveFromDoCage");
+            // Log.v(TAG, name() + " ERROR State bad doMoveFromCage");
             moves.clear();
             ret = State.READY;
           }
         } else {
-          Log.i(TAG, name() + " ERROR no skip [1] " + player );
+          // Log.v(TAG, name() + "Do Cage: must skip [1] " + player );
+          // State.setSkipping( player );
+          if ( clear ) moves.clear();
+          if ( sender != null ) sender.sendMySkip( clear );
+          ret = State.SKIP;
         }
       } else { // board is empty - start is not empty
         if ( this.playerDoCage( player ) > 0 ) {
           if ( moves.removeSkip() ) {
             // Log.v(TAG, name() + " skip from cage [2]" );
-            int move = this.doMoveFromDoCage( player );
+            int move = this.doMoveFromCage( player );
             if ( sender != null ) sender.sendMyMove( k, 34, 21, 1 );
             if ( move == 1 ) { // sent opponent to START
               ret = State.THROW;
             } else if ( move == 0 ) {
               ret = ( moves.size() > 0 )? State.MOVE : State.READY;
             } else {
-              // Log.v(TAG, name() + " ERROR State bad doMoveFromDoCage");
+              // Log.v(TAG, name() + " ERROR State bad doMoveFromCage");
               moves.clear();
               ret = State.READY;
             }
@@ -220,8 +227,8 @@ class BoardDoCage extends BoardDoNone
           }
         } else { // do-cage is empty
           if ( moves.hasAllSkips() ) {
-            Log.v(TAG, name() + " move to cage " + player );
-            this.doMoveToDoCage( 1, player, 1 );
+            // Log.v(TAG, name() + " move to cage " + player );
+            this.doMoveToCage( 1, player, 1 );
             if ( sender != null ) sender.sendMyMove( k, 0, 34, 1 );
             if ( clear ) moves.clear();
             ret = State.READY;
@@ -235,14 +242,14 @@ class BoardDoCage extends BoardDoNone
       if ( this.playerDoCage( player ) > 0 ) {
         if ( moves.removeSkip() ) {
           // Log.v(TAG, name() + " skip from cage " + player );
-          int move = this.doMoveFromDoCage( player );
+          int move = this.doMoveFromCage( player );
           if ( sender != null ) sender.sendMyMove( k, 34, 21, 1 );
           if ( move == 1 ) {
             ret = State.THROW;
           } else if ( move == 0 ) {
             ret = ( moves.size() > 0 )? State.MOVE : State.READY;
           } else {
-            // Log.v(TAG, name() + " STATE bad doMoveFromDoCage");
+            // Log.v(TAG, name() + " STATE bad doMoveFromCage");
             moves.clear();
             ret = State.READY;
           }

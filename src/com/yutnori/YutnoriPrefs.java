@@ -12,12 +12,14 @@
  */
 package com.yutnori;
 
+import android.util.Log;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
-import android.util.Log;
+import android.os.Bundle;
 
 class YutnoriPrefs
 {
@@ -70,7 +72,28 @@ class YutnoriPrefs
   static int     mDefaultSpecialRule = NONE;
   static int     mDefaultBackDo      = DO_NONE;
   static int     mDefaultBackYuts = 1;
+  // --------------------------------------------------------------
+  static void saveState( Bundle bundle )
+  {
+    bundle.putShort( "YUTNORI_DELAY",    (short)mDelayIndex );
+    bundle.putShort( "YUTNORI_POS",      (short)mPos );
+    bundle.putShort( "YUTNORI_ENGINE",   (short)mEngine );
+    bundle.putShort( "YUTNORI_SPECIAL",  (short)mSpecialRule );
+    bundle.putShort( "YUTNORI_BACKDO",   (short)mBackDo );
+    bundle.putShort( "YUTNORI_BACKYUTS", (short)mBackYuts );
+  }
 
+  static void restoreState( Bundle bundle )
+  {
+    setDelay( bundle.getShort( "YUTNORI_DELAY" ) );
+    mPos         = bundle.getShort( "YUTNORI_POS" );
+    mEngine      = bundle.getShort( "YUTNORI_ENGINE" );
+    mSpecialRule = bundle.getShort( "YUTNORI_SPECIAL" );
+    mBackDo      = bundle.getShort( "YUTNORI_BACKDO" );
+    mBackYuts    = bundle.getShort( "YUTNORI_BACKYUTS" );
+  }
+
+  // --------------------------------------------------------------
   static boolean isSpecial() { return mSpecialRule > 0; }
 
   static boolean isBackDo() { return mSpecialRule == BACKDO; }
@@ -82,6 +105,9 @@ class YutnoriPrefs
   static boolean isDoSkip() { return mSpecialRule == BACKDO && mBackDo == DO_SKIP; }
   static boolean isDoSpot() { return mSpecialRule == BACKDO && mBackDo == DO_SPOT; }
   static boolean isDoCage() { return mSpecialRule == BACKDO && mBackDo == DO_CAGE; }
+
+  static int getBackYuts() // { return mBackYuts; }
+  { return ( mSpecialRule > 0 )? (isSeoulOrBusan() ? 1 : mBackYuts) : 0; } 
 
   static void setSpecial( int rule ) 
   {

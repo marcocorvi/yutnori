@@ -123,6 +123,7 @@ class Strategy extends Player
   static final float W_DANGER = 0.4f;
   static final float W_SEOUL  = 1.8f;
   static final float W_BUSAN  = 1.0f;
+  static final float W_DOSPOT = 2.0f;
 
   static final int[] mDanger = { 0, 4, 6, 4, 1, 1 };
   static final int[] mMHome  = { 0, 6, 3, 2, 1, 1 };
@@ -167,6 +168,7 @@ class Strategy extends Player
             s = W_HOME * mMHome[m];
           }
           if ( kf == Board.BUSAN && YutnoriPrefs.isBusan() ) s += W_BUSAN;
+          else if ( kf == Board.DO_STATION && YutnoriPrefs.isDoSpot() ) s += W_DOSPOT;
           if ( s > score ) { score = s; fbest = kf; tbest = kkm; jbest = j; }
         }
       }
@@ -284,7 +286,7 @@ class Strategy extends Player
     if ( YutnoriPrefs.isDoCage() ) {
       if ( mBoard.playerDoCage( player() ) > 0 ) {
         moves.removeSkip();
-        if ( mBoard.doMoveFromDoCage( player() ) > 0 ) {
+        if ( mBoard.doMoveFromCage( player() ) > 0 ) {
           return State.THROW;
         }
         return ( moves.size() > 0 )? State.MOVE : State.NONE;
@@ -303,11 +305,11 @@ class Strategy extends Player
         if ( YutnoriPrefs.isDoCage() ) {
           moves.removeSkip();
           if ( mBoard.playerDoCage( player() ) > 0 ) {
-            if ( mBoard.doMoveFromDoCage( player() ) > 0 ) {
+            if ( mBoard.doMoveFromCage( player() ) > 0 ) {
               return State.THROW;
             }
           } else {
-            mBoard.doMoveToDoCage( 1, player(), 1 );
+            mBoard.doMoveToCage( 1, player(), 1 );
           }
           return ( moves.size() > 0 )? State.MOVE : State.NONE;
         } else if ( YutnoriPrefs.isDoSkip() ) {

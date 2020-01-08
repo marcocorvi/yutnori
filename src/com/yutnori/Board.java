@@ -13,6 +13,7 @@
 package com.yutnori;
 
 import android.util.Log;
+import android.os.Bundle;
 
 class Board 
 {
@@ -27,7 +28,15 @@ class Board
     //              19       25       28        8
     //      {32}    20   26               27    7
     //      {33} [21/1]    2    3    4    5   [ 6]
-    //           
+    //
+  static final protected short BOARD_PLAIN  = 0;
+  static final protected short BOARD_SEOUL  = 1;
+  static final protected short BOARD_DONONE = 2;
+  static final protected short BOARD_DOSKIP = 3;
+  static final protected short BOARD_DOSPOT = 4;
+  static final protected short BOARD_DOCAGE = 5;
+
+  protected short getBoardIndex() { return BOARD_PLAIN; }
 
   static final int SEOUL = 24;
   static final int BUSAN =  6;
@@ -41,6 +50,7 @@ class Board
 
   protected int mStart[];
   protected int mHome[];
+  protected int mCage[];
   protected static boolean cross24 = false; //!< whether can cross 24
 
   Board()
@@ -48,7 +58,66 @@ class Board
     mBoard = new int[33];
     mStart = new int[2];
     mHome  = new int[2];
+    mCage  = new int[2];
     reset();
+  }
+
+  Board( short b[] )
+  {
+    mBoard = new int[33];
+    mStart = new int[2];
+    mHome  = new int[2];
+    mCage  = new int[2];
+    if ( b == null ) {
+      reset();
+    } else {
+      // Log.v("Yutnori", "restore board data");
+      int k = 0;
+      for ( ; k < 33; ++ k ) mBoard[k] = b[k];
+      mStart[0] = b[k++];
+      mStart[1] = b[k++];
+      mHome[0]  = b[k++];
+      mHome[1]  = b[k++];
+      mCage[0]  = b[k++];
+      mCage[1]  = b[k++];
+    }
+  }
+
+  static private Board makeBoard( short index, short b[] )
+  {
+    // Log.v("Yutnori", "make board " + index );
+    switch ( index ) {
+      case BOARD_SEOUL:  return new BoardSeoul(b);
+      case BOARD_DONONE: return new BoardDoNone(b);
+      case BOARD_DOSKIP: return new BoardDoSkip(b);
+      case BOARD_DOSPOT: return new BoardDoSpot(b);
+      case BOARD_DOCAGE: return new BoardDoCage(b);
+      default: return new Board(b);
+    }
+  }
+
+  void saveState( Bundle bundle )
+  {
+    short b[] = new short[39];
+    int k = 0;
+    for ( ; k < 33; ++ k ) b[k] = (short)(mBoard[k]);
+    b[k++] = (short)mStart[0];
+    b[k++] = (short)mStart[1];
+    b[k++] = (short)mHome[0];
+    b[k++] = (short)mHome[1];
+    b[k++] = (short)mCage[0];
+    b[k++] = (short)mCage[1];
+    short index = (short)getBoardIndex();
+    // Log.v("Yutnori", "save board " + index );
+    bundle.putShort( "BOARD_INDEX", getBoardIndex() );
+    bundle.putShortArray( "BOARD_ARRAY", b );
+  }
+
+  static Board restoreState( Bundle bundle )
+  {
+    short index = bundle.getShort( "BOARD_INDEX" );
+    short b[]   = bundle.getShortArray( "BOARD_ARRAY" );
+    return makeBoard( index, b );
   }
 
   String name() { return "Plain"; }
@@ -93,8 +162,8 @@ class Board
   int playerAtStation( int player, int k ) { return mBoard[k] * player; }
 
 
-  int doMoveFromDoCage( int player ) { return -1; } // ERROR
-  void doMoveToDoCage( int from, int player, int pawn_nr ) { } 
+  int doMoveFromCage( int player ) { return -1; } // ERROR
+  void doMoveToCage( int from, int player, int pawn_nr ) { } 
   int doMoveToSeoulOrBusan( int player, Moves moves, int station ) { return -1; }
 
   // boolean doMoveToStart( int from, int player, int pawns )
@@ -338,7 +407,7 @@ class Board
         if ( from > 1 ) {
           // if ( YutnoriPrefs.isDoSpot() ) {
           //   // Log.v(TAG, name() + " Player " + player + " move to DoSpot from " + from + " mal " + pawn_nr );
-          //   doMoveToDoCage( from, player, pawn_nr ); // DO_SPOT CAGE
+          //   doMoveToCage( from, player, pawn_nr ); // DO_SPOT CAGE
           // } else 
           {
             int b = mBoard[from];

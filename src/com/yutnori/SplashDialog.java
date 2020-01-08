@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 import android.widget.TextView;
 import android.widget.Button;
@@ -112,7 +113,12 @@ public class SplashDialog extends Dialog
     mBTok.setOnClickListener( this );
     mBThelp.setOnClickListener( this );
 
-    setTitle( mApp.getResources().getString( R.string.app_name ) );
+    String version = "";
+    try {
+      version = mApp.getPackageManager().getPackageInfo( mApp.getPackageName(), 0 ).versionName;
+      // version_code = mApp.getPackageManager().getPackageInfo( mApp.getPackageName(), 0 ).versionCode;
+    } catch ( NameNotFoundException e ) { }
+    setTitle( mApp.getResources().getString( R.string.app_name ) + " " + version );
 
     // showBackDos( mCBbackdo.isChecked() );
   }
@@ -156,6 +162,7 @@ public class SplashDialog extends Dialog
             rule,
             backdo
           );
+          mApp.startDrawing();
         // }
         onBackPressed();
         break;

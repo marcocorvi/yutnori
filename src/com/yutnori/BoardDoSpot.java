@@ -16,10 +16,12 @@ import android.util.Log;
 
 class BoardDoSpot extends BoardDoNone
 {
-  BoardDoSpot()
-  {
-    super();
-  }
+  BoardDoSpot() { super(); }
+
+  BoardDoSpot( short b[] ) { super( b ); }
+
+  @Override
+  protected short getBoardIndex() { return BOARD_DOSPOT; }
 
   @Override
   String name() { return "Do-Spot"; }
