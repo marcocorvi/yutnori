@@ -16,7 +16,7 @@ import android.util.Log;
 
 class Strategy extends Player
 {
-  static final String TAG = "Yutnori-TITO";
+  static final String TAG = "Yutnori-S0";
   State mState;
 
   Strategy( Board b, Moves m, DrawingSurface s, int p ) 
@@ -88,7 +88,7 @@ class Strategy extends Player
           // State.clearSkipping( Player.ANDROID );
           return state;
         }
-        if ( state == State.THROW )    return state;
+        if ( state == State.THROW ) return state;
         if ( state != State.MOVE && state != State.TO_START ) return State.NONE; 
       }
 
@@ -109,9 +109,9 @@ class Strategy extends Player
   }
 
   static final float W_GET   = 7.0f;
-  static final float W_JOIN  = 2.5f;
+  static final float W_JOIN  = 4.5f;
   static final float W_MOVE  = 2.0f;
-  static final float W_HOME  = 4.5f;
+  static final float W_HOME  = 3.5f;
   static final float W_GMOVE = 1.0f;
   static final float W_JMOVE = 0.5f;
   static final float W_DIAG1 = 1.3f;
@@ -120,10 +120,11 @@ class Strategy extends Player
   static final float W_STARTJ = 0.8f;
   static final float W_STARTG = 1.2f;
   static final float W_CORNER = 1.4f;
-  static final float W_DANGER = 0.4f;
+  static final float W_DANGER = 1.8f;
   static final float W_SEOUL  = 1.8f;
   static final float W_BUSAN  = 1.0f;
   static final float W_DOSPOT = 2.0f;
+  static final float W_CATCH  = 2.4f;
 
   static final int[] mDanger = { 0, 4, 6, 4, 1, 1 };
   static final int[] mMHome  = { 0, 6, 3, 2, 1, 1 };
@@ -140,6 +141,7 @@ class Strategy extends Player
     int tbest = -1;
     int jbest = -1;
     int me = player();
+    int other = - me;
 
     int k;
     for (k=2; k<=21; ++k ) {
@@ -251,9 +253,10 @@ class Strategy extends Player
           int kkm = 1 + m;
           float f = (kkm == 6)? W_CORNER : 1;
           float s = score;
+          if ( mBoard.playerStart( other ) == 0 ) s += W_CATCH;
           int b = mBoard.getStationValue( kkm );
           if ( b*me < 0 )      { s = W_STARTG * W_GET  * Math.abs(b) + W_GMOVE * m; }
-          else if ( b*me > 0 ) { s = W_STARTJ * W_JOIN * Math.abs(b) + W_JMOVE * m; }
+          // else if ( b*me > 0 ) { s = W_STARTJ * W_JOIN * Math.abs(b) + W_JMOVE * m; }
           else { s = W_START * W_MOVE * m; }
           s *= f;
           for ( int jj = 1; jj <= 5; ++ jj ) {

@@ -594,7 +594,7 @@ public class Main extends Activity
   private boolean playMove( int pos, int x, int y )
   {
     int state = mBoard.checkBackDo( mPlayer, mState, mMoves, true, this );
-    // Log.v( TAG, "USER play move: " + mBoard.name() + " check back-do - state " + State.toString(state) );
+    Log.v( TAG, "USER play move: " + mBoard.name() + " check back-do - state " + State.toString(state) );
 
     if ( state == State.TO_START ) {
       // Toast.makeText( this, "to start", Toast.LENGTH_SHORT ).show();
