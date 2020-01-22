@@ -143,14 +143,16 @@ class Yutnori
 
     boolean again = true;
     int state = State.NONE;
+    int m = 0;
     do {
       if ( again ) {
         again = false;
         do {
-          int m = throwYut( );
+          m = throwYut( );
           mMoves.add( m );
           Delay.sleep( 2 * doze ); // was 2
-        } while ( Math.abs( mMoves.getValue( mMoves.size()-1 ) ) > 3 );
+          // Log.v( TAG, "added move " + m );
+        } while ( Math.abs( m%10 ) > 3 );
       }
       if ( mStrategy != null ) {
         // mMoves.print( "Android " );
