@@ -122,19 +122,21 @@ public class DrawingSurface extends SurfaceView
     Canvas canvas = null;
     try {
       canvas = mHolder.lockCanvas();
-      if ( mBitmap == null ) {
-        mBitmap = Bitmap.createBitmap (1, 1, Bitmap.Config.ARGB_8888);
-      }
-      final Canvas c = new Canvas (mBitmap);
-      mCanvasWidth  = c.getWidth();
-      mCanvasHeight = c.getHeight();
+      if ( canvas != null ) {
+        if ( mBitmap == null ) {
+          mBitmap = Bitmap.createBitmap (1, 1, Bitmap.Config.ARGB_8888);
+        }
+        final Canvas c = new Canvas (mBitmap);
+        mCanvasWidth  = c.getWidth();
+        mCanvasHeight = c.getHeight();
 
-      c.drawColor(0xff993333);// , PorterDuff.Mode.CLEAR);
-      canvas.drawColor(0xff993333); // , PorterDuff.Mode.CLEAR);
+        c.drawColor(0xff993333);// , PorterDuff.Mode.CLEAR);
+        canvas.drawColor(0xff993333); // , PorterDuff.Mode.CLEAR);
 
-      executeAll( c, previewDoneHandler );
+        executeAll( c, previewDoneHandler );
     
-      canvas.drawBitmap (mBitmap, 0,  0,null);
+        canvas.drawBitmap (mBitmap, 0,  0,null);
+      }
     } finally {
       if ( canvas != null ) {
         mHolder.unlockCanvasAndPost( canvas );
